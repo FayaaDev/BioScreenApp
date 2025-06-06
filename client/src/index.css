@@ -4,6 +4,99 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force placeholder text to be gray and override any pink colors */
+input::placeholder,
+textarea::placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input:-moz-placeholder,
+textarea:-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+/* Force placeholder text to be gray and override any pink colors */
+input::placeholder,
+textarea::placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input:-moz-placeholder,
+textarea:-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+/* Specific targeting for email and password inputs to override any pink placeholder colors */
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input[type="email"]::-webkit-input-placeholder,
+input[type="password"]::-webkit-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input[type="email"]::-moz-placeholder,
+input[type="password"]::-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input[type="email"]:-ms-input-placeholder,
+input[type="password"]:-ms-input-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
+input[type="email"]:-moz-placeholder,
+input[type="password"]:-moz-placeholder {
+  color: #8e8e93 !important;
+  opacity: 1 !important;
+}
+
 :root {
   --background: 242 242 247;      /* #F2F2F7 */
   --foreground: 28 28 30;         /* #1C1C1E */
