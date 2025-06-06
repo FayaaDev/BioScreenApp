@@ -1,0 +1,91 @@
+/* RTL Support Styles */
+html, body {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Form fields */
+input, textarea, select {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Layout adjustments */
+.flex {
+  flex-direction: row-reverse;
+}
+
+/* Login and signup form specific adjustments */
+form label {
+  text-align: right;
+  display: block;
+}
+
+/* Card content alignment */
+.card-content, .card-header {
+  text-align: right;
+}
+
+/* Border adjustments for screening cards */
+.border-l-4 {
+  border-left: none !important;
+  border-right: 4px solid !important;
+}
+
+.screening-border-overdue {
+  border-left: none !important;
+  border-right: 4px solid #ef4444 !important;
+}
+
+.screening-border-due-soon {
+  border-left: none !important;
+  border-right: 4px solid #2563eb !important;
+}
+
+.screening-border-upcoming {
+  border-left: none !important;
+  border-right: 4px solid #10b981 !important;
+}
+
+.screening-border-completed {
+  border-left: none !important;
+  border-right: 4px solid #10b981 !important;
+}
+
+/* Margin adjustments */
+.ml-auto {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.mr-auto {
+  margin-right: 0 !important;
+  margin-left: auto !important;
+}
+
+/* Button alignments */
+.justify-between {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+/* Lists alignment */
+ul, ol {
+  padding-right: 20px;
+  padding-left: 0;
+}
+
+/* Fix for shadcn components in RTL */
+[role="tablist"] {
+  flex-direction: row-reverse;
+}
+
+[role="tab"] {
+  text-align: right;
+}
+
+/* Language-specific adjustments for Arabic */
+html[lang="ar"], html[lang="ar"] body {
+  font-family: 'Amiri', 'Sakkal Majalla', Arial, sans-serif;
+  line-height: 1.6;
+}

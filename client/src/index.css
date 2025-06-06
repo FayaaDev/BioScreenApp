@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 242 242 247;      /* #F2F2F7 */
+  --foreground: 28 28 30;         /* #1C1C1E */
+  --muted: 249 249 249;           /* #F9F9F9 */
+  --muted-foreground: 142 142 147;/* #8E8E93 */
+  --popover: 255 255 255;         /* #FFFFFF */
+  --popover-foreground: 28 28 30; /* #1C1C1E */
+  --card: 255 255 255;            /* #FFFFFF */
+  --card-foreground: 28 28 30;    /* #1C1C1E */
+  --border: 209 209 214;          /* #D1D1D6 */
+  --input: 209 209 214;           /* #D1D1D6 */
+  --primary: 0 122 255;           /* #007AFF */
+  --primary-foreground: 255 255 255; /* #FFFFFF */
+  --secondary: 242 242 247;       /* #F2F2F7 */
+  --secondary-foreground: 28 28 30; /* #1C1C1E */
+  --accent: 52 199 89;            /* #34C759 */
+  --accent-foreground: 255 255 255; /* #FFFFFF */
+  --destructive: 255 59 48;       /* #FF3B30 */
+  --destructive-foreground: 255 255 255; /* #FFFFFF */
+  --ring: 0 122 255;              /* #007AFF */
+  --radius: 0.75rem;              /* More rounded for iOS */
+
+  /* Health-specific colors */
+  --health-overdue: 255 59 48;    /* #FF3B30 */
+  --health-due-soon: 255 149 0;   /* #FF9500 */
+  --health-upcoming: 52 199 89;   /* #34C759 */
+  --health-completed: 48 209 88;  /* #30D158 */
+}
+
+.dark {
+  --background: 15 23 42; /* #0F172A */
+  --foreground: 248 250 252; /* #F8FAFC */
+  --muted: 30 41 59; /* #1E293B */
+  --muted-foreground: 148 163 184; /* #94A3B8 */
+  --popover: 15 23 42; /* #0F172A */
+  --popover-foreground: 248 250 252; /* #F8FAFC */
+  --card: 15 23 42; /* #0F172A */
+  --card-foreground: 248 250 252; /* #F8FAFC */
+  --border: 30 41 59; /* #1E293B */
+  --input: 30 41 59; /* #1E293B */
+  --primary: 37 99 235; /* #2563EB */
+  --primary-foreground: 248 250 252; /* #F8FAFC */
+  --secondary: 30 41 59; /* #1E293B */
+  --secondary-foreground: 248 250 252; /* #F8FAFC */
+  --accent: 30 41 59; /* #1E293B */
+  --accent-foreground: 248 250 252; /* #F8FAFC */
+  --destructive: 239 68 68; /* #EF4444 */
+  --destructive-foreground: 248 250 252; /* #F8FAFC */
+  --ring: 37 99 235; /* #2563EB */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    @apply bg-background font-sans antialiased;
+    font-family: 'Sakkal Majalla', 'Amiri', Arial, sans-serif;
+    color: #0f172a;
+    background-color: #ffffff !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure proper card rendering on mobile Safari */
+  .bg-white {
+    background-color: #ffffff !important;
+  }
+
+  .bg-gray-50 {
+    background-color: #f9fafb !important;
+  }
+
+  /* Fix for Safari iOS card rendering */
+  [data-testid="card"], .card, .screening-card {
+    background-color: #ffffff !important;
+    -webkit-appearance: none;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  /* Force white background for all card-like components */
+  .border.bg-white, .bg-white.border {
+    background-color: #ffffff !important;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* Specific fix for shadcn Card components on iOS Safari */
+  .bg-card, [class*="bg-card"] {
+    background-color: #ffffff !important;
+  }
+
+  /* Target the exact card structure from screening cards */
+  .rounded-lg.border.bg-card {
+    background-color: #ffffff !important;
+  }
+
+  /* Override any potential CSS variable issues on mobile */
+  @supports (-webkit-touch-callout: none) {
+    .bg-card {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+    }
+  }
+
+  /* Fix for buttons on iOS Safari - ensure white background */
+  button, [role="button"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    -webkit-appearance: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Specific button variants */
+  button[class*="bg-primary"] {
+    background-color: #008553 !important;
+    color: #ffffff !important;
+  }
+
+  button[class*="bg-secondary"] {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  /* Fix for input fields on iOS Safari */
+  input, textarea, select {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    -webkit-appearance: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-user-select: text !important;
+  }
+
+  /* Override any accent/secondary colors that might be causing yellow */
+  input:focus, textarea:focus, button:focus {
+    border-color: #e2e8f0 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2) !important;
+  }
+
+  /* Specific overrides for shadcn components on mobile */
+  .bg-background {
+    background-color: #ffffff !important;
+  }
+
+  .bg-accent {
+    background-color: #f8fafc !important;
+  }
+
+  .bg-secondary {
+    background-color: #f8fafc !important;
+  }
+
+  /* Additional mobile-specific overrides */
+  @media (max-width: 768px) {
+    button, input, select, textarea {
+      background-color: #ffffff !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+    }
+
+    button[class*="bg-primary"] {
+      background-color: #008553 !important;
+      color: #ffffff !important;
+    }
+
+    /* Force override any remaining yellow backgrounds */
+    [style*="background-color: #9b945d"],
+    [style*="background-color: rgb(155, 148, 93)"],
+    .bg-yellow-200, .bg-yellow-100, .bg-amber-100, .bg-amber-200 {
+      background-color: #ffffff !important;
+    }
+  }
+}
+
+@layer components {
+  .status-overdue {
+    @apply bg-red-50 border-red-200 text-red-800;
+    background-color: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
+  }
+  
+  .status-due {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+    background-color: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: #1e40af !important;
+  }
+  
+  .status-upcoming {
+    @apply bg-green-50 border-green-200 text-green-800;
+    background-color: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+    color: #166534 !important;
+  }
+
+  .status-later {
+    @apply bg-gray-50 border-gray-200 text-gray-800;
+    background-color: #f0fdf4 !important;
+    color: #166534 !important;
+  }
+  
+  
+  .status-completed {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+
+  .screening-border-overdue {
+    @apply border-l-4 border-red-500;
+  }
+  
+  .screening-border-due-soon {
+    @apply border-l-4 border-blue-500;
+  }
+  
+  .screening-border-upcoming {
+    @apply border-l-4 border-green-500;
+  }
+  
+  .screening-border-completed {
+    @apply border-l-4 border-green-500;
+  }
+
+  .screening-border-later {
+    @apply border-l-4 border-green-500;
+  }
+}
+
+/* Remove yellow/amber backgrounds and borders */
+.bg-yellow-200, .bg-yellow-100, .bg-amber-100, .bg-amber-200 {
+  background-color: #fff !important;
+}
+
+/* Remove all yellow borders from all elements, including fieldset, div, card, etc. */
+*, *:before, *:after, fieldset, legend {
+  border-color: #D1D1D6 !important;
+  box-shadow: none !important;
+}
+
+[style*="border: 1px solid yellow"],
+[style*="border:1px solid yellow"],
+[style*="border: 1px solid #ffff00"],
+[style*="border:1px solid #ffff00"] {
+  border-color: #D1D1D6 !important;
+}
+
+/* Remove yellow from dropdowns and selects */
+select,
+[role="listbox"],
+[role="option"],
+.menu,
+.dropdown,
+.dropdown-menu,
+.dropdown-content {
+  background-color: #fff !important;
+  border-color: #D1D1D6 !important;
+  box-shadow: none !important;
+}
+
+/* Remove yellow from any focused/active dropdown item */
+[role="option"][aria-selected="true"],
+[role="option"]:focus,
+[role="option"]:active {
+  background-color: #F2F2F7 !important;
+  border-color: #007AFF !important;
+  color: #1C1C1E !important;
+}
+
+/* Remove yellow from tab borders and backgrounds */
+[role="tablist"] [role="tab"],
+.tabs,
+.tabs-list,
+.tabs-tab,
+.tabs__tab {
+  border-color: #D1D1D6 !important;
+  background-color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Active tab styling for iOS look (now green) */
+[role="tab"][aria-selected="true"],
+.tabs .active,
+.tabs-tab.active,
+.tabs__tab--active {
+  border-color: #34C759 !important;
+  background-color: #F2F2F7 !important;
+  color: #34C759 !important;
+}
+
+/* Remove yellow border from tab container and its children */
+.tabs-list,
+.tabs,
+[role="tablist"],
+.tabs__container,
+.tabs-container {
+  background: #fff !important;
+  background-color: #fff !important;
+}
+
+.tabs-list[style*="background: yellow"],
+.tabs-list[style*="background-color: yellow"],
+.tabs[style*="background: yellow"],
+.tabs[style*="background-color: yellow"],
+[role="tablist"][style*="background: yellow"],
+[role="tablist"][style*="background-color: yellow"] {
+  background: #fff !important;
+  background-color: #fff !important;
+}
+
+.tabs-list,
+.tabs,
+[role="tablist"] {
+  outline: none !important;
+  background-clip: border-box !important;
+}

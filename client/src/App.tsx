@@ -1,0 +1,68 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import UpcomingTests from "@/pages/upcoming_tests";
+import Signup from "@/pages/signup";
+import Admin from "@/pages/admin";
+import CompletedTests from "@/pages/completed_tests";
+import Profile from "@/pages/profile";
+import Login from "@/pages/login";
+import NotFound from "@/pages/not-found";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { initializeMobileApp } from "@/lib/capacitor";
+
+function Router() {
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-t-transparent border-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-700">جاري التحقق من بيانات الدخول...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/onboarding" component={Signup} />
+      <Route path="/admin" component={Admin} />
+      
+      {isAuthenticated ? (
+        <>
+          <Route path="/" component={UpcomingTests} />
+          <Route path="/completed" component={CompletedTests} />
+          <Route path="/profile" component={Profile} />
+        </>
+      ) : (
+        <Route path="/" component={Login} />
+      )}
+      
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
+  // Initialize mobile app features when running as native app
+  useEffect(() => {
+    initializeMobileApp();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

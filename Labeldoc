@@ -1,0 +1,4 @@
+Due: User is exactly at start age OR exactly one year past start age
+Overdue: User is more than one year past start age
+Later: User is before start age
+Completed: User has marked the test as completed
