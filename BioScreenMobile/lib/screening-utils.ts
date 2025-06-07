@@ -143,4 +143,36 @@ export const STATUS_COLORS = {
     border: '#bbf7d0',     // green-200
     icon: '#166534'
   }
-}; 
+};
+
+export function calculateNextDueDate(dateOfBirth: string, startAge: number): Date {
+  const birthDate = new Date(dateOfBirth);
+  const birthYear = birthDate.getFullYear();
+  
+  // Calculate the year when user turns the start age
+  const targetYear = birthYear + startAge;
+  
+  // Always set to January 1st of target year
+  return new Date(targetYear, 0, 1);
+}
+
+export function calculateScreeningStatus(dateOfBirth: string, startAge: number): "due" | "overdue" | "later" {
+  const birthDate = new Date(dateOfBirth);
+  const birthYear = birthDate.getFullYear();
+  const currentYear = new Date().getFullYear();
+  
+  // Calculate the year when user turns the start age
+  const targetYear = birthYear + startAge;
+  
+  // Determine status based on current date vs target date
+  if (currentYear < targetYear) {
+    // Before the target year - always "later"
+    return "later";
+  } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+    // User is AT StartAge or exactly one year past - "due"
+    return "due";
+  } else {
+    // More than one year past start age - "overdue"
+    return "overdue";
+  }
+} 

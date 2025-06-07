@@ -10,13 +10,14 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter } from 'expo-router';
-import { STATUS_COLORS } from '../../lib/screening-utils';
+import { STATUS_COLORS, calculateNextDueDate } from '../../lib/screening-utils';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
@@ -24,7 +25,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 type Screening = {
   id: number;
   status: string;
-  screening?: { name: string; frequencyYears?: number; description?: string; priority?: string };
+  screening?: { name: string; frequencyYears?: number; description?: string; priority?: string; startAge?: number; };
   name?: string;
 };
 
@@ -134,12 +135,37 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   }
   // Add language detection (for i18n)
   const language = isRTL ? 'ar' : 'en';
+  // Calculate overdue years if needed
+  let overdueYears: number | null = null;
+  if (screening.status === 'overdue' && screening.screening?.startAge && userBirthDate) {
+    const birthDate = new Date(userBirthDate);
+    const birthYear = birthDate.getFullYear();
+    const targetYear = birthYear + screening.screening.startAge;
+    const currentYear = new Date().getFullYear();
+    overdueYears = currentYear - targetYear;
+  }
   return (
-    <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
+    <View style={[styles.screeningCard, { flexDirection: 'row', position: 'relative' }]}> 
+      {/* Priority tag in top left corner */}
+      {priority && (
+        <View style={{
+          position: 'absolute',
+          top: 8,
+          left: 8,
+          zIndex: 2,
+          backgroundColor: priorityColor,
+          borderRadius: 12,
+          paddingHorizontal: 10,
+          paddingVertical: 3,
+          alignSelf: 'flex-start',
+        }}>
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
+        </View>
+      )}
       {/* Buttons on the left */}
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
-          <Text style={styles.actionButtonText}>جدولة</Text>
+          <Text style={styles.actionButtonText}>أحجز مع صحتي</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
           <Text style={styles.actionButtonText}>تم</Text>
@@ -147,20 +173,8 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       </View>
       {/* Details on the right, aligned right */}
       <View style={{ flex: 1, alignItems: 'flex-end' }}>
-        {/* Name row: priority badge, info icon, name */}
+        {/* Name row: info icon, name */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {priority && (
-            <View style={{
-              backgroundColor: priorityColor,
-              borderRadius: 12,
-              paddingHorizontal: 10,
-              paddingVertical: 3,
-              marginLeft: 6,
-              alignSelf: 'center',
-            }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
-            </View>
-          )}
           {screening.screening?.description ? (
             <Tooltip
               isVisible={showTip}
@@ -177,18 +191,30 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
           ) : null}
           <Text style={styles.screeningTitle}>{screening.screening?.name || screening.name}</Text>
         </View>
-        {/* Frequency text below name row, if frequencyYears is specified */}
-        {typeof screening.screening?.frequencyYears === 'number' && (
-          <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
-            {getFrequencyText(screening.screening.frequencyYears)}
-          </Text>
-        )}
         {/* Status label below name row */}
         <View style={{ width: '100%', marginTop: 4, alignItems: 'flex-end' }}>
           <View>
             <Text style={[...statusLabelStyle, { textAlign: 'right', alignSelf: 'flex-end' }]}>{statusLabel}</Text>
           </View>
         </View>
+        {/* Repetition date below status */}
+        {(screening.status === 'completed' || screening.status === 'due' || (screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due')) && typeof screening.screening?.frequencyYears === 'number' && (
+          <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
+            {getFrequencyText(screening.screening.frequencyYears)}
+          </Text>
+        )}
+        {/* Next due message (only for not overdue, not due, not completed) */}
+        {screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due' && typeof screening.screening?.startAge === 'number' && userBirthDate && (
+          <Text style={{ color: '#22223b', fontSize: 14, marginBottom: 2, textAlign: 'right' }}>
+            {`يجب عليك إجراء هذا الفحص عند بلوغك ${screening.screening.startAge} سنة`}
+          </Text>
+        )}
+        {/* Overdue years label */}
+        {screening.status === 'overdue' && overdueYears !== null && overdueYears > 0 && (
+          <Text style={{ color: '#22223b', fontSize: 14, marginBottom: 2, textAlign: 'right' }}>
+            {`متأخر ${overdueYears} ${overdueYears === 1 ? 'سنة' : overdueYears < 11 ? 'سنوات' : 'سنة'}`}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -295,8 +321,26 @@ export default function UpcomingTests() {
     markCompletedMutation.mutate(screening);
   };
 
-  const handleScheduleScreening = (screening: any) => {
-    showToast({ title: 'جدولة موعد', description: `سيتم جدولة ${screening.screening?.name || screening.name}`, type: 'info' });
+  const handleScheduleScreening = async (screening: any) => {
+    const sehhatyAppStoreUrl = 'https://apps.apple.com/sa/app/%D8%B5%D8%AD%D8%AA%D9%8A-sehhaty/id1459266578?l';
+    try {
+      const supported = await Linking.canOpenURL(sehhatyAppStoreUrl);
+      if (supported) {
+        await Linking.openURL(sehhatyAppStoreUrl);
+      } else {
+        showToast({ 
+          title: 'خطأ', 
+          description: 'لا يمكن فتح رابط التطبيق', 
+          type: 'error' 
+        });
+      }
+    } catch (error) {
+      showToast({ 
+        title: 'خطأ', 
+        description: 'حدث خطأ أثناء فتح التطبيق', 
+        type: 'error' 
+      });
+    }
   };
 
   // Data normalization
