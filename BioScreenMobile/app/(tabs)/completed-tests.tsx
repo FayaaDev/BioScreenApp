@@ -51,10 +51,10 @@ const ScreeningCard = ({ screening, onUncomplete, isRTL, userBirthDate }: {
   let priorityColor = '';
   if (priority === 'strongly_recommended') {
     priorityLabel = 'موصى به بشدة';
-    priorityColor = '#ef4444'; // red-500
+    priorityColor = '#C2BD86'; //'#ef4444'; // red-500
   } else if (priority === 'recommended') {
     priorityLabel = 'موصى به';
-    priorityColor = '#fca5a5'; // red-300
+    priorityColor = '#D9D5A8';//'#fca5a5'; // red-300
   }
   // Always show 'مكتملة' with green pill in Completed Tests
   const statusLabel = 'مكتملة';
