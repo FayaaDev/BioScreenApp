@@ -568,13 +568,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = insertUserScreeningSchema.partial().parse(req.body);
-      const userScreening = await storage.updateUserScreening(id, updates);
       
+      // If uncompleting (status is 'upcoming' and lastCompleted is null), recalculate status
+      if (updates.status === 'upcoming' && updates.lastCompleted === null) {
+        const userScreenings = await storage.getUserScreenings(id);
+        const userScreening = userScreenings.find(us => us.id === id);
+        if (!userScreening) {
+          res.status(404).json({ message: "User screening not found" });
+          return;
+        }
+        const user = await storage.getUser(userScreening.userId);
+        const screening = await storage.getScreening(userScreening.screeningId);
+        if (!user || !screening) {
+          res.status(404).json({ message: "User or screening not found" });
+          return;
+        }
+        const birthYear = new Date(user.dateOfBirth).getFullYear();
+        const targetYear = birthYear + screening.startAge;
+        const currentYear = new Date().getFullYear();
+        let newStatus: "due" | "overdue" | "later";
+        if (currentYear < targetYear) {
+          newStatus = "later";
+        } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+          newStatus = "due";
+        } else {
+          newStatus = "overdue";
+        }
+        updates.status = newStatus;
+      }
+      
+      const userScreening = await storage.updateUserScreening(id, updates);
       if (!userScreening) {
         res.status(404).json({ message: "User screening not found" });
         return;
       }
-      
       res.json(userScreening);
     } catch (error) {
       if (error instanceof z.ZodError) {
