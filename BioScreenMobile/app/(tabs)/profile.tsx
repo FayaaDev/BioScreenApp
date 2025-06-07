@@ -17,16 +17,15 @@ import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter } from 'expo-router';
 import { FamilyManagement } from '../../components/FamilyManagement';
-
-// Placeholder for LanguageSwitcher
-const LanguageSwitcher = () => (
-  <View style={{ flexDirection: 'row', gap: 8 }}>
-    <TouchableOpacity style={styles.langButton}><Text>العربية</Text></TouchableOpacity>
-    <TouchableOpacity style={styles.langButton}><Text>English</Text></TouchableOpacity>
-  </View>
-);
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function Profile() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -40,6 +39,7 @@ export default function Profile() {
   });
   const [showAgreement, setShowAgreement] = useState(false);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('healthscreen_user_id').then((id) => {
@@ -131,22 +131,22 @@ export default function Profile() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-      <View style={styles.card}>
-        <Text style={styles.title}>الملف الشخصي</Text>
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>الاسم الكامل</Text>
+      <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
+        <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
+        <View style={[styles.form, isRTL && { alignItems: 'flex-end' }]}>
+          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
+            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
             <TextInput
-              style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
               editable={isEditing}
             />
           </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>البريد الإلكتروني</Text>
+          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
+            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
             <TextInput
-              style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               editable={isEditing}
@@ -154,25 +154,101 @@ export default function Profile() {
               autoCapitalize="none"
             />
           </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>تاريخ الميلاد</Text>
-            <TextInput
-              style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
-              value={formData.dateOfBirth}
-              onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
-              editable={isEditing}
-              placeholder="YYYY-MM-DD"
-            />
+          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
+            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
+            {isEditing ? (
+              <>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  style={[styles.input, isRTL && { alignSelf: 'flex-end', justifyContent: 'center' }]}
+                >
+                  <Text style={isRTL && { textAlign: 'right', writingDirection: 'rtl' }}>
+                    {formData.dateOfBirth
+                      ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      : 'اختر تاريخ الميلاد'}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setFormData({ ...formData, dateOfBirth: selectedDate.toISOString().split('T')[0] });
+                      }
+                    }}
+                    maximumDate={new Date()}
+                  />
+                )}
+              </>
+            ) : (
+              <Text style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end', color: '#374151' }]}>
+                {formData.dateOfBirth
+                  ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : '-'}
+              </Text>
+            )}
           </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>الجنس</Text>
-            <TextInput
-              style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
-              value={formData.gender}
-              onChangeText={(text) => setFormData({ ...formData, gender: text })}
-              editable={isEditing}
-              placeholder="ذكر / أنثى"
-            />
+          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
+            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
+            {isEditing || true ? (
+              <View style={[styles.genderContainer, isRTL && { flexDirection: 'row-reverse' }]}>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    formData.gender === 'male' && styles.genderButtonSelected,
+                  ]}
+                  disabled={!isEditing}
+                  onPress={() => isEditing && setFormData({ ...formData, gender: 'male' })}
+                >
+                  <MaterialIcons
+                    name="male"
+                    size={20}
+                    color={formData.gender === 'male' ? '#fff' : '#008553'}
+                  />
+                  <Text
+                    style={[
+                      styles.genderButtonText,
+                      formData.gender === 'male' && styles.genderButtonTextSelected,
+                    ]}
+                  >
+                    ذكر
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.genderButton,
+                    formData.gender === 'female' && styles.genderButtonSelected,
+                  ]}
+                  disabled={!isEditing}
+                  onPress={() => isEditing && setFormData({ ...formData, gender: 'female' })}
+                >
+                  <MaterialIcons
+                    name="female"
+                    size={20}
+                    color={formData.gender === 'female' ? '#fff' : '#008553'}
+                  />
+                  <Text
+                    style={[
+                      styles.genderButtonText,
+                      formData.gender === 'female' && styles.genderButtonTextSelected,
+                    ]}
+                  >
+                    أنثى
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
           </View>
         </View>
         {isEditing ? (
@@ -191,14 +267,22 @@ export default function Profile() {
         )}
       </View>
 
-      {/* Language Switcher */}
+      {/* Language Settings */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>إعدادات اللغة</Text>
-        <LanguageSwitcher />
+        <Text style={styles.sectionTitle}>{t('profile.languageSettings')}</Text>
+        <View style={styles.languageContainer}>
+          <View>
+            <Text style={styles.languageLabel}>{t('profile.currentLanguage')}</Text>
+            <Text style={styles.languageValue}>{t('language.current')}</Text>
+          </View>
+          <LanguageSwitcher />
+        </View>
       </View>
 
       {/* Family Management Section */}
-      <FamilyManagement userId={userId!} onSwitchPerson={handleSwitchPerson} />
+      <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
+        <FamilyManagement userId={userId!} onSwitchPerson={handleSwitchPerson} />
+      </View>
 
       {/* Reset Profile and Sign Out */}
       <View style={styles.card}>
@@ -411,5 +495,41 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  languageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  languageLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  languageValue: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  genderButton: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    padding: 8,
+  },
+  genderButtonSelected: {
+    backgroundColor: '#008553',
+  },
+  genderButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+  },
+  genderButtonTextSelected: {
+    color: '#fff',
   },
 }); 

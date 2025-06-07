@@ -38,6 +38,17 @@ type FamilyMemberResponse = {
   screenings: Screening[];
 };
 
+// Helper function to get frequency text in Arabic only
+const getFrequencyText = (years: number) => {
+  if (years === 0) return 'مرة واحدة فقط';
+  if (years === 1) return 'كل سنة';
+  if (years === 2) return 'كل سنتين';
+  if (years === 3) return 'كل ثلاث سنوات';
+  if (years === 4) return 'كل أربع سنوات';
+  if (years === 5) return 'كل خمس سنوات';
+  return `كل ${years} سنة`;
+};
+
 // Placeholder for ScreeningCard
 const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirthDate }: {
   screening: Screening;
@@ -121,6 +132,8 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   }
+  // Add language detection (for i18n)
+  const language = isRTL ? 'ar' : 'en';
   return (
     <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
       {/* Buttons on the left */}
@@ -164,6 +177,12 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
           ) : null}
           <Text style={styles.screeningTitle}>{screening.screening?.name || screening.name}</Text>
         </View>
+        {/* Frequency text below name row, if frequencyYears is specified */}
+        {typeof screening.screening?.frequencyYears === 'number' && (
+          <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
+            {getFrequencyText(screening.screening.frequencyYears)}
+          </Text>
+        )}
         {/* Status label below name row */}
         <View style={{ width: '100%', marginTop: 4, alignItems: 'flex-end' }}>
           <View>

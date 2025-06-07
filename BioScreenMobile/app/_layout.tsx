@@ -8,6 +8,7 @@ import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFonts } from 'expo-font';
 import { toastConfig } from '../components/ToastConfig';
+import '../lib/i18n';
 
 // Create a client
 const queryClient = new QueryClient();

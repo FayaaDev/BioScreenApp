@@ -19,6 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User as UserType } from '../types/api';
 import { IconSymbol } from '../components/ui/IconSymbol';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 interface SignupFormData {
   name: string;
@@ -155,7 +156,7 @@ export default function Onboarding() {
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  I18nManager.isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                   errors.name && styles.inputError,
                 ]}
                 value={formData.name}
@@ -251,7 +252,7 @@ export default function Onboarding() {
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>الجنس</Text>
-              <View style={styles.genderContainer}>
+              <View style={[styles.genderContainer, I18nManager.isRTL && { flexDirection: 'row-reverse' }]}>
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
@@ -265,8 +266,8 @@ export default function Onboarding() {
                   }}
                   disabled={createUserMutation.isPending}
                 >
-                  <IconSymbol
-                    name="person.fill"
+                  <MaterialIcons
+                    name="male"
                     size={20}
                     color={formData.gender === 'male' ? '#fff' : '#008553'}
                   />
@@ -293,8 +294,8 @@ export default function Onboarding() {
                   }}
                   disabled={createUserMutation.isPending}
                 >
-                  <IconSymbol
-                    name="person.2.fill"
+                  <MaterialIcons
+                    name="female"
                     size={20}
                     color={formData.gender === 'female' ? '#fff' : '#008553'}
                   />
@@ -318,18 +319,20 @@ export default function Onboarding() {
               <TouchableOpacity
                 style={[
                   styles.dateInput,
+                  I18nManager.isRTL && { alignSelf: 'flex-end' },
                   errors.dateOfBirth && styles.inputError,
                 ]}
                 onPress={() => setShowDatePicker(true)}
                 disabled={createUserMutation.isPending}
               >
-                <Text
-                  style={[
-                    styles.dateInputText,
-                    !formData.dateOfBirth && styles.dateInputPlaceholder,
-                  ]}
-                >
-                  {formData.dateOfBirth || 'اختر تاريخ الميلاد'}
+                <Text style={I18nManager.isRTL && { textAlign: 'right', writingDirection: 'rtl' }}>
+                  {formData.dateOfBirth
+                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'اختر تاريخ الميلاد'}
                 </Text>
               </TouchableOpacity>
               {errors.dateOfBirth && (
