@@ -20,6 +20,8 @@ import { useRouter } from 'expo-router';
 import { STATUS_COLORS, calculateNextDueDate } from '../../lib/screening-utils';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useContext } from 'react';
+import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type Screening = {
@@ -248,7 +250,7 @@ export default function UpcomingTests() {
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedPersonId, setSelectedPersonId] = useState('user');
+  const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
 
   // Load userId from AsyncStorage
@@ -257,14 +259,7 @@ export default function UpcomingTests() {
       if (id) setUserId(id);
       else router.replace('/onboarding');
     });
-    AsyncStorage.getItem('selectedPersonId').then((id) => {
-      if (id) setSelectedPersonId(id);
-    });
   }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem('selectedPersonId', selectedPersonId);
-  }, [selectedPersonId]);
 
   // Data fetching
   const { data: userData, isLoading, error } = useQuery({
@@ -375,7 +370,7 @@ export default function UpcomingTests() {
     { key: 'due', label: 'مستحقة', color: STATUS_COLORS.due },
     { key: 'overdue', label: 'متأخرة', color: STATUS_COLORS.overdue },
     { key: 'later', label: 'لاحقاً', color: STATUS_COLORS.later },
-    { key: 'completed', label: 'مكتملة', color: STATUS_COLORS.completed },
+    //{ key: 'completed', label: 'مكتملة', color: STATUS_COLORS.completed },
   ];
 
   let filteredScreenings = screenings;
@@ -412,7 +407,7 @@ export default function UpcomingTests() {
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={styles.familyButtonText}>أنت</Text>
+            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>أنت</Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
             <TouchableOpacity
@@ -420,7 +415,7 @@ export default function UpcomingTests() {
               style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={styles.familyButtonText}>{member.name}</Text>
+              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -527,6 +522,10 @@ const styles = StyleSheet.create({
   },
   familyButtonText: {
     color: '#008553',
+    fontWeight: 'bold',
+  },
+  familyButtonSelectedText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
   statsRow: {

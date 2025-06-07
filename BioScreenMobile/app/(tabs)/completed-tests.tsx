@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,13 @@ import {
   StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter } from 'expo-router';
-import { STATUS_COLORS } from '../../lib/screening-utils';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 
 // Types
 type Screening = {
@@ -39,9 +39,8 @@ type FamilyMemberResponse = {
 };
 
 // Placeholder for ScreeningCard
-const ScreeningCard = ({ screening, onUncomplete, isRTL, userBirthDate }: {
+const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   screening: Screening;
-  onUncomplete: () => void;
   isRTL: boolean;
   userBirthDate: string;
 }) => {
@@ -73,13 +72,7 @@ const ScreeningCard = ({ screening, onUncomplete, isRTL, userBirthDate }: {
   ];
   return (
     <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
-      {/* Action button on the left */}
-      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <TouchableOpacity style={styles.actionButton} onPress={onUncomplete}>
-          <Text style={styles.actionButtonText}>إرجاع</Text>
-        </TouchableOpacity>
-      </View>
-      {/* Details on the right, aligned right */}
+      {/* Details aligned right */}
       <View style={{ flex: 1, alignItems: 'flex-end' }}>
         {/* Name row: priority badge, info icon, name */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -138,7 +131,7 @@ export default function CompletedTests() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedPersonId, setSelectedPersonId] = useState('user');
+  const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
 
   // Load userId from AsyncStorage
@@ -147,17 +140,10 @@ export default function CompletedTests() {
       if (id) setUserId(id);
       else router.replace('/onboarding');
     });
-    AsyncStorage.getItem('selectedPersonId').then((id) => {
-      if (id) setSelectedPersonId(id);
-    });
   }, []);
 
-  useEffect(() => {
-    AsyncStorage.setItem('selectedPersonId', selectedPersonId);
-  }, [selectedPersonId]);
-
   // Data fetching
-  const { data: userData, isLoading, error } = useQuery({
+  const { isLoading, error } = useQuery({
     queryKey: ['/api/users', userId],
     queryFn: () => apiRequest('GET', `/api/users/${userId}`),
     enabled: !!userId,
@@ -177,37 +163,6 @@ export default function CompletedTests() {
         : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
     enabled: !!userId && !!selectedPersonId,
   });
-
-  // Mutation for uncompleting a screening
-  const uncompleteMutation = useMutation({
-    mutationFn: async (screening: Screening) => {
-      if (selectedPersonId !== 'user') {
-        // Use screening.screeningId for family screenings
-        const screeningId = (screening as any).screeningId || (screening.screening && (screening.screening as any).id);
-        if (!screeningId) throw new Error('معرف الفحص غير موجود');
-        return apiRequest('PATCH', `/api/family/${selectedPersonId}/screenings/${screeningId}/uncomplete`, {});
-      } else {
-        const nextDue = new Date();
-        nextDue.setFullYear(nextDue.getFullYear() + (screening.screening?.frequencyYears || 1));
-        return apiRequest('PUT', `/api/user-screenings/${screening.id}`, {
-          status: 'upcoming',
-          lastCompleted: null,
-          nextDue: nextDue.toISOString(),
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-      showToast({ title: 'تم إرجاع الفحص', type: 'success' });
-    },
-    onError: (error: any) => {
-      showToast({ title: 'خطأ', description: error.message || 'حدث خطأ', type: 'error' });
-    },
-  });
-
-  const handleUncomplete = (screening: Screening) => {
-    uncompleteMutation.mutate(screening);
-  };
 
   // Data normalization
   let familyMembers: any[] = Array.isArray(familyMembersData) ? familyMembersData : [];
@@ -262,7 +217,7 @@ export default function CompletedTests() {
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={styles.familyButtonText}>أنت</Text>
+            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>أنت</Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
             <TouchableOpacity
@@ -270,7 +225,7 @@ export default function CompletedTests() {
               style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={styles.familyButtonText}>{member.name}</Text>
+              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -285,7 +240,6 @@ export default function CompletedTests() {
             <ScreeningCard
               key={screening.id !== 0 ? screening.id : `${screening.screening?.name || screening.name}-${index}`}
               screening={screening}
-              onUncomplete={() => handleUncomplete(screening)}
               isRTL={isRTL}
               userBirthDate={currentPerson.dateOfBirth}
             />
@@ -349,6 +303,10 @@ const styles = StyleSheet.create({
   },
   familyButtonText: {
     color: '#008553',
+    fontWeight: 'bold',
+  },
+  familyButtonSelectedText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
   screeningsList: {

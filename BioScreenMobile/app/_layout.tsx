@@ -9,6 +9,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFonts } from 'expo-font';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n';
+import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -35,18 +36,20 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="login" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-        <Toast config={toastConfig} />
+        <SelectedPersonProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="login" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+          <Toast config={toastConfig} />
+        </SelectedPersonProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

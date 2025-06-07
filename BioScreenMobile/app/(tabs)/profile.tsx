@@ -10,6 +10,7 @@ import {
   I18nManager,
   Modal,
   Alert,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import i18n from '../../lib/i18n';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -40,6 +42,7 @@ export default function Profile() {
   const [showAgreement, setShowAgreement] = useState(false);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('healthscreen_user_id').then((id) => {
@@ -130,12 +133,20 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 64 }}>
       <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, zIndex: 2, gap: 12 }}>
+          <TouchableOpacity onPress={() => setIsEditing(true)}>
+            <MaterialIcons name="edit" size={28} color="#008553" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
+            <MaterialIcons name="language" size={28} color="#008553" />
+          </TouchableOpacity>
+        </View>
         <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
         <View style={[styles.form, isRTL && { alignItems: 'flex-end' }]}>
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
+            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
             <TextInput
               style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
               value={formData.name}
@@ -144,7 +155,7 @@ export default function Profile() {
             />
           </View>
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
+            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
             <TextInput
               style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
               value={formData.email}
@@ -155,14 +166,14 @@ export default function Profile() {
             />
           </View>
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
+            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
             {isEditing ? (
               <>
                 <TouchableOpacity
                   onPress={() => setShowDatePicker(true)}
-                  style={[styles.input, isRTL && { alignSelf: 'flex-end', justifyContent: 'center' }]}
+                  style={styles.datePickerButton}
                 >
-                  <Text style={isRTL && { textAlign: 'right', writingDirection: 'rtl' }}>
+                  <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
                     {formData.dateOfBirth
                       ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
                           year: 'numeric',
@@ -176,7 +187,7 @@ export default function Profile() {
                   <DateTimePicker
                     value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
                     mode="date"
-                    display="default"
+                    display={Platform.OS === 'ios' ? 'default' : 'calendar'}
                     onChange={(event, selectedDate) => {
                       setShowDatePicker(false);
                       if (selectedDate) {
@@ -188,7 +199,7 @@ export default function Profile() {
                 )}
               </>
             ) : (
-              <Text style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end', color: '#374151' }]}>
+              <Text style={styles.profileValueText}>
                 {formData.dateOfBirth
                   ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
                       year: 'numeric',
@@ -200,7 +211,7 @@ export default function Profile() {
             )}
           </View>
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
+            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
             {isEditing || true ? (
               <View style={[styles.genderContainer, isRTL && { flexDirection: 'row-reverse' }]}>
                 <TouchableOpacity
@@ -260,23 +271,7 @@ export default function Profile() {
               <Text style={styles.cancelButtonText}>إلغاء</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
-            <Text style={styles.editButtonText}>تعديل</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Language Settings */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>{t('profile.languageSettings')}</Text>
-        <View style={styles.languageContainer}>
-          <View>
-            <Text style={styles.languageLabel}>{t('profile.currentLanguage')}</Text>
-            <Text style={styles.languageValue}>{t('language.current')}</Text>
-          </View>
-          <LanguageSwitcher />
-        </View>
+        ) : null}
       </View>
 
       {/* Family Management Section */}
@@ -286,9 +281,6 @@ export default function Profile() {
 
       {/* Reset Profile and Sign Out */}
       <View style={styles.card}>
-        <TouchableOpacity style={styles.resetButton} onPress={handleResetProfile}>
-          <Text style={styles.resetButtonText}>إعادة تعيين الملف الشخصي</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutButtonText}>تسجيل الخروج</Text>
         </TouchableOpacity>
@@ -296,6 +288,30 @@ export default function Profile() {
           <Text style={styles.agreementButtonText}>اتفاقية المستخدم</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Language Selection Modal */}
+      <Modal visible={showLanguageModal} animationType="slide" transparent onRequestClose={() => setShowLanguageModal(false)}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, minWidth: 280 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#008553', marginBottom: 16, textAlign: 'center' }}>تغيير اللغة</Text>
+            <TouchableOpacity
+              style={{ backgroundColor: i18n.language === 'ar' ? '#008553' : '#f0f0f0', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
+              onPress={() => { i18n.changeLanguage('ar'); setShowLanguageModal(false); }}
+            >
+              <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#008553', fontWeight: 'bold', fontSize: 16 }}>العربية</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ backgroundColor: i18n.language === 'en' ? '#008553' : '#f0f0f0', borderRadius: 8, paddingVertical: 12, marginBottom: 4, alignItems: 'center' }}
+              onPress={() => { i18n.changeLanguage('en'); setShowLanguageModal(false); }}
+            >
+              <Text style={{ color: i18n.language === 'en' ? '#fff' : '#008553', fontWeight: 'bold', fontSize: 16 }}>English</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginTop: 8, alignItems: 'center' }} onPress={() => setShowLanguageModal(false)}>
+              <Text style={{ color: '#008553', fontWeight: 'bold', fontSize: 16 }}>إغلاق</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* User Agreement Modal */}
       <Modal visible={showAgreement} animationType="slide" onRequestClose={() => setShowAgreement(false)}>
@@ -318,6 +334,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fffe',
     padding: 16,
+    paddingTop: 48,
   },
   centered: {
     flex: 1,
@@ -400,18 +417,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   cancelButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  editButton: {
-    marginTop: 16,
-    backgroundColor: '#008553',
-    borderRadius: 8,
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  editButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
@@ -514,22 +519,45 @@ const styles = StyleSheet.create({
   },
   genderContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 16,
+    justifyContent: 'center',
+    marginTop: 12,
   },
   genderButton: {
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
-    padding: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 4,
+    alignItems: 'center',
+    minWidth: 0,
   },
   genderButtonSelected: {
     backgroundColor: '#008553',
   },
   genderButtonText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#374151',
+    marginTop: 4,
   },
   genderButtonTextSelected: {
     color: '#fff',
+  },
+  profileValueText: {
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'right',
+    marginVertical: 4,
+    alignSelf: 'flex-end',
+  },
+  datePickerButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignSelf: 'flex-end',
+    marginTop: 4,
+    marginBottom: 4,
   },
 }); 
