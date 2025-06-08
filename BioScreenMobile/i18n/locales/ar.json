@@ -103,7 +103,7 @@
     "completed": "مكتمل",
     "due": "حالا",
     "later": "لاحقا",
-    "healthTips": "نصائح صحية",
+    "healthTips": "جرعة وقائية ",
     "readMore": "اقرأ المزيد",
     "defaultTipTitle": "حافظ على صحتك",
     "defaultTipContent": "الفحوصات الطبية المنتظمة مهمة للكشف المبكر والوقاية من الأمراض. اتبع جدول الفحوصات الموصى به.",
@@ -232,7 +232,7 @@
     "status": {
       "overdue": "متأخر",
       "upcoming": "قادمة",
-      "completed": "مكتملة"
+      "completed": "مكتمل"
     }
   },
   "family": {

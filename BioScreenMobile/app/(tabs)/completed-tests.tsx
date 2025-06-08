@@ -45,18 +45,8 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   userBirthDate: string;
 }) => {
   const [showTip, setShowTip] = React.useState(false);
-  const priority = screening.screening?.priority;
-  let priorityLabel = '';
-  let priorityColor = '';
-  if (priority === 'strongly_recommended') {
-    priorityLabel = 'موصى به بشدة';
-    priorityColor = '#C2BD86'; //'#ef4444'; // red-500
-  } else if (priority === 'recommended') {
-    priorityLabel = 'موصى به';
-    priorityColor = '#D9D5A8';//'#fca5a5'; // red-300
-  }
   // Always show 'مكتملة' with green pill in Completed Tests
-  const statusLabel = 'مكتملة';
+  const statusLabel = 'تم';
   const statusLabelStyle = [
     styles.screeningStatus,
     {
@@ -74,20 +64,8 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
     <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
       {/* Details aligned right */}
       <View style={{ flex: 1, alignItems: 'flex-end' }}>
-        {/* Name row: priority badge, info icon, name */}
+        {/* Name row: info icon, name */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {priority && (
-            <View style={{
-              backgroundColor: priorityColor,
-              borderRadius: 12,
-              paddingHorizontal: 10,
-              paddingVertical: 3,
-              marginLeft: 6,
-              alignSelf: 'center',
-            }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
-            </View>
-          )}
           {screening.screening?.description ? (
             <Tooltip
               isVisible={showTip}
@@ -267,22 +245,25 @@ const styles = StyleSheet.create({
     color: '#22c55e',
   },
   header: {
-    padding: 16,
+    paddingTop: 24,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     backgroundColor: '#22c55e',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     textAlign: 'right',
   },
   headerSubtitle: {
     color: '#e0ffe0',
-    fontSize: 15,
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 2,
     textAlign: 'right',
   },
   familySelector: {

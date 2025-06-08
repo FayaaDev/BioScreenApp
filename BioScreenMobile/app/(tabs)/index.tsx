@@ -228,7 +228,7 @@ export default function HomeScreen() {
               {stats?.completedThisYear || 0}
             </Text>
             <Text style={styles.statLabel}>
-              مكتملة
+              مكتمل
             </Text>
           </View>
         </View>

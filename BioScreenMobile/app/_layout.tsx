@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
-import { I18nManager } from 'react-native';
+import { I18nManager, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -21,6 +21,7 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    NotoSansArabic: require('../assets/fonts/NotoSansArabic-Regular.ttf'),
   });
 
   // Initialize RTL based on language
@@ -53,6 +54,15 @@ export default function RootLayout() {
       i18n.off('initialized', handleLanguageChange);
     };
   }, [i18n]);
+
+  useEffect(() => {
+    if (i18n.language === 'ar') {
+      const defaultFont = (Text as any).defaultProps || {};
+      defaultFont.style = defaultFont.style || {};
+      defaultFont.style.fontFamily = 'NotoSansArabic';
+      (Text as any).defaultProps = defaultFont;
+    }
+  }, [i18n.language]);
 
   if (!loaded || !isReady) {
     return null;

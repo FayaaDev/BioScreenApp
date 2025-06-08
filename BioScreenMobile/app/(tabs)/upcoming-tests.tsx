@@ -120,7 +120,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   } else if (screening.status === 'completed') {
-    statusLabel = 'مكتملة';
+    statusLabel = 'مكتمل';
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -478,22 +478,25 @@ const styles = StyleSheet.create({
     color: '#22c55e',
   },
   header: {
-    padding: 16,
+    paddingTop: 24,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     backgroundColor: '#22c55e',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     textAlign: 'right',
   },
   headerSubtitle: {
     color: '#e0ffe0',
-    fontSize: 15,
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 2,
     textAlign: 'right',
   },
   familySelector: {
