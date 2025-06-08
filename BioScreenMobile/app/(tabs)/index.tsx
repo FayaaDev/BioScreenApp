@@ -9,6 +9,8 @@ import {
   RefreshControl,
   I18nManager,
   Dimensions,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -57,6 +59,8 @@ export default function HomeScreen() {
   const [user, setUser] = useState<User | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', content: '' });
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -254,17 +258,12 @@ export default function HomeScreen() {
                   { backgroundColor: colors.card, transform: [{ scaleX: -1 }] }
                 ]}
               >
-                <ThemedText style={[styles.educationalTitle, { color: colors.text }]}>
+                <ThemedText style={[styles.educationalTitle, { color: colors.text, fontFamily: 'NotoSansArabic-Bold' }]}>
                   {content.title}
                 </ThemedText>
-                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary }]} numberOfLines={4}>
+                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary, fontFamily: 'NotoSansArabic-Regular' }]} numberOfLines={4}>
                   {content.content}
                 </ThemedText>
-                <TouchableOpacity style={styles.readMoreButton}>
-                  <ThemedText style={[styles.readMoreText, { color: colors.primary }]}>
-                    {t('home.readMore')}
-                  </ThemedText>
-                </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
@@ -329,21 +328,70 @@ export default function HomeScreen() {
 
           <TouchableOpacity 
             style={[styles.actionCard, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/(tabs)/upcoming-tests')}
+            onPress={() => setShowContactModal(true)}
           >
-            <MaterialCommunityIcons name="plus-circle" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
-              {t('home.addResult')}
-            </ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
-              {t('home.recordTestResult')}
-            </ThemedText>
+            <MaterialCommunityIcons name="email" size={32} color={colors.primary} />
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>تواصل معنا</ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>راسلنا لأي استفسار أو اقتراح</ThemedText>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Bottom padding for better scrolling */}
       <View style={styles.bottomPadding} />
+
+      <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#008553', marginBottom: 16, textAlign: 'center' }}>تواصل معنا</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>الاسم</Text>
+            <TextInput
+              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              value={contactForm.name}
+              onChangeText={text => setContactForm({ ...contactForm, name: text })}
+              placeholder="أدخل اسمك"
+            />
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>البريد الإلكتروني</Text>
+            <TextInput
+              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              value={contactForm.email}
+              onChangeText={text => setContactForm({ ...contactForm, email: text })}
+              placeholder="أدخل بريدك الإلكتروني"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>الموضوع</Text>
+            <TextInput
+              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              value={contactForm.subject}
+              onChangeText={text => setContactForm({ ...contactForm, subject: text })}
+              placeholder="أدخل موضوع الرسالة"
+            />
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>المحتوى</Text>
+            <TextInput
+              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top' }}
+              value={contactForm.content}
+              onChangeText={text => setContactForm({ ...contactForm, content: text })}
+              placeholder="اكتب رسالتك هنا"
+              multiline
+            />
+            <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
+              <TouchableOpacity
+                style={{ backgroundColor: '#008553', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
+                onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>إرسال</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ backgroundColor: '#f0f0f0', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
+                onPress={() => setShowContactModal(false)}
+              >
+                <Text style={{ color: '#008553', fontWeight: 'bold', fontSize: 16 }}>إلغاء</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -467,13 +515,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
     textAlign: 'right',
-  },
-  readMoreButton: {
-    alignSelf: 'flex-end',
-  },
-  readMoreText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 
   // Quick Actions Section
