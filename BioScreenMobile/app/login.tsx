@@ -61,7 +61,7 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginFormData) => {
-      return apiRequest<LoginResponse>('POST', '/api/auth/login', credentials);
+      return apiRequest<LoginResponse>('POST', '/api/users/login', credentials);
     },
     onSuccess: async (data) => {
       try {
