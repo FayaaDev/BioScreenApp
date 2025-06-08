@@ -22,6 +22,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useContext } from 'react';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type Screening = {
@@ -187,7 +188,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#22c55e" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -252,6 +253,7 @@ export default function UpcomingTests() {
   const [activeTab, setActiveTab] = useState('all');
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
+  const insets = useSafeAreaInsets();
 
   // Load userId from AsyncStorage
   useEffect(() => {
@@ -397,8 +399,8 @@ export default function UpcomingTests() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fffe' }}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 32 }]}>
+    <ScrollView style={{ flex: 1, backgroundColor: '#f8fffe' }} contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `مرحباً، ${currentPersonName}` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
         {/* Family selector */}
@@ -441,7 +443,7 @@ export default function UpcomingTests() {
       </View>
 
       {/* Screenings List */}
-      <ScrollView style={styles.screeningsList} contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
+      <ScrollView style={styles.screeningsList} contentContainerStyle={{ gap: 7, paddingBottom: 32 }}>
         {filteredScreenings.length === 0 ? (
           <Text style={styles.emptyText}>لا توجد فحوصات في هذا القسم</Text>
         ) : (
@@ -457,7 +459,7 @@ export default function UpcomingTests() {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
@@ -479,9 +481,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 24,
-    paddingBottom: 12,
+    paddingBottom: 3,
     paddingHorizontal: 16,
-    backgroundColor: '#22c55e',
+    backgroundColor: '#2c9167',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },

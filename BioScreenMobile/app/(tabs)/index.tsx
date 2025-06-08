@@ -175,7 +175,7 @@ export default function HomeScreen() {
     >
       {/* Header with Gradient */}
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#1a365d', '#2d5a87'] : ['#4ade80', '#22c55e']}
+        colors={colorScheme === 'dark' ? ['#1a365d', '#2d5a87'] : ['#4ade80', '#2c9167']}
         style={styles.headerGradient}
       >
         <View style={styles.headerContent}>
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingTop: 60,
-    paddingBottom: 30,
+    paddingBottom: 10,
     paddingHorizontal: 20,
   },
   headerContent: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   greeting: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'right',
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     color: '#f97316', // Orange for لاحقاً (later)
   },
   statNumberCompleted: {
-    color: '#22c55e', // Green for مكتملة (completed)
+    color: '#2c9167', // Green for مكتملة (completed)
   },
   statLabel: {
     fontSize: 12,

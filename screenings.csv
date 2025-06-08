@@ -1,0 +1,26 @@
+﻿name,description,category,gender_applicable,start_age,end_age,frequency_years,is_active,priority
+صحة الاسنان,مكملات الفلورايد بعض الأطفال,preventive,both,1,5,1,TRUE,recommended
+فرط الحركة,ينصح عند ملاحظة صعوبة اكادمية/سلوكية ,preventive,both,4,18,0,TRUE,recommended
+السمع,اختبار القياس السمعي,preventive,both,3,,0,TRUE,recommended
+النظر," مخطط سنيلين او رموز ""ليا"" للأطفال ",preventive,both,3,5,0,TRUE,recommended
+التويتر والقلق,ويشمل الحامل وفترة مابعد الحمل,preventive,both,8,18,0,TRUE,recommended
+الاكتئاب,يشمل المَرأة الحامل وفترة مابعد الولادة لمن هم تحت ال65 سنة.,preventive,both,65,80,0,TRUE,recommended
+الامراض الجنسية (الزهري), لمن قضى فترة بالسجن او الخدمة العسكرية,preventive,both,18,59,0,TRUE,Strongly_recommended
+عيادة التدخين,علاجات دوائية وسلوكيّة,preventive,both,18,59,0,TRUE,recommended
+السمنة,جلسات تعديل السلوك لمن تجاوزت كتلة الجسم لديهم 30,preventive,both,18,59,0,TRUE,recommended
+ضغط الدم,"في حالة تسجيل ارتفاغ في ضغط الدم بالعيادة، ينصح الالتزام بقياس ضغط الدم بالمنزل",preventive,both,18,59,1,TRUE,Strongly_recommended
+السكر,التحليل العشوائي او التراكمي خصوصا لمن يعانون من السمنة (كتلة الجسم فوق 25),preventive,both,35,70,3,TRUE,recommended
+الامراض الجنسية (الكلاميديا والسيلان),خصوصا لمن يمارسون علاقات متعددة,preventive,both,18,45,0,TRUE,recommended
+فيروس التهاب الكبد ب,بالاخص الحامل ومستخدمي الحقن,preventive,both,18,59,0,TRUE,recommended
+فيروس التهاب الكبد ج,بالاخص مستخدمي الحقن,preventive,both,18,79,0,TRUE,recommended
+عنق الرحم (مسحة),يستهذف فيروس الورم الحليمي البشري,preventive,female,21,29,3,TRUE,Strongly_recommended
+ عنق الرحم (شامل),يضاف التحليل الخلوي مع المسحة بعد عمر الثلاثين. ,preventive,female,30,65,5,TRUE,Strongly_recommended
+الثدي,"تُجرى حاليًا دراسات، مثل تجربة WISDOM، لبحث إمكانية تقديم سن بدء الكشف عن سرطان الثدي إلى ما قبل سن الأربعين.",preventive,female,40,74,2,TRUE,recommended
+الرئة,"اشعة مقطعية للصدر، لمن يدخنون 20 علبة/سنة لمدة 20 سنة او توقفوا عن التدخين خلال السنوات الخمس عشرة الماضية.",preventive,both,50,80,0,TRUE,recommended
+القولون,"بالمنظار القولوني الشامل (قد يستخدم الطبيب أساليب أخرى تختلف فيها المدة الزمنيّة مثل: المنظار السفلي، العينة، الحمض النووي.",preventive,both,45,75,10,TRUE,Strongly_recommended
+هشاشة العظام,"خصوصا لمن لديهم خطورة عالية مثل (التدخن،الكحول،تاريخ كسر بالخصر لدى الام/الاب، قلة وزن)",preventive,female,65,,0,TRUE,Recommended
+القلب,قد يعطى الاسبرين/والستاتين كأدوية وقائية ضد امراض القلب (تخضع لتقييم الطبيب),preventive,both,40,75,0,TRUE,Recommended
+الاستخدام المفرط للكحول,جلسات تعديل السلوك للمدمنين ,preventive,both,18,,0,TRUE,Recommended
+الكتلة الجسمية,قياس الـBMI ومحيط الخصر,preventive,both,18,,2,TRUE,Recommended
+الحامل,حمض الفوليك(شهر قبل الجماع ويستمر ثلاث شهور من بداية الحمل) / فيتامين ك (بعد الوضع),preventive,female,18,,0,TRUE,Strongly_recommended
+الشرايين,للكشف عن تمدّد الشريان عند المدخنين بغض النظر عن المدة والكمية,preventive,male,65,75,0,TRUE,Recommended

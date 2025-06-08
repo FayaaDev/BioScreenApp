@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Types
 type Screening = {
@@ -50,7 +51,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   const statusLabelStyle = [
     styles.screeningStatus,
     {
-      color: '#16a34a', // green-600
+      color: '#2c9167',
       backgroundColor: '#f0fdf4', // green-50
       borderRadius: 8,
       paddingHorizontal: 8,
@@ -76,7 +77,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#22c55e" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -111,6 +112,7 @@ export default function CompletedTests() {
   const [userId, setUserId] = useState<string | null>(null);
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
+  const insets = useSafeAreaInsets();
 
   // Load userId from AsyncStorage
   useEffect(() => {
@@ -185,8 +187,8 @@ export default function CompletedTests() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fffe' }}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 32 }]}>
+    <ScrollView style={{ flex: 1, backgroundColor: '#f8fffe' }} contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
         {/* Family selector */}
@@ -210,7 +212,7 @@ export default function CompletedTests() {
       </View>
 
       {/* Completed Screenings List */}
-      <ScrollView style={styles.screeningsList} contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
+      <View style={styles.screeningsList}>
         {completedScreenings.length === 0 ? (
           <Text style={styles.emptyText}>لا توجد فحوصات مكتملة</Text>
         ) : (
@@ -223,8 +225,8 @@ export default function CompletedTests() {
             />
           ))
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -246,9 +248,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 24,
-    paddingBottom: 12,
+    paddingBottom: 3,
     paddingHorizontal: 16,
-    backgroundColor: '#22c55e',
+    backgroundColor: '#2c9167',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
