@@ -55,17 +55,22 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const [user, setUser] = useState<User | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const colors = Colors[colorScheme ?? 'light'];
 
-  // Load user data
+  // Load user data from AsyncStorage
   useEffect(() => {
     const loadUser = async () => {
       try {
         const userData = await AsyncStorage.getItem('healthscreen_user');
+        const userIdData = await AsyncStorage.getItem('healthscreen_user_id');
         if (userData) {
           setUser(JSON.parse(userData));
+        }
+        if (userIdData) {
+          setUserId(userIdData);
         }
       } catch (error) {
         console.error('Failed to load user data:', error);
@@ -74,15 +79,19 @@ export default function HomeScreen() {
     loadUser();
   }, []);
 
-  // Fetch screenings data
-  const { data: screenings = [], isLoading, refetch } = useQuery({
-    queryKey: ['screenings', user?.id],
-    queryFn: async (): Promise<ScreeningWithDetails[]> => {
-      if (!user?.id) return [];
-      return apiRequest('GET', `/api/screenings/user/${user.id}`);
-    },
-    enabled: !!user?.id,
+  // Fetch user data with screenings
+  const { data: userDataWithScreenings, isLoading, refetch } = useQuery({
+    queryKey: ['/api/users', userId],
+    queryFn: () => apiRequest('GET', `/api/users/${userId}`),
+    enabled: !!userId,
   });
+
+  // Extract screenings from user data
+  let screenings: any[] = [];
+  if (userDataWithScreenings && typeof userDataWithScreenings === 'object' && userDataWithScreenings !== null && 'screenings' in userDataWithScreenings) {
+    const userData = userDataWithScreenings as { screenings: any[] };
+    screenings = userData.screenings || [];
+  }
 
   // Fetch educational content
   const { data: educationalContent = [] } = useQuery({
@@ -92,8 +101,8 @@ export default function HomeScreen() {
     },
   });
 
-  // Calculate stats from screenings data locally
-  const calculateDashboardStats = (screenings: ScreeningWithDetails[]): DashboardStats => {
+  // Calculate stats from screenings data using the same logic as upcoming tests
+  const calculateDashboardStats = (screenings: any[]): DashboardStats => {
     const stats = {
       totalScreenings: screenings.length,
       dueScreenings: 0,
@@ -143,7 +152,7 @@ export default function HomeScreen() {
     }
   };
 
-  if (isLoading && !user) {
+  if (isLoading && !userId) {
     return (
       <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -183,66 +192,45 @@ export default function HomeScreen() {
         </View>
       </LinearGradient>
 
-      {/* Test Status Cards - Top Section */}
+      {/* Test Status Stats - Top Section */}
       <View style={styles.statsContainer}>
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
           {t('home.testStatus')}
         </ThemedText>
         
-        <View style={styles.statsGrid}>
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/(tabs)/upcoming-tests')}
-          >
-            <MaterialCommunityIcons name="alert-circle" size={28} color="#ef4444" />
-            <Text style={[styles.statNumber, { color: '#ef4444' }]}>
-              {stats?.overdueScreenings || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              {t('home.overdue')}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/(tabs)/upcoming-tests')}
-          >
-            <MaterialCommunityIcons name="clock-alert" size={28} color="#f59e0b" />
-            <Text style={[styles.statNumber, { color: '#f59e0b' }]}>
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNumber, styles.statNumberDue]}>
               {stats?.dueScreenings || 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              {t('home.due')}
+            <Text style={styles.statLabel}>
+              حالا
             </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.statsGrid}>
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/(tabs)/upcoming-tests')}
-          >
-            <MaterialCommunityIcons name="calendar-clock" size={28} color="#3b82f6" />
-            <Text style={[styles.statNumber, { color: '#3b82f6' }]}>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNumber, styles.statNumberOverdue]}>
+              {stats?.overdueScreenings || 0}
+            </Text>
+            <Text style={styles.statLabel}>
+              متأخر
+            </Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNumber, styles.statNumberLater]}>
               {stats?.laterScreenings || 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              {t('home.later')}
+            <Text style={styles.statLabel}>
+              لاحقاً
             </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/(tabs)/completed-tests')}
-          >
-            <MaterialCommunityIcons name="check-circle" size={28} color="#10b981" />
-            <Text style={[styles.statNumber, { color: '#10b981' }]}>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNumber, styles.statNumberCompleted]}>
               {stats?.completedThisYear || 0}
             </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              {t('home.completed')}
+            <Text style={styles.statLabel}>
+              مكتملة
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -407,12 +395,12 @@ const styles = StyleSheet.create({
   statsContainer: {
     padding: 20,
   },
-  statsGrid: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  statCard: {
+  statBox: {
     flex: 1,
     marginHorizontal: 6,
     padding: 20,
@@ -423,17 +411,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    backgroundColor: 'rgba(240, 240, 240, 0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(200, 200, 200, 0.3)',
   },
   statNumber: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginTop: 8,
     marginBottom: 4,
+  },
+  statNumberDue: {
+    color: '#3b82f6', // Blue for حالا (due)
+  },
+  statNumberOverdue: {
+    color: '#ef4444', // Red for متأخر (overdue)
+  },
+  statNumberLater: {
+    color: '#f97316', // Orange for لاحقاً (later)
+  },
+  statNumberCompleted: {
+    color: '#22c55e', // Green for مكتملة (completed)
   },
   statLabel: {
     fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
+    color: '#666',
   },
 
   // Educational Section

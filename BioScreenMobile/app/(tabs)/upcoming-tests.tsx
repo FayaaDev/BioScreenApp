@@ -90,7 +90,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   } else if (screening.status === 'due') {
-    statusLabel = 'مستحقة';
+    statusLabel = 'حالا';
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -105,7 +105,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   } else if (screening.status === 'overdue') {
-    statusLabel = 'متأخرة';
+    statusLabel = 'متأخر';
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -187,7 +187,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#008553" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#22c55e" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -367,8 +367,8 @@ export default function UpcomingTests() {
   // Tabs logic
   const tabOptions = [
     { key: 'all', label: 'الكل', color: undefined },
-    { key: 'due', label: 'مستحقة', color: STATUS_COLORS.due },
-    { key: 'overdue', label: 'متأخرة', color: STATUS_COLORS.overdue },
+    { key: 'due', label: 'حالا', color: STATUS_COLORS.due },
+    { key: 'overdue', label: 'متأخر', color: STATUS_COLORS.overdue },
     { key: 'later', label: 'لاحقاً', color: STATUS_COLORS.later },
     //{ key: 'completed', label: 'مكتملة', color: STATUS_COLORS.completed },
   ];
@@ -423,8 +423,8 @@ export default function UpcomingTests() {
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.due}</Text><Text style={styles.statLabel}>مستحقة</Text></View>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.overdue}</Text><Text style={styles.statLabel}>متأخرة</Text></View>
+        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.due}</Text><Text style={styles.statLabel}>حالا</Text></View>
+        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.overdue}</Text><Text style={styles.statLabel}>متأخر</Text></View>
         <View style={styles.statBox}><Text style={styles.statNumber}>{stats.later}</Text><Text style={styles.statLabel}>لاحقاً</Text></View>
         <View style={styles.statBox}><Text style={styles.statNumber}>{stats.completed}</Text><Text style={styles.statLabel}>مكتملة</Text></View>
       </View>
@@ -483,11 +483,11 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#008553',
+    color: '#22c55e',
   },
   header: {
     padding: 16,
-    backgroundColor: '#008553',
+    backgroundColor: '#22c55e',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
@@ -514,14 +514,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#22c55e',
   },
   familyButtonSelected: {
-    backgroundColor: '#008553',
-    borderColor: '#008553',
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e',
   },
   familyButtonText: {
-    color: '#008553',
+    color: '#22c55e',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#22c55e',
   },
   statLabel: {
     fontSize: 13,
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   tabButtonText: {
-    color: '#008553',
+    color: '#22c55e',
     fontWeight: 'bold',
   },
   screeningsList: {
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#22c55e',
     marginBottom: 4,
   },
   screeningStatus: {
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   actionButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#22c55e',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,

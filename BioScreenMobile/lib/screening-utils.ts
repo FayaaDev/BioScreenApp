@@ -132,10 +132,10 @@ export const STATUS_COLORS = {
     icon: '#991b1b'
   },
   later: {
-    background: '#f0fdf4', // green-50
-    text: '#166534',       // green-800
-    border: '#bbf7d0',     // green-200
-    icon: '#166534'
+    background: '#fff7ed', // orange-50
+    text: '#ea580c',       // orange-600
+    border: '#fed7aa',     // orange-200
+    icon: '#ea580c'
   },
   completed: {
     background: '#f0fdf4', // green-50

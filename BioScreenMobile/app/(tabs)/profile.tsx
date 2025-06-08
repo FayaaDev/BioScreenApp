@@ -120,7 +120,7 @@ export default function Profile() {
   if (!userId || isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#008553" />
+        <ActivityIndicator size="large" color="#22c55e" />
         <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
       </View>
     );
@@ -137,10 +137,10 @@ export default function Profile() {
       <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, zIndex: 2, gap: 12 }}>
           <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <MaterialIcons name="edit" size={28} color="#008553" />
+            <MaterialIcons name="edit" size={28} color="#22c55e" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
-            <MaterialIcons name="language" size={28} color="#008553" />
+            <MaterialIcons name="language" size={28} color="#22c55e" />
           </TouchableOpacity>
         </View>
         <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
@@ -225,7 +225,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#008553'}
+                    color={formData.gender === 'male' ? '#fff' : '#22c55e'}
                   />
                   <Text
                     style={[
@@ -247,7 +247,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#008553'}
+                    color={formData.gender === 'female' ? '#fff' : '#22c55e'}
                   />
                   <Text
                     style={[
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#22c55e',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   closeModalButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#22c55e',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   genderButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#22c55e',
   },
   genderButtonText: {
     fontSize: 16,

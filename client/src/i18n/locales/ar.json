@@ -110,8 +110,8 @@
     },
     "noScreenings": "لا توجد فحوصات.",
     "noScreeningsForTab": "لا توجد فحوصات {{status}}.",
-    "noDue": "لا توجد فحوصات مستحقة.",
-    "noOverdue": "لا توجد فحوصات متأخرة.",
+    "noDue": "لا توجد فحوصات حالا.",
+    "noOverdue": "لا توجد فحوصات متأخر.",
     "noLater": "لا توجد فحوصات لاحقة.",
     "noCompleted": "لا توجد فحوصات مكتملة.",
     "bookWithSehhaty": "احجز مع صحتي",
@@ -214,7 +214,7 @@
     "nextDue": " موعد الفحص القادم: {{date}}",
     "takeAtAge": "يجب عليك إجراء هذا الفحص عند بلوغك {{age}} سنة",
     "status": {
-      "overdue": "متأخرة",
+      "overdue": "متأخر",
       "upcoming": "قادمة",
       "completed": "مكتملة"
     }

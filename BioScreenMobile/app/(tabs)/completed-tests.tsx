@@ -98,7 +98,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#008553" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#22c55e" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -264,11 +264,11 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#008553',
+    color: '#22c55e',
   },
   header: {
     padding: 16,
-    backgroundColor: '#008553',
+    backgroundColor: '#22c55e',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
@@ -295,14 +295,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#22c55e',
   },
   familyButtonSelected: {
-    backgroundColor: '#008553',
-    borderColor: '#008553',
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e',
   },
   familyButtonText: {
-    color: '#008553',
+    color: '#22c55e',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#22c55e',
     marginBottom: 4,
   },
   screeningStatus: {
