@@ -11,23 +11,42 @@ export const LanguageSwitcher = () => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en';
     const isRTL = newLang === 'ar';
 
-    // Update i18n language
-    await i18n.changeLanguage(newLang);
+    try {
+      console.log('Switching language from', i18n.language, 'to', newLang);
+      
+      // Save language preference first
+      await AsyncStorage.setItem('healthscreen_language', newLang);
+      
+      // Update i18n language
+      await i18n.changeLanguage(newLang);
 
-    // Save language preference
-    await AsyncStorage.setItem('healthscreen_language', newLang);
-
-    // Update RTL settings and reload if needed
-    if (I18nManager.isRTL !== isRTL) {
-      I18nManager.forceRTL(isRTL);
-      if (Updates?.reloadAsync) {
-        Updates.reloadAsync();
+      // Update RTL settings - always reload to ensure proper layout
+      if (I18nManager.isRTL !== isRTL) {
+        I18nManager.forceRTL(isRTL);
+        if (Updates?.reloadAsync) {
+          // Reload the app to apply RTL changes
+          console.log('Reloading app for RTL change');
+          await Updates.reloadAsync();
+        } else {
+          Alert.alert(
+            'Language Changed',
+            'Please restart the app to apply the language direction change.',
+            [{ text: 'OK' }]
+          );
+        }
       } else {
-        Alert.alert(
-          t('common.done'),
-          t('Please restart the app to apply the language direction change.')
-        );
+        // Force a small delay to ensure language change is applied
+        setTimeout(() => {
+          console.log('Language switched successfully without RTL change');
+        }, 100);
       }
+    } catch (error) {
+      console.error('Error switching language:', error);
+      Alert.alert(
+        'Error',
+        'Failed to switch language. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

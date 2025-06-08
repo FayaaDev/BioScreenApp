@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, varchar, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -56,6 +56,24 @@ export const familyMemberScreenings = pgTable("family_member_screenings", {
   createdAt: text("created_at").notNull(),
 });
 
+export const adminUsers = pgTable('admin_users', {
+  id: serial('id').primaryKey(),
+  username: text('username').notNull().unique(),
+  password: text('password').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  lastLogin: timestamp('last_login'),
+});
+
+export const educationalContent = pgTable('educational_content', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  category: text('category').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -80,6 +98,12 @@ export const insertFamilyMemberScreeningSchema = createInsertSchema(familyMember
   createdAt: true,
 });
 
+export const insertEducationalContentSchema = createInsertSchema(educationalContent).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Screening = typeof screenings.$inferSelect;
@@ -90,3 +114,5 @@ export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 export type FamilyMemberScreening = typeof familyMemberScreenings.$inferSelect;
 export type InsertFamilyMemberScreening = z.infer<typeof insertFamilyMemberScreeningSchema>;
+export type EducationalContent = typeof educationalContent.$inferSelect;
+export type InsertEducationalContent = z.infer<typeof insertEducationalContentSchema>;

@@ -1,12 +1,13 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { I18nManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFonts } from 'expo-font';
+import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
@@ -16,20 +17,45 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { i18n } = useTranslation();
+  const [isReady, setIsReady] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // Force RTL layout
+  // Initialize RTL based on language
   useEffect(() => {
-    if (!I18nManager.isRTL) {
-      I18nManager.allowRTL(true);
-      I18nManager.forceRTL(true);
-    }
-  }, []);
+    const handleLanguageChange = () => {
+      const isRTL = i18n.language === 'ar';
+      console.log('App layout - current language:', i18n.language);
+      console.log('Setting RTL to:', isRTL);
+      
+      if (I18nManager.isRTL !== isRTL) {
+        I18nManager.allowRTL(true);
+        I18nManager.forceRTL(isRTL);
+      }
+    };
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
+    // Handle initial setup
+    if (i18n.isInitialized) {
+      handleLanguageChange();
+      setIsReady(true);
+    }
+
+    // Listen for language changes
+    i18n.on('languageChanged', handleLanguageChange);
+    i18n.on('initialized', () => {
+      handleLanguageChange();
+      setIsReady(true);
+    });
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+      i18n.off('initialized', handleLanguageChange);
+    };
+  }, [i18n]);
+
+  if (!loaded || !isReady) {
     return null;
   }
 

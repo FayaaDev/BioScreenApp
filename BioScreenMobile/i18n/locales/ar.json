@@ -16,7 +16,8 @@
     "you": "أنت"
   },
   "navigation": {
-    "home": "الفحوصات القادمة",
+    "home": "الرئيسية",
+    "upcoming": "الفحوصات القادمة",
     "completed": "الفحوصات المكتملة",
     "profile": "الملف الشخصي",
     "admin": "لوحة الإدارة"
@@ -95,11 +96,26 @@
     "afternoonGreeting": "مساء الخير، {{name}}!",
     "eveningGreeting": "مساء الخير، {{name}}!",
     "greetingDefault": "مرحباً بك!",
+    "manageHealth": "إدارة صحتك",
     "screeningsFor": "فحوصات",
+    "testStatus": "حالة الفحوصات",
     "overdue": "متأخر",
     "completed": "مكتمل",
     "due": "حالا",
     "later": "لاحقا",
+    "healthTips": "نصائح صحية",
+    "readMore": "اقرأ المزيد",
+    "defaultTipTitle": "حافظ على صحتك",
+    "defaultTipContent": "الفحوصات الطبية المنتظمة مهمة للكشف المبكر والوقاية من الأمراض. اتبع جدول الفحوصات الموصى به.",
+    "quickActions": "إجراءات سريعة",
+    "addFamily": "إضافة عائلة",
+    "manageFamilyMembers": "إدارة أفراد العائلة",
+    "upcomingTests": "الفحوصات القادمة",
+    "viewScheduledTests": "عرض الفحوصات المجدولة",
+    "completedTests": "الفحوصات المكتملة",
+    "viewTestHistory": "عرض تاريخ الفحوصات",
+    "addResult": "إضافة نتيجة",
+    "recordTestResult": "تسجيل نتيجة الفحص",
 
     "tabs": {
       "all": "الكل",

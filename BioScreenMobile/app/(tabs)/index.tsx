@@ -1,75 +1,497 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+  I18nManager,
+  Dimensions,
+} from 'react-native';
+import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import { apiRequest } from '@/lib/api';
+import { ScreeningWithDetails } from '@/lib/screening-utils';
+
+interface DashboardStats {
+  totalScreenings: number;
+  dueScreenings: number;
+  overdueScreenings: number;
+  laterScreenings: number;
+  completedThisYear: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  dateOfBirth?: string;
+  gender?: string;
+}
+
+interface EducationalContent {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  isActive: boolean;
+}
+
+const { width } = Dimensions.get('window');
+const isRTL = I18nManager.isRTL;
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const colorScheme = useColorScheme();
+  const [user, setUser] = useState<User | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const colors = Colors[colorScheme ?? 'light'];
+
+  // Load user data
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('healthscreen_user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // Fetch screenings data
+  const { data: screenings = [], isLoading, refetch } = useQuery({
+    queryKey: ['screenings', user?.id],
+    queryFn: async (): Promise<ScreeningWithDetails[]> => {
+      if (!user?.id) return [];
+      return apiRequest('GET', `/api/screenings/user/${user.id}`);
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch educational content
+  const { data: educationalContent = [] } = useQuery({
+    queryKey: ['educational-content'],
+    queryFn: async (): Promise<EducationalContent[]> => {
+      return apiRequest('GET', '/api/educational-content?isActive=true');
+    },
+  });
+
+  // Calculate stats from screenings data locally
+  const calculateDashboardStats = (screenings: ScreeningWithDetails[]): DashboardStats => {
+    const stats = {
+      totalScreenings: screenings.length,
+      dueScreenings: 0,
+      overdueScreenings: 0,
+      laterScreenings: 0,
+      completedThisYear: 0
+    };
+
+    screenings.forEach((screening) => {
+      if (screening.status === 'due') stats.dueScreenings++;
+      else if (screening.status === 'overdue') stats.overdueScreenings++;
+      else if (screening.status === 'later') stats.laterScreenings++;
+      else if (screening.status === 'completed') {
+        // Check if completed this year
+        if (screening.lastCompleted) {
+          const completedDate = new Date(screening.lastCompleted);
+          const currentYear = new Date().getFullYear();
+          if (completedDate.getFullYear() === currentYear) {
+            stats.completedThisYear++;
+          }
+        }
+      }
+    });
+
+    return stats;
+  };
+
+  // Calculate stats from fetched screenings
+  const stats = calculateDashboardStats(screenings);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    const name = user?.name || '';
+    
+    if (hour < 12) {
+      return name ? t('home.morningGreeting', { name }) : t('home.greeting');
+    } else if (hour < 17) {
+      return name ? t('home.afternoonGreeting', { name }) : t('home.greeting');
+    } else {
+      return name ? t('home.eveningGreeting', { name }) : t('home.greeting');
+    }
+  };
+
+  if (isLoading && !user) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <ThemedText style={styles.loadingText}>{t('common.loading')}</ThemedText>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      {/* Header with Gradient */}
+      <LinearGradient
+        colors={colorScheme === 'dark' ? ['#1a365d', '#2d5a87'] : ['#4ade80', '#22c55e']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <ThemedText style={[styles.greeting, { color: 'white' }]}>
+              {getGreeting()}
+            </ThemedText>
+            <ThemedText style={[styles.subtitle, { color: 'rgba(255,255,255,0.9)' }]}>
+              {t('home.manageHealth')}
+            </ThemedText>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/profile')}
+          >
+            <Ionicons name="person-circle-outline" size={32} color="white" />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      {/* Test Status Cards - Top Section */}
+      <View style={styles.statsContainer}>
+        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('home.testStatus')}
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+        
+        <View style={styles.statsGrid}>
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/upcoming-tests')}
+          >
+            <MaterialCommunityIcons name="alert-circle" size={28} color="#ef4444" />
+            <Text style={[styles.statNumber, { color: '#ef4444' }]}>
+              {stats?.overdueScreenings || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              {t('home.overdue')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/upcoming-tests')}
+          >
+            <MaterialCommunityIcons name="clock-alert" size={28} color="#f59e0b" />
+            <Text style={[styles.statNumber, { color: '#f59e0b' }]}>
+              {stats?.dueScreenings || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              {t('home.due')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/upcoming-tests')}
+          >
+            <MaterialCommunityIcons name="calendar-clock" size={28} color="#3b82f6" />
+            <Text style={[styles.statNumber, { color: '#3b82f6' }]}>
+              {stats?.laterScreenings || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              {t('home.later')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/completed-tests')}
+          >
+            <MaterialCommunityIcons name="check-circle" size={28} color="#10b981" />
+            <Text style={[styles.statNumber, { color: '#10b981' }]}>
+              {stats?.completedThisYear || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              {t('home.completed')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Educational Content - Middle Section */}
+      <View style={styles.educationalSection}>
+        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('home.healthTips')}
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
+        
+        {educationalContent.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {educationalContent.slice(0, 3).map((content) => (
+              <View key={content.id} style={[styles.educationalCard, { backgroundColor: colors.card }]}>
+                <ThemedText style={[styles.educationalTitle, { color: colors.text }]}>
+                  {content.title}
+                </ThemedText>
+                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary }]} numberOfLines={4}>
+                  {content.content}
+                </ThemedText>
+                <TouchableOpacity style={styles.readMoreButton}>
+                  <ThemedText style={[styles.readMoreText, { color: colors.primary }]}>
+                    {t('home.readMore')}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={[styles.educationalCard, { backgroundColor: colors.card }]}>
+            <MaterialCommunityIcons name="information" size={32} color={colors.textSecondary} />
+            <ThemedText style={[styles.educationalTitle, { color: colors.text }]}>
+              {t('home.defaultTipTitle')}
+            </ThemedText>
+            <ThemedText style={[styles.educationalContent, { color: colors.textSecondary }]}>
+              {t('home.defaultTipContent')}
+            </ThemedText>
+          </View>
+        )}
+      </View>
+
+      {/* Quick Actions - Bottom Section */}
+      <View style={styles.quickActionsSection}>
+        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('home.quickActions')}
         </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        
+        <View style={styles.actionsGrid}>
+          <TouchableOpacity 
+            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <MaterialCommunityIcons name="account-group" size={32} color={colors.primary} />
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
+              {t('home.addFamily')}
+            </ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
+              {t('home.manageFamilyMembers')}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/upcoming-tests')}
+          >
+            <MaterialCommunityIcons name="calendar-check" size={32} color={colors.primary} />
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
+              {t('home.upcomingTests')}
+            </ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
+              {t('home.viewScheduledTests')}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/completed-tests')}
+          >
+            <MaterialCommunityIcons name="clipboard-check" size={32} color={colors.primary} />
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
+              {t('home.completedTests')}
+            </ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
+              {t('home.viewTestHistory')}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push('/(tabs)/upcoming-tests')}
+          >
+            <MaterialCommunityIcons name="plus-circle" size={32} color={colors.primary} />
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
+              {t('home.addResult')}
+            </ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
+              {t('home.recordTestResult')}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Bottom padding for better scrolling */}
+      <View style={styles.bottomPadding} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  greeting: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    opacity: 0.9,
+  },
+  profileButton: {
+    padding: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  
+  // Stats Section
+  statsContainer: {
+    padding: 20,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statCard: {
+    flex: 1,
+    marginHorizontal: 6,
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+
+  // Educational Section
+  educationalSection: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  educationalCard: {
+    width: width * 0.75,
+    marginRight: 16,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  educationalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  educationalContent: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  readMoreButton: {
+    alignSelf: 'flex-start',
+  },
+  readMoreText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Quick Actions Section
+  quickActionsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  actionCard: {
+    width: '48%',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 12,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  actionSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  bottomPadding: {
+    height: 20,
   },
 });

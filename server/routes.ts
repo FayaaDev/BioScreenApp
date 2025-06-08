@@ -4,13 +4,29 @@ import multer from "multer";
 import path from "path";
 import bcrypt from "bcrypt";
 import { storage } from "./storage";
-import { insertUserSchema, insertScreeningSchema, insertUserScreeningSchema, insertFamilyMemberSchema, insertFamilyMemberScreeningSchema } from "@shared/schema";
+import { insertUserSchema, insertScreeningSchema, insertUserScreeningSchema, insertFamilyMemberSchema, insertFamilyMemberScreeningSchema, educationalContent } from "@shared/schema";
 import { z } from "zod";
+import { db, adminUsers } from './db';
+import jwt from 'jsonwebtoken';
+import { eq } from 'drizzle-orm';
+import { Request, Response, NextFunction } from 'express';
 
 // Extend session type
 declare module 'express-session' {
   interface SessionData {
     userId: number;
+  }
+}
+
+// Extend Express Request type to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: number;
+        username: string;
+      };
+    }
   }
 }
 
@@ -59,36 +75,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Admin authentication middleware
+  const authenticateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { id: number; username: string };
+      
+      // Verify admin exists
+      const admin = await db.query.adminUsers.findFirst({
+        where: eq(adminUsers.id, decoded.id)
+      });
+
+      if (!admin) {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+
+      req.user = decoded;
+      next();
+    } catch (error) {
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  };
+
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { username, password } = req.body;
       
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
       }
 
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      const admin = await db.query.adminUsers.findFirst({
+        where: eq(adminUsers.username, username)
+      });
+
+      if (!admin) {
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await bcrypt.compare(password, admin.password);
       if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      req.session.userId = user.id;
+      // Update last login
+      await db.update(adminUsers)
+        .set({ lastLogin: new Date() })
+        .where(eq(adminUsers.id, admin.id));
+
+      const token = jwt.sign(
+        { id: admin.id, username: admin.username },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+
       res.json({ 
+        token,
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin
+          id: admin.id,
+          username: admin.username
         }
       });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -101,27 +156,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/me", async (req: any, res) => {
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
+  app.get("/api/auth/me", authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const user = await storage.getUser(req.session.userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      const admin = await db.query.adminUsers.findFirst({
+        where: eq(adminUsers.id, req.user!.id)
+      });
+
+      if (!admin) {
+        return res.status(404).json({ error: 'User not found' });
       }
 
       res.json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin
-        }
+        id: admin.id,
+        username: admin.username,
+        lastLogin: admin.lastLogin
       });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -720,6 +772,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Internal server error" });
       }
+    }
+  });
+
+  // Educational content routes
+  app.get("/api/educational-content", async (req, res) => {
+    try {
+      const content = await db.query.educationalContent.findMany({
+        where: (content, { eq }) => eq(content.isActive, true),
+        orderBy: (content, { asc }) => [asc(content.category), asc(content.id)]
+      });
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching educational content:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Create initial admin user if none exists
+  const createInitialAdmin = async () => {
+    try {
+      const adminExists = await db.query.adminUsers.findFirst();
+      if (!adminExists) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await db.insert(adminUsers).values({
+          username: 'admin',
+          password: hashedPassword,
+        });
+        console.log('Initial admin user created');
+      }
+    } catch (error) {
+      console.error('Error creating initial admin:', error);
+    }
+  };
+
+  // Call this when the server starts
+  createInitialAdmin();
+
+  // Protect all admin routes
+  app.use('/api/admin/*', authenticateAdmin);
+
+  // Protected admin route example
+  app.get('/api/admin/dashboard', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Add your admin dashboard data here
+      res.json({ message: 'Welcome to admin dashboard' });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

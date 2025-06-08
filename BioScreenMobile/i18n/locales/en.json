@@ -15,8 +15,13 @@
     "age": "Age",
     "you": "You"
   },
+  "language": {
+    "switchTo": "العربية",
+    "current": "English"
+  },
   "navigation": {
     "home": "Home",
+    "upcoming": "Upcoming Tests",
     "completed": "Completed",
     "profile": "Profile",
     "admin": "Admin"
@@ -49,11 +54,26 @@
     "afternoonGreeting": "Good afternoon, {{name}}!",
     "eveningGreeting": "Good evening, {{name}}!",
     "greetingDefault": "Welcome!",
+    "manageHealth": "Manage your health",
     "screeningsFor": "Screenings for",
+    "testStatus": "Test Status",
     "due": "Due Now",
     "overdue": "Overdue",
     "later": "Later",
     "completed": "Completed",
+    "healthTips": "Health Tips",
+    "readMore": "Read More",
+    "defaultTipTitle": "Stay Healthy",
+    "defaultTipContent": "Regular health screenings are important for early detection and prevention of diseases. Follow your recommended screening schedule.",
+    "quickActions": "Quick Actions",
+    "addFamily": "Add Family",
+    "manageFamilyMembers": "Manage family members",
+    "upcomingTests": "Upcoming Tests",
+    "viewScheduledTests": "View scheduled tests",
+    "completedTests": "Completed Tests",
+    "viewTestHistory": "View test history",
+    "addResult": "Add Result",
+    "recordTestResult": "Record test result",
     "tabs": {
       "all": "All",
       "due": "Due",
@@ -204,9 +224,5 @@
     "child": "Child",
     "sibling": "Sibling",
     "other": "Other"
-  },
-  "language": {
-    "switchTo": "العربية",
-    "current": "English"
   }
 }

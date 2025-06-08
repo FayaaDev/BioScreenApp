@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +16,20 @@ import { useToast } from "@/hooks/use-toast";
 import type { Screening, InsertScreening } from "@shared/schema";
 import { useTranslation } from "react-i18next";
 
+interface AdminUser {
+  id: number;
+  username: string;
+  lastLogin: string;
+}
+
 export default function Admin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newScreening, setNewScreening] = useState<InsertScreening>({
     name: "",
@@ -38,6 +48,71 @@ export default function Admin() {
 
   const { data: screenings = [], isLoading: screeningsLoading } = useQuery<Screening[]>({
     queryKey: ["/api/screenings"],
+  });
+
+  // Check authentication status
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(res => {
+        if (res.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem('adminToken');
+        }
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        localStorage.removeItem('adminToken');
+      })
+      .finally(() => {
+        setIsLoadingAuth(false);
+      });
+    } else {
+      setIsAuthenticated(false);
+      setIsLoadingAuth(false);
+    }
+  }, []);
+
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+      
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem('adminToken', data.token);
+      setIsAuthenticated(true);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      toast({
+        title: "تم تسجيل الدخول بنجاح",
+        description: "مرحباً بك في لوحة الإدارة",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد",
+        variant: "destructive",
+      });
+    },
   });
 
   const createScreeningMutation = useMutation({
@@ -121,6 +196,18 @@ export default function Admin() {
     },
   });
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate({ username, password });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsAuthenticated(false);
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    setLocation('/');
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -187,11 +274,99 @@ export default function Admin() {
     },
   ] : [];
 
+  // Add authorization header to all API requests
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      // Add token to all fetch requests
+      const originalFetch = window.fetch;
+      window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+        if (init) {
+          init.headers = {
+            ...init.headers,
+            'Authorization': `Bearer ${token}`
+          };
+        } else {
+          init = {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          };
+        }
+        return originalFetch(input, init);
+      };
+    }
+  }, []);
+
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>جاري التحميل...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" dir="rtl">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Shield className="w-6 h-6" style={{color: '#008553'}} />
+              <h2 className="text-2xl font-bold" style={{color: '#008553'}}>
+                تسجيل دخول الإدارة
+              </h2>
+            </div>
+          </div>
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <div className="rounded-md shadow-sm -space-y-px">
+              <div>
+                <Label htmlFor="username">اسم المستخدم</Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="mt-4">
+                <Label htmlFor="password">كلمة المرور</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loginMutation.isPending}
+                style={{backgroundColor: '#008553'}}
+              >
+                {loginMutation.isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-4" dir="rtl">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <Button
             variant="ghost"
             onClick={() => setLocation("/")}
@@ -199,6 +374,13 @@ export default function Admin() {
           >
             <ArrowLeft className="w-4 h-4" />
             العودة للرئيسية
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="flex items-center gap-2"
+          >
+            تسجيل الخروج
           </Button>
         </div>
 
