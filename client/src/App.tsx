@@ -13,6 +13,7 @@ import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { initializeMobileApp } from "@/lib/capacitor";
+import i18n from "./i18n";
 
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -53,6 +54,12 @@ function App() {
   // Initialize mobile app features when running as native app
   useEffect(() => {
     initializeMobileApp();
+    // Set default language and RTL
+    i18n.changeLanguage('ar');
+    document.documentElement.dir = 'rtl';
+    console.log('Setting RTL to: true');
+    console.log('Current language: ar');
+    console.log('App layout – current language: ar');
   }, []);
 
   return (

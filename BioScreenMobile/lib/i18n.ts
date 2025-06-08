@@ -10,9 +10,11 @@ import arTranslations from '../i18n/locales/ar.json';
 // Initialize i18n with async configuration
 const initI18n = async () => {
   try {
-    // Check for saved language preference, default to Arabic
-    const savedLanguage = await AsyncStorage.getItem('healthscreen_language');
-    const defaultLanguage = savedLanguage || 'ar';
+    // Force Arabic as default language
+    const defaultLanguage = 'ar';
+    
+    // Clear any existing language preference and set to Arabic
+    await AsyncStorage.setItem('healthscreen_language', 'ar');
 
     await i18n
       .use(initReactI18next)
@@ -26,7 +28,7 @@ const initI18n = async () => {
           }
         },
         fallbackLng: 'ar',
-        lng: defaultLanguage,
+        lng: 'ar', // Force Arabic as the initial language
         interpolation: {
           escapeValue: false
         },
@@ -35,18 +37,16 @@ const initI18n = async () => {
         }
       });
 
-    // Set RTL based on language
-    const isRTL = defaultLanguage === 'ar';
+    // Force change to Arabic to ensure it's set correctly
+    await i18n.changeLanguage('ar');
+
+    // Set RTL to true for Arabic
+    const isRTL = true;
     console.log('Setting RTL to:', isRTL);
     
-    if (I18nManager.isRTL !== isRTL) {
-      I18nManager.allowRTL(true);
-      if (isRTL) {
-        I18nManager.forceRTL(true);
-      } else {
-        I18nManager.forceRTL(false);
-      }
-    }
+    // Always enable RTL for Arabic
+    I18nManager.allowRTL(true);
+    I18nManager.forceRTL(true);
 
     console.log('Current language:', i18n.language);
   } catch (error) {

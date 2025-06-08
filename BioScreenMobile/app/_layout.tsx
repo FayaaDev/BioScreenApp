@@ -26,14 +26,13 @@ export default function RootLayout() {
   // Initialize RTL based on language
   useEffect(() => {
     const handleLanguageChange = () => {
-      const isRTL = i18n.language === 'ar';
-      console.log('App layout - current language:', i18n.language);
+      // Force Arabic and RTL
+      const isRTL = true;
+      console.log('App layout - current language: ar');
       console.log('Setting RTL to:', isRTL);
       
-      if (I18nManager.isRTL !== isRTL) {
-        I18nManager.allowRTL(true);
-        I18nManager.forceRTL(isRTL);
-      }
+      I18nManager.allowRTL(true);
+      I18nManager.forceRTL(true);
     };
 
     // Handle initial setup

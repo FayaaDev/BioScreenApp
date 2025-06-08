@@ -253,9 +253,19 @@ export default function HomeScreen() {
         </ThemedText>
         
         {educationalContent.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={{ transform: [{ scaleX: -1 }] }}
+          >
             {educationalContent.slice(0, 3).map((content) => (
-              <View key={content.id} style={[styles.educationalCard, { backgroundColor: colors.card }]}>
+              <View 
+                key={content.id} 
+                style={[
+                  styles.educationalCard, 
+                  { backgroundColor: colors.card, transform: [{ scaleX: -1 }] }
+                ]}
+              >
                 <ThemedText style={[styles.educationalTitle, { color: colors.text }]}>
                   {content.title}
                 </ThemedText>
@@ -368,7 +378,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   headerContent: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -376,10 +386,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
+    textAlign: 'right',
   },
   subtitle: {
     fontSize: 16,
     opacity: 0.9,
+    textAlign: 'right',
   },
   profileButton: {
     padding: 8,
@@ -388,6 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
+    textAlign: 'right',
   },
   
   // Stats Section
@@ -427,10 +440,11 @@ const styles = StyleSheet.create({
   educationalSection: {
     paddingHorizontal: 20,
     marginBottom: 30,
+    alignItems: 'flex-end',
   },
   educationalCard: {
     width: width * 0.75,
-    marginRight: 16,
+    marginLeft: 16,
     padding: 20,
     borderRadius: 16,
     shadowColor: '#000',
@@ -443,14 +457,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: 'right',
   },
   educationalContent: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
+    textAlign: 'right',
   },
   readMoreButton: {
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
   },
   readMoreText: {
     fontSize: 14,

@@ -307,7 +307,7 @@ export default function Profile() {
                 <p className="text-sm font-medium text-gray-700">{t("profile.currentLanguage")}</p>
                 <p className="text-xs text-gray-700">{t("language.current")}</p>
               </div>
-              <LanguageSwitcher />
+              {/* <LanguageSwitcher /> */}
             </div>
             
             {/* Reset Profile Button */}

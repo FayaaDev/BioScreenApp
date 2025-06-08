@@ -1,15 +1,14 @@
-import type { Express, Request } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import bcrypt from "bcrypt";
 import { storage } from "./storage";
-import { insertUserSchema, insertScreeningSchema, insertUserScreeningSchema, insertFamilyMemberSchema, insertFamilyMemberScreeningSchema, educationalContent } from "@shared/schema";
+import { insertUserSchema, insertScreeningSchema, insertUserScreeningSchema, insertFamilyMemberSchema, insertFamilyMemberScreeningSchema, educationalContent, insertEducationalContentSchema } from "@shared/schema";
 import { z } from "zod";
 import { db, adminUsers } from './db';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
-import { Request, Response, NextFunction } from 'express';
 
 // Extend session type
 declare module 'express-session' {
@@ -785,6 +784,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(content);
     } catch (error) {
       console.error("Error fetching educational content:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Admin educational content routes
+  app.get("/api/admin/educational-content", authenticateAdmin, async (req, res) => {
+    try {
+      const content = await db.query.educationalContent.findMany({
+        orderBy: (content, { desc }) => [desc(content.createdAt)]
+      });
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching educational content:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/educational-content", authenticateAdmin, async (req, res) => {
+    try {
+      const contentData = insertEducationalContentSchema.parse(req.body);
+      const [newContent] = await db.insert(educationalContent).values({
+        ...contentData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning();
+      res.json(newContent);
+    } catch (error) {
+      console.error("Error creating educational content:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.put("/api/admin/educational-content/:id", authenticateAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertEducationalContentSchema.partial().parse(req.body);
+      
+      const [updatedContent] = await db.update(educationalContent)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(educationalContent.id, id))
+        .returning();
+
+      if (!updatedContent) {
+        res.status(404).json({ message: "Educational content not found" });
+        return;
+      }
+
+      res.json(updatedContent);
+    } catch (error) {
+      console.error("Error updating educational content:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.delete("/api/admin/educational-content/:id", authenticateAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      const [deletedContent] = await db.delete(educationalContent)
+        .where(eq(educationalContent.id, id))
+        .returning();
+
+      if (!deletedContent) {
+        res.status(404).json({ message: "Educational content not found" });
+        return;
+      }
+
+      res.json({ message: "Educational content deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting educational content:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
