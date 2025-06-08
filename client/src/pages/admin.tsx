@@ -32,6 +32,8 @@ export default function Admin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditScreeningDialogOpen, setIsEditScreeningDialogOpen] = useState(false);
+  const [editingScreening, setEditingScreening] = useState<Screening | null>(null);
   const [newScreening, setNewScreening] = useState<InsertScreening>({
     name: "",
     description: "",
@@ -44,7 +46,9 @@ export default function Admin() {
     priority: "recommended",
   });
   const [selectedIcon, setSelectedIcon] = useState<File | null>(null);
+  const [editSelectedIcon, setEditSelectedIcon] = useState<File | null>(null);
   const [isRepeating, setIsRepeating] = useState(true);
+  const [editIsRepeating, setEditIsRepeating] = useState(true);
   const [activeTab, setActiveTab] = useState("screenings");
   
   // Educational content states
@@ -215,6 +219,31 @@ export default function Admin() {
     },
   });
 
+  const updateScreeningMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: number; updates: Partial<InsertScreening> }) => {
+      return await apiRequest("PUT", `/api/screenings/${id}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/screenings"] });
+      setIsEditScreeningDialogOpen(false);
+      setEditingScreening(null);
+      setEditSelectedIcon(null);
+      setEditIsRepeating(true);
+      toast({
+        title: "تم التحديث بنجاح",
+        description: "تم تحديث الفحص الطبي",
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating screening:", error);
+      toast({
+        title: "خطأ",
+        description: "فشل في تحديث الفحص الطبي",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Educational content mutations
   const createEducationalContentMutation = useMutation({
     mutationFn: async (content: InsertEducationalContent) => {
@@ -380,6 +409,69 @@ export default function Admin() {
     });
   };
 
+  const handleEditScreening = (screening: Screening) => {
+    setEditingScreening(screening);
+    setEditIsRepeating(screening.frequencyYears > 0);
+    setIsEditScreeningDialogOpen(true);
+  };
+
+  const handleUpdateScreening = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingScreening) return;
+    
+    if (!editingScreening.name || !editingScreening.description || !editingScreening.category) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let updatedScreening = { ...editingScreening };
+    
+    // Set frequency to 0 if not repeating
+    if (!editIsRepeating) {
+      updatedScreening.frequencyYears = 0;
+    }
+    
+    // Handle icon upload if a new file is selected
+    if (editSelectedIcon) {
+      try {
+        const formData = new FormData();
+        formData.append('icon', editSelectedIcon);
+        
+        const uploadResponse = await fetch('/api/upload-icon', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload icon');
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        updatedScreening.iconUrl = uploadResult.iconUrl;
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: "فشل في رفع الأيقونة",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Remove the id field for the update
+    const { id, ...updates } = updatedScreening;
+    
+    updateScreeningMutation.mutate({
+      id: editingScreening.id,
+      updates
+    });
+  };
+
   const statsData = screenings && screenings.length > 0 ? [
     {
       title: "إجمالي الفحوصات",
@@ -446,34 +538,35 @@ export default function Admin() {
                 تسجيل دخول الإدارة
               </h2>
             </div>
-          </div>
-          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <Label htmlFor="username">اسم المستخدم</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="mt-1"
-                />
+          </div>            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+              <div className="rounded-md shadow-sm space-y-4">
+                <div>
+                  <Label htmlFor="username" className="text-right block">اسم المستخدم</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="mt-1 text-right"
+                    dir="rtl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password" className="text-right block">كلمة المرور</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 text-right"
+                    dir="rtl"
+                  />
+                </div>
               </div>
-              <div className="mt-4">
-                <Label htmlFor="password">كلمة المرور</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-            </div>
 
             <div>
               <Button
@@ -498,18 +591,18 @@ export default function Admin() {
         <div className="flex items-center justify-between gap-4 mb-6">
           <Button
             variant="ghost"
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            العودة للرئيسية
-          </Button>
-          <Button
-            variant="ghost"
             onClick={handleLogout}
             className="flex items-center gap-2"
           >
             تسجيل الخروج
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="flex items-center gap-2 flex-row-reverse"
+          >
+            <ArrowLeft className="w-4 h-4 rotate-180" />
+            العودة للرئيسية
           </Button>
         </div>
 
@@ -559,7 +652,17 @@ export default function Admin() {
             <TabsContent value="screenings">
               {/* Screenings content */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">الفحوصات الحالية</h3>
+                <div className="flex justify-between items-center mb-4 flex-row-reverse">
+                  <h3 className="text-lg font-semibold">الفحوصات الحالية</h3>
+                  <Button 
+                    onClick={() => setIsAddDialogOpen(true)} 
+                    style={{backgroundColor: '#008553'}}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    إضافة فحص طبي جديد
+                  </Button>
+                </div>
                 
                 {screeningsLoading ? (
                   <div className="text-center py-8">
@@ -576,30 +679,12 @@ export default function Admin() {
                     {screenings.map((screening: Screening) => (
                       <Card key={screening.id} className="p-4">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold">{screening.name}</h4>
-                              <Badge variant={screening.isActive ? "default" : "secondary"}>
-                                {screening.isActive ? "نشط" : "غير نشط"}
-                              </Badge>
-                              <Badge variant={
-                                screening.priority === "strongly_recommended" ? "destructive" :
-                                screening.priority === "recommended" ? "default" : "secondary"
-                              }>
-                                {screening.priority === "strongly_recommended" ? "موصى به بشدة" :
-                                 screening.priority === "recommended" ? "موصى به" : "اختياري"}
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-2">{screening.description}</p>
-                            <div className="flex gap-4 text-xs text-gray-500">
-                              <span>الفئة: {screening.category}</span>
-                              <span>الجنس: {screening.genderApplicable}</span>
-                              <span>العمر: {screening.startAge}{screening.endAge ? `-${screening.endAge}` : '+'}</span>
-                              <span>التكرار: كل {screening.frequencyYears} سنة</span>
-                            </div>
-                          </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleEditScreening(screening)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button 
@@ -610,6 +695,40 @@ export default function Admin() {
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
+                          </div>
+                          <div className="flex-1 mr-4">
+                            <div className="mb-2 text-right">
+                              <h4 className="font-semibold text-right mb-2">{screening.name}</h4>
+                              <div className="flex items-center gap-2 justify-end">
+                                <Badge 
+                                  variant={screening.isActive ? "default" : "secondary"}
+                                  className={screening.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"}
+                                >
+                                  {screening.isActive ? "نشط" : "غير نشط"}
+                                </Badge>
+                                <Badge 
+                                  variant={
+                                    screening.priority === "strongly_recommended" ? "destructive" :
+                                    screening.priority === "recommended" ? "default" : "secondary"
+                                  }
+                                  className={
+                                    screening.priority === "strongly_recommended" ? "bg-red-100 text-red-800 border-red-200" :
+                                    screening.priority === "recommended" ? "bg-blue-100 text-blue-800 border-blue-200" : 
+                                    "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                  }
+                                >
+                                  {screening.priority === "strongly_recommended" ? "موصى به بشدة" :
+                                   screening.priority === "recommended" ? "موصى به" : "اختياري"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-2 text-right">{screening.description}</p>
+                            <div className="flex gap-4 text-xs text-gray-500 justify-end">
+                              <span>التكرار: كل {screening.frequencyYears} سنة</span>
+                              <span>العمر: {screening.startAge}{screening.endAge ? `-${screening.endAge}` : '+'}</span>
+                              <span>الجنس: {screening.genderApplicable}</span>
+                              <span>الفئة: {screening.category}</span>
+                            </div>
                           </div>
                         </div>
                       </Card>
@@ -622,13 +741,14 @@ export default function Admin() {
             <TabsContent value="educationalContent">
               {/* Educational content */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">المحتوى التعليمي</h3>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-4 flex-row-reverse">
+                  <h3 className="text-lg font-semibold">المحتوى التعليمي</h3>
                   <Button 
                     onClick={() => setIsAddEducationalDialogOpen(true)} 
                     style={{backgroundColor: '#008553'}}
+                    className="flex items-center gap-2"
                   >
-                    <Plus className="w-4 h-4 ml-2" />
+                    <Plus className="w-4 h-4" />
                     إضافة محتوى تعليمي جديد
                   </Button>
                 </div>
@@ -648,18 +768,6 @@ export default function Admin() {
                     {educationalContent.map((content) => (
                       <Card key={content.id} className="p-4">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold">{content.title}</h4>
-                              <Badge variant={content.isActive ? "default" : "secondary"}>
-                                {content.isActive ? "نشط" : "غير نشط"}
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-2">{content.content}</p>
-                            <div className="flex gap-4 text-xs text-gray-500">
-                              <span>الفئة: {content.category}</span>
-                            </div>
-                          </div>
                           <div className="flex gap-2">
                             <Button 
                               size="sm" 
@@ -679,6 +787,23 @@ export default function Admin() {
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
+                          </div>
+                          <div className="flex-1 text-right mr-4">
+                            <div className="mb-2 text-right">
+                              <h4 className="font-semibold text-right mb-2">{content.title}</h4>
+                              <div className="flex items-center gap-2 justify-end">
+                                <Badge 
+                                  variant={content.isActive ? "default" : "secondary"}
+                                  className={content.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"}
+                                >
+                                  {content.isActive ? "نشط" : "غير نشط"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-2 text-right">{content.content}</p>
+                            <div className="flex gap-4 text-xs text-gray-500 justify-end">
+                              <span>الفئة: {content.category}</span>
+                            </div>
                           </div>
                         </div>
                       </Card>
@@ -706,6 +831,8 @@ export default function Admin() {
                     value={newEducationalContent.title}
                     onChange={(e) => setNewEducationalContent({...newEducationalContent, title: e.target.value})}
                     placeholder="مثال: أهمية فحص ضغط الدم"
+                    className="text-right"
+                    dir="rtl"
                     required
                   />
                 </div>
@@ -736,33 +863,35 @@ export default function Admin() {
                   onChange={(e) => setNewEducationalContent({...newEducationalContent, content: e.target.value})}
                   placeholder="محتوى تعليمي مفصل حول الفحص وأهميته..."
                   rows={3}
+                  className="text-right"
+                  dir="rtl"
                   required
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Label htmlFor="isActive">نشط</Label>
                 <Checkbox 
                   id="isActive"
                   checked={newEducationalContent.isActive}
                   onCheckedChange={(checked) => setNewEducationalContent({...newEducationalContent, isActive: checked === true})}
                 />
-                <Label htmlFor="isActive">نشط</Label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAddEducationalDialogOpen(false)}
-                >
-                  إلغاء
-                </Button>
+              <div className="flex justify-end gap-2 pt-4 flex-row-reverse">
                 <Button 
                   type="submit" 
                   disabled={createEducationalContentMutation.isPending}
                   style={{backgroundColor: '#008553'}}
                 >
                   {createEducationalContentMutation.isPending ? "جاري الإضافة..." : "إضافة المحتوى التعليمي"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddEducationalDialogOpen(false)}
+                >
+                  إلغاء
                 </Button>
               </div>
             </form>
@@ -785,6 +914,8 @@ export default function Admin() {
                       value={editingEducationalContent.title}
                       onChange={(e) => setEditingEducationalContent({...editingEducationalContent, title: e.target.value})}
                       placeholder="مثال: أهمية فحص ضغط الدم"
+                      className="text-right"
+                      dir="rtl"
                       required
                     />
                   </div>
@@ -815,27 +946,22 @@ export default function Admin() {
                     onChange={(e) => setEditingEducationalContent({...editingEducationalContent, content: e.target.value})}
                     placeholder="محتوى تعليمي مفصل حول الفحص وأهميته..."
                     rows={3}
+                    className="text-right"
+                    dir="rtl"
                     required
                   />
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <Label htmlFor="isActive">نشط</Label>
                   <Checkbox 
                     id="isActive"
                     checked={editingEducationalContent.isActive}
                     onCheckedChange={(checked) => setEditingEducationalContent({...editingEducationalContent, isActive: checked === true})}
                   />
-                  <Label htmlFor="isActive">نشط</Label>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsEditEducationalDialogOpen(false)}
-                  >
-                    إلغاء
-                  </Button>
+                <div className="flex justify-end gap-2 pt-4 flex-row-reverse">
                   <Button 
                     type="submit" 
                     disabled={updateEducationalContentMutation.isPending}
@@ -843,9 +969,399 @@ export default function Admin() {
                   >
                     {updateEducationalContentMutation.isPending ? "جاري التعديل..." : "تحديث المحتوى التعليمي"}
                   </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsEditEducationalDialogOpen(false)}
+                  >
+                    إلغاء
+                  </Button>
                 </div>
               </form>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Screening Dialog */}
+        <Dialog open={isEditScreeningDialogOpen} onOpenChange={setIsEditScreeningDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>تعديل الفحص الطبي</DialogTitle>
+            </DialogHeader>
+            
+            {editingScreening && (
+              <form onSubmit={handleUpdateScreening} className="space-y-4 pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-name">اسم الفحص *</Label>
+                    <Input
+                      id="edit-name"
+                      value={editingScreening.name}
+                      onChange={(e) => setEditingScreening({...editingScreening, name: e.target.value})}
+                      placeholder="مثال: فحص ضغط الدم"
+                      className="text-right"
+                      dir="rtl"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="edit-category">الفئة *</Label>
+                    <Select 
+                      value={editingScreening.category} 
+                      onValueChange={(value) => setEditingScreening({...editingScreening, category: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر الفئة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cardiovascular">القلب والأوعية الدموية</SelectItem>
+                        <SelectItem value="cancer screening">فحص السرطان</SelectItem>
+                        <SelectItem value="bone health">صحة العظام</SelectItem>
+                        <SelectItem value="vision/hearing">النظر والسمع</SelectItem>
+                        <SelectItem value="vaccinations">التطعيمات</SelectItem>
+                        <SelectItem value="preventive">وقائي</SelectItem>
+                        <SelectItem value="general">عام</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-description">الوصف *</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editingScreening.description}
+                    onChange={(e) => setEditingScreening({...editingScreening, description: e.target.value})}
+                    placeholder="وصف الفحص وأهميته"
+                    className="min-h-[100px] text-right"
+                    dir="rtl"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-gender">الجنس المطبق عليه</Label>
+                    <Select 
+                      value={editingScreening.genderApplicable} 
+                      onValueChange={(value: "male" | "female" | "both") => setEditingScreening({...editingScreening, genderApplicable: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="both">كلاهما</SelectItem>
+                        <SelectItem value="male">ذكور فقط</SelectItem>
+                        <SelectItem value="female">إناث فقط</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-startAge">العمر المبدئي *</Label>
+                    <Input
+                      id="edit-startAge"
+                      type="number"
+                      value={editingScreening.startAge}
+                      onChange={(e) => setEditingScreening({...editingScreening, startAge: parseInt(e.target.value)})}
+                      min="0"
+                      max="120"
+                      className="text-right"
+                      dir="rtl"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-endAge">العمر النهائي (اختياري)</Label>
+                    <Input
+                      id="edit-endAge"
+                      type="number"
+                      value={editingScreening.endAge || ''}
+                      onChange={(e) => setEditingScreening({...editingScreening, endAge: e.target.value ? parseInt(e.target.value) : null})}
+                      min="0"
+                      max="120"
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-priority">الأولوية</Label>
+                    <Select 
+                      value={editingScreening.priority} 
+                      onValueChange={(value: "strongly_recommended" | "recommended" | "optional") => setEditingScreening({...editingScreening, priority: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="strongly_recommended">موصى به بشدة</SelectItem>
+                        <SelectItem value="recommended">موصى به</SelectItem>
+                        <SelectItem value="optional">اختياري</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 flex-row-reverse">
+                  <Label htmlFor="edit-repeating">هل يتكرر هذا الفحص؟</Label>
+                  <Checkbox 
+                    id="edit-repeating"
+                    checked={editIsRepeating}
+                    onCheckedChange={(checked) => setEditIsRepeating(checked === true)}
+                  />
+                </div>
+
+                {editIsRepeating && (
+                  <div>
+                    <Label htmlFor="edit-frequency">التكرار (بالسنوات)</Label>
+                    <Input
+                      id="edit-frequency"
+                      type="number"
+                      value={editingScreening.frequencyYears}
+                      onChange={(e) => setEditingScreening({...editingScreening, frequencyYears: parseInt(e.target.value)})}
+                      min="1"
+                      max="50"
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="edit-icon">أيقونة الفحص (اختياري)</Label>
+                  <Input
+                    id="edit-icon"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditSelectedIcon(e.target.files?.[0] || null)}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                  {editingScreening.iconUrl && !editSelectedIcon && (
+                    <div className="mt-2">
+                      <img 
+                        src={editingScreening.iconUrl} 
+                        alt="Current icon" 
+                        className="w-16 h-16 object-contain"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">الأيقونة الحالية</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 flex-row-reverse">
+                  <Button 
+                    type="submit" 
+                    disabled={updateScreeningMutation.isPending}
+                    style={{backgroundColor: '#008553'}}
+                  >
+                    {updateScreeningMutation.isPending ? "جاري التحديث..." : "تحديث الفحص"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditScreeningDialogOpen(false);
+                      setEditingScreening(null);
+                      setEditSelectedIcon(null);
+                    }}
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Screening Dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>إضافة فحص طبي جديد</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">اسم الفحص *</Label>
+                  <Input
+                    id="name"
+                    value={newScreening.name}
+                    onChange={(e) => setNewScreening({...newScreening, name: e.target.value})}
+                    placeholder="مثال: فحص ضغط الدم"
+                    className="text-right"
+                    dir="rtl"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="category">الفئة *</Label>
+                  <Select 
+                    value={newScreening.category} 
+                    onValueChange={(value) => setNewScreening({...newScreening, category: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر الفئة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cardiovascular">القلب والأوعية الدموية</SelectItem>
+                      <SelectItem value="cancer screening">فحص السرطان</SelectItem>
+                      <SelectItem value="bone health">صحة العظام</SelectItem>
+                      <SelectItem value="vision/hearing">النظر والسمع</SelectItem>
+                      <SelectItem value="vaccinations">التطعيمات</SelectItem>
+                      <SelectItem value="preventive">وقائي</SelectItem>
+                      <SelectItem value="general">عام</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description">الوصف *</Label>
+                <Textarea
+                  id="description"
+                  value={newScreening.description}
+                  onChange={(e) => setNewScreening({...newScreening, description: e.target.value})}
+                  placeholder="وصف مفصل للفحص وأهميته..."
+                  rows={3}
+                  className="text-right"
+                  dir="rtl"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="genderApplicable">الجنس المطبق عليه</Label>
+                  <Select 
+                    value={newScreening.genderApplicable} 
+                    onValueChange={(value: "male" | "female" | "both") => setNewScreening({...newScreening, genderApplicable: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="both">الجنسين</SelectItem>
+                      <SelectItem value="male">الرجال فقط</SelectItem>
+                      <SelectItem value="female">النساء فقط</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="startAge">العمر المبدئي</Label>
+                  <Input
+                    id="startAge"
+                    type="number"
+                    value={newScreening.startAge}
+                    onChange={(e) => setNewScreening({...newScreening, startAge: parseInt(e.target.value) || 18})}
+                    min="0"
+                    max="100"
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="endAge">العمر النهائي (اختياري)</Label>
+                  <Input
+                    id="endAge"
+                    type="number"
+                    value={newScreening.endAge || ''}
+                    onChange={(e) => setNewScreening({...newScreening, endAge: e.target.value ? parseInt(e.target.value) : null})}
+                    min="0"
+                    max="120"
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="priority">الأولوية</Label>
+                  <Select 
+                    value={newScreening.priority} 
+                    onValueChange={(value: "strongly_recommended" | "recommended" | "optional") => setNewScreening({...newScreening, priority: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="strongly_recommended">موصى به بشدة</SelectItem>
+                      <SelectItem value="recommended">موصى به</SelectItem>
+                      <SelectItem value="optional">اختياري</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <div className="flex items-center space-x-2 space-x-reverse mb-2">
+                    <Label htmlFor="isRepeating">فحص متكرر</Label>
+                    <Checkbox 
+                      id="isRepeating"
+                      checked={isRepeating}
+                      onCheckedChange={(checked) => setIsRepeating(checked === true)}
+                    />
+                  </div>
+                  
+                  {isRepeating && (
+                    <div>
+                      <Label htmlFor="frequencyYears">التكرار (بالسنوات)</Label>
+                      <Input
+                        id="frequencyYears"
+                        type="number"
+                        value={newScreening.frequencyYears}
+                        onChange={(e) => setNewScreening({...newScreening, frequencyYears: parseInt(e.target.value) || 1})}
+                        min="1"
+                        max="10"
+                        className="text-right"
+                        dir="rtl"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="icon">أيقونة الفحص (اختياري)</Label>
+                <Input
+                  id="icon"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                {selectedIcon && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    تم اختيار: {selectedIcon.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 flex-row-reverse">
+                <Button 
+                  type="submit" 
+                  disabled={createScreeningMutation.isPending}
+                  style={{backgroundColor: '#008553'}}
+                >
+                  {createScreeningMutation.isPending ? "جاري الإضافة..." : "إضافة الفحص الطبي"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
