@@ -17,8 +17,8 @@
   },
   "navigation": {
     "home": "الرئيسية",
-    "upcoming": "الفحوصات القادمة",
-    "completed": "الفحوصات المكتملة",
+    "upcoming": " أحجز",
+    "completed": "مكتمل ",
     "profile": "الملف الشخصي",
     "admin": "لوحة الإدارة"
   },

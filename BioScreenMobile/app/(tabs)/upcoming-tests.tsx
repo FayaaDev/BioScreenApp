@@ -421,14 +421,6 @@ export default function UpcomingTests() {
         </ScrollView>
       </View>
 
-      {/* Stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.due}</Text><Text style={styles.statLabel}>حالا</Text></View>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.overdue}</Text><Text style={styles.statLabel}>متأخر</Text></View>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.later}</Text><Text style={styles.statLabel}>لاحقاً</Text></View>
-        <View style={styles.statBox}><Text style={styles.statNumber}>{stats.completed}</Text><Text style={styles.statLabel}>مكتملة</Text></View>
-      </View>
-
       {/* Tabs */}
       <View style={styles.tabsRow}>
         {tabOptions.map(tab => (
@@ -527,28 +519,6 @@ const styles = StyleSheet.create({
   familyButtonSelectedText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  statBox: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#22c55e',
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 2,
   },
   tabsRow: {
     flexDirection: 'row',

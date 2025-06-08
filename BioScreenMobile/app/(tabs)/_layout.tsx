@@ -47,20 +47,11 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="index"
+        name="profile"
         options={{
-          title: t('navigation.home'),
+          title: t('navigation.profile'),
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="home" size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="upcoming-tests"
-        options={{
-          title: t('navigation.upcoming'),
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="calendar-clock" size={24} color={color} />
+            <Ionicons name="person-circle-outline" size={24} color={color} />
           ),
         }}
       />
@@ -74,11 +65,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="upcoming-tests"
         options={{
-          title: t('navigation.profile'),
+          title: t('navigation.upcoming'),
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person-circle-outline" size={24} color={color} />
+            <MaterialCommunityIcons name="calendar-clock" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: t('navigation.home'),
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home" size={24} color={color} />
           ),
         }}
       />
