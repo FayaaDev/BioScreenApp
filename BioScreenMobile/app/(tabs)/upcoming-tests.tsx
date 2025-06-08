@@ -90,7 +90,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   } else if (screening.status === 'due') {
-    statusLabel = 'حالا';
+    statusLabel = 'حالاً';
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -367,7 +367,7 @@ export default function UpcomingTests() {
   // Tabs logic
   const tabOptions = [
     { key: 'all', label: 'الكل', color: undefined },
-    { key: 'due', label: 'حالا', color: STATUS_COLORS.due },
+    { key: 'due', label: 'حالاً', color: STATUS_COLORS.due },
     { key: 'overdue', label: 'متأخر', color: STATUS_COLORS.overdue },
     { key: 'later', label: 'لاحقاً', color: STATUS_COLORS.later },
     //{ key: 'completed', label: 'مكتملة', color: STATUS_COLORS.completed },

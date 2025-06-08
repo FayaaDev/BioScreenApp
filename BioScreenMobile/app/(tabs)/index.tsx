@@ -208,7 +208,7 @@ export default function HomeScreen() {
               {stats?.dueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
-              حالا
+              حالاً
             </Text>
           </View>
           <View style={styles.statBox}>
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statNumberDue: {
-    color: '#3b82f6', // Blue for حالا (due)
+    color: '#3b82f6', // Blue for حالاً (due)
   },
   statNumberOverdue: {
     color: '#ef4444', // Red for متأخر (overdue)
