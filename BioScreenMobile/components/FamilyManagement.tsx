@@ -26,6 +26,21 @@ interface FamilyMember {
   gender: string;
   dateOfBirth: string;
   createdAt: string;
+  // Medical survey fields
+  isDiabetic: boolean;
+  isHypertensive: boolean;
+  isSmoker: boolean;
+  smokingDetails?: {
+    amount: string;
+    duration: string;
+  };
+  height: string;
+  weight: string;
+  isPregnant?: boolean;
+  isSexuallyActive: boolean;
+  sexualActivityDetails?: {
+    partnerCount: 'single' | 'multiple';
+  };
 }
 
 const relationshipOptions = [
@@ -47,6 +62,21 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     relationship: '',
     gender: '',
     dateOfBirth: '',
+    // Medical survey fields
+    isDiabetic: false,
+    isHypertensive: false,
+    isSmoker: false,
+    smokingDetails: {
+      amount: '',
+      duration: '',
+    },
+    height: '',
+    weight: '',
+    isPregnant: false,
+    isSexuallyActive: false,
+    sexualActivityDetails: {
+      partnerCount: 'single' as 'single' | 'multiple',
+    },
   });
   const [isRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -103,7 +133,26 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   });
 
   const resetForm = () => {
-    setFormData({ name: '', relationship: '', gender: '', dateOfBirth: '' });
+    setFormData({
+      name: '',
+      relationship: '',
+      gender: '',
+      dateOfBirth: '',
+      isDiabetic: false,
+      isHypertensive: false,
+      isSmoker: false,
+      smokingDetails: {
+        amount: '',
+        duration: '',
+      },
+      height: '',
+      weight: '',
+      isPregnant: false,
+      isSexuallyActive: false,
+      sexualActivityDetails: {
+        partnerCount: 'single',
+      },
+    });
   };
 
   const handleSubmit = () => {
@@ -125,6 +174,15 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       relationship: member.relationship,
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
+      isDiabetic: member.isDiabetic ?? false,
+      isHypertensive: member.isHypertensive ?? false,
+      isSmoker: member.isSmoker ?? false,
+      smokingDetails: member.smokingDetails ?? { amount: '', duration: '' },
+      height: member.height ?? '',
+      weight: member.weight ?? '',
+      isPregnant: member.isPregnant ?? false,
+      isSexuallyActive: member.isSexuallyActive ?? false,
+      sexualActivityDetails: member.sexualActivityDetails ?? { partnerCount: 'single' },
     });
     setIsModalOpen(true);
   };
@@ -140,6 +198,37 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     await AsyncStorage.setItem('selectedPersonId', id);
     if (onSwitchPerson) onSwitchPerson(id);
     showToast({ title: 'تم التبديل', type: 'info' });
+  };
+
+  const validateForm = () => {
+    const errors: string[] = [];
+    if (!formData.name.trim()) errors.push('الاسم مطلوب');
+    if (!formData.relationship) errors.push('العلاقة مطلوبة');
+    if (!formData.gender) errors.push('الجنس مطلوب');
+    if (!formData.dateOfBirth) errors.push('تاريخ الميلاد مطلوب');
+    if (!formData.height.trim()) errors.push('الطول مطلوب');
+    if (!formData.weight.trim()) errors.push('الوزن مطلوب');
+    return errors;
+  };
+
+  const calculateBMI = (height: string, weight: string): number | null => {
+    const heightCm = parseFloat(height);
+    const weightKg = parseFloat(weight);
+    if (isNaN(heightCm) || isNaN(weightKg) || heightCm <= 0 || weightKg <= 0) {
+      return null;
+    }
+    const heightM = heightCm / 100;
+    return weightKg / (heightM * heightM);
+  };
+
+  const getBMICategory = (bmi: number): string => {
+    if (bmi < 18.4) return 'نقص في الوزن';
+    if (18.5 <= bmi && bmi < 24.9) return 'وزنك طبيعي';
+    if (25 <= bmi && bmi < 29.9) return 'مرحلة ماقبل السمنة';
+    if (30 <= bmi && bmi < 34.9) return 'سمنة درجة أولى';
+    if (35 <= bmi && bmi < 39.9) return 'سمنة درجة ثانية';
+    if (bmi > 40) return 'سمنة مفرطة درجة ثالثة';
+    return 'حاول مرة أخرى';
   };
 
   return (
@@ -305,6 +394,180 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   }}
                   maximumDate={new Date()}
                 />
+              )}
+            </View>
+            {/* Medical Survey Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>البيانات الصحية</Text>
+              
+              {/* Height and Weight with BMI */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>الطول (سم)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.height}
+                  onChangeText={(text) => {
+                    setFormData(prev => ({ ...prev, height: text }));
+                  }}
+                  keyboardType="numeric"
+                  placeholder="مثال: 170"
+                />
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>الوزن (كجم)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.weight}
+                  onChangeText={(text) => {
+                    setFormData(prev => ({ ...prev, weight: text }));
+                  }}
+                  keyboardType="numeric"
+                  placeholder="مثال: 70"
+                />
+              </View>
+              {formData.height && formData.weight && calculateBMI(formData.height, formData.weight) && (
+                <View style={styles.bmiBox}>
+                  <Text style={styles.bmiLabel}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text style={styles.bmiValue}>{calculateBMI(formData.height, formData.weight)?.toFixed(1)}</Text>
+                  <Text style={styles.bmiCategoryText}>{getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.medicalSurveyContainer}>
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isDiabetic: !formData.isDiabetic })}
+                >
+                  {formData.isDiabetic && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بالسكري؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isHypertensive: !formData.isHypertensive })}
+                >
+                  {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isSmoker: !formData.isSmoker })}
+                >
+                  {formData.isSmoker && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل هو/هي مدخن؟</Text>
+              </View>
+
+              {formData.isSmoker && (
+                <View style={styles.smokingDetailsContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="كم عدد السجائر في اليوم؟"
+                    value={formData.smokingDetails.amount}
+                    onChangeText={(text) =>
+                      setFormData({
+                        ...formData,
+                        smokingDetails: {
+                          ...formData.smokingDetails,
+                          amount: text,
+                        },
+                      })
+                    }
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="منذ متى يدخن؟ (بالسنوات)"
+                    value={formData.smokingDetails.duration}
+                    onChangeText={(text) =>
+                      setFormData({
+                        ...formData,
+                        smokingDetails: {
+                          ...formData.smokingDetails,
+                          duration: text,
+                        },
+                      })
+                    }
+                  />
+                </View>
+              )}
+
+              {formData.gender === 'female' && (
+                <View style={styles.checkboxContainer}>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => setFormData({ ...formData, isPregnant: !formData.isPregnant })}
+                  >
+                    {formData.isPregnant && <MaterialIcons name="check" size={20} color="#008553" />}
+                  </TouchableOpacity>
+                  <Text style={styles.checkboxLabel}>هل هي حامل؟</Text>
+                </View>
+              )}
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isSexuallyActive: !formData.isSexuallyActive })}
+                >
+                  {formData.isSexuallyActive && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل هو/هي نشط جنسياً؟</Text>
+              </View>
+
+              {formData.isSexuallyActive && (
+                <View style={styles.partnerCountContainer}>
+                  <Text style={styles.label}>عدد الشركاء</Text>
+                  <View style={styles.partnerCountButtons}>
+                    <TouchableOpacity
+                      style={[
+                        styles.partnerCountButton,
+                        formData.sexualActivityDetails.partnerCount === 'single' && styles.partnerCountButtonSelected,
+                      ]}
+                      onPress={() =>
+                        setFormData({
+                          ...formData,
+                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'single' },
+                        })
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.partnerCountButtonText,
+                          formData.sexualActivityDetails.partnerCount === 'single' && styles.partnerCountButtonTextSelected,
+                        ]}
+                      >
+                        شريك واحد
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.partnerCountButton,
+                        formData.sexualActivityDetails.partnerCount === 'multiple' && styles.partnerCountButtonSelected,
+                      ]}
+                      onPress={() =>
+                        setFormData({
+                          ...formData,
+                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'multiple' },
+                        })
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.partnerCountButtonText,
+                          formData.sexualActivityDetails.partnerCount === 'multiple' && styles.partnerCountButtonTextSelected,
+                        ]}
+                      >
+                        أكثر من شريك
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               )}
             </View>
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, justifyContent: 'center', alignSelf: 'center' }}>
@@ -505,5 +768,94 @@ const styles = StyleSheet.create({
   },
   genderButtonTextSelected: {
     color: '#fff',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#008553',
+  },
+  medicalSurveyContainer: {
+    gap: 16,
+    width: '100%',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#008553',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  smokingDetailsContainer: {
+    gap: 8,
+    marginLeft: 32,
+  },
+  partnerCountContainer: {
+    marginLeft: 32,
+    gap: 8,
+  },
+  partnerCountButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  partnerCountButton: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#008553',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  partnerCountButtonSelected: {
+    backgroundColor: '#008553',
+  },
+  partnerCountButtonText: {
+    fontSize: 14,
+    color: '#008553',
+  },
+  partnerCountButtonTextSelected: {
+    color: '#fff',
+  },
+  inputContainer: {
+    width: '100%',
+  },
+  bmiBox: {
+    backgroundColor: '#e6faed',
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 12,
+    alignItems: 'flex-start',
+  },
+  bmiLabel: {
+    color: '#009966',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  bmiValue: {
+    color: '#009966',
+    fontWeight: 'bold',
+    fontSize: 28,
+    marginBottom: 4,
+  },
+  bmiCategoryText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  section: {
+    marginTop: 24,
+    width: '100%',
   },
 }); 

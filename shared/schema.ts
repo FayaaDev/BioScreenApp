@@ -11,6 +11,17 @@ export const users = pgTable("users", {
   dateOfBirth: text("date_of_birth").notNull(),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: text("created_at").notNull(),
+  // Medical survey fields
+  isDiabetic: boolean("is_diabetic").default(false),
+  isHypertensive: boolean("is_hypertensive").default(false),
+  isSmoker: boolean("is_smoker").default(false),
+  smokingAmount: text("smoking_amount"),
+  smokingDuration: text("smoking_duration"),
+  height: text("height"),
+  weight: text("weight"),
+  isPregnant: boolean("is_pregnant").default(false),
+  isSexuallyActive: boolean("is_sexually_active").default(false),
+  sexualPartnerCount: varchar("sexual_partner_count", { length: 10 }),
 });
 
 export const screenings = pgTable("screenings", {
@@ -25,6 +36,7 @@ export const screenings = pgTable("screenings", {
   isActive: boolean("is_active").notNull().default(true),
   iconUrl: text("icon_url"), // URL to uploaded icon
   priority: text("priority").notNull().default("recommended"), // 'strongly_recommended', 'recommended'
+  specialCode: text("special_code"), // New field for filtering
 });
 
 export const userScreenings = pgTable("user_screenings", {
@@ -44,6 +56,17 @@ export const familyMembers = pgTable("family_members", {
   gender: varchar("gender", { length: 10 }).notNull(),
   dateOfBirth: text("date_of_birth").notNull(),
   createdAt: text("created_at").notNull(),
+  // Medical survey fields
+  isDiabetic: boolean("is_diabetic").default(false),
+  isHypertensive: boolean("is_hypertensive").default(false),
+  isSmoker: boolean("is_smoker").default(false),
+  smokingAmount: text("smoking_amount"),
+  smokingDuration: text("smoking_duration"),
+  height: text("height"),
+  weight: text("weight"),
+  isPregnant: boolean("is_pregnant").default(false),
+  isSexuallyActive: boolean("is_sexually_active").default(false),
+  sexualPartnerCount: text("sexual_partner_count"),
 });
 
 export const familyMemberScreenings = pgTable("family_member_screenings", {

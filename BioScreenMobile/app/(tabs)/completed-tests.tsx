@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -113,6 +114,18 @@ export default function CompletedTests() {
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await queryClient.invalidateQueries();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient]);
 
   // Load userId from AsyncStorage
   useEffect(() => {
@@ -174,7 +187,7 @@ export default function CompletedTests() {
   if (!userId || isLoading || isLoadingSelectedPerson) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#008553" />
+        <ActivityIndicator size="large" color="#2c9167" />
         <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
       </View>
     );
@@ -187,7 +200,21 @@ export default function CompletedTests() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#f8fffe' }} contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: '#f8fffe' }} 
+      contentContainerStyle={{ paddingBottom: 32 }} 
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#2c9167']} // Android
+          tintColor="#2c9167" // iOS
+          title="جاري التحديث..." // iOS
+          titleColor="#2c9167" // iOS
+        />
+      }
+    >
       <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
@@ -244,7 +271,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#22c55e',
+    color: '#2c9167',
   },
   header: {
     paddingTop: 24,
@@ -278,14 +305,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#22c55e',
+    borderColor: '#2c9167',
   },
   familyButtonSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: '#2c9167',
+    borderColor: '#2c9167',
   },
   familyButtonText: {
-    color: '#22c55e',
+    color: '#2c9167',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {
@@ -317,12 +344,12 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#22c55e',
+    color: '#2c9167',
     marginBottom: 4,
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#666',
+    color: '#2c9167',
   },
   actionButton: {
     backgroundColor: '#ef4444',

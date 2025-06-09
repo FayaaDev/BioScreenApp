@@ -11,12 +11,13 @@ import {
   Platform,
   StatusBar,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { STATUS_COLORS, calculateNextDueDate } from '../../lib/screening-utils';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -125,7 +126,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#16a34a', // green-600
+        color: '#22c55e', // green-600
         backgroundColor: '#f0fdf4', // green-50
         borderRadius: 8,
         paddingHorizontal: 8,
@@ -245,8 +246,24 @@ function filterScreeningsByStatus(screenings: any[], status: string) {
   return screenings.filter((s) => s.status === status);
 }
 
+// Add sorting function for screenings
+function sortScreenings(screenings: Screening[]) {
+  const statusOrder = { due: 0, overdue: 1, later: 2 };
+  return [...screenings].sort((a, b) => {
+    // First sort by status
+    const statusDiff = (statusOrder[a.status as keyof typeof statusOrder] || 0) - (statusOrder[b.status as keyof typeof statusOrder] || 0);
+    if (statusDiff !== 0) return statusDiff;
+
+    // If status is the same, sort by priority
+    const aPriority = a.screening?.priority === 'strongly_recommended' ? 0 : 1;
+    const bPriority = b.screening?.priority === 'strongly_recommended' ? 0 : 1;
+    return aPriority - bPriority;
+  });
+}
+
 export default function UpcomingTests() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
@@ -254,6 +271,14 @@ export default function UpcomingTests() {
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Get initial tab from route params
+  useEffect(() => {
+    if (params?.initialTab) {
+      setActiveTab(params.initialTab as string);
+    }
+  }, [params.initialTab]);
 
   // Load userId from AsyncStorage
   useEffect(() => {
@@ -378,9 +403,21 @@ export default function UpcomingTests() {
   let filteredScreenings = screenings;
   if (activeTab === 'all') {
     filteredScreenings = screenings.filter((s) => s.status !== 'completed');
+    filteredScreenings = sortScreenings(filteredScreenings);
   } else if (activeTab !== 'all') {
     filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
   }
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await queryClient.invalidateQueries();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient]);
 
   // Loading and error states
   if (!userId || isLoading || isLoadingSelectedPerson) {
@@ -399,7 +436,21 @@ export default function UpcomingTests() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#f8fffe' }} contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: '#f8fffe' }} 
+      contentContainerStyle={{ paddingBottom: 32 }} 
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#2c9167']} // Android
+          tintColor="#2c9167" // iOS
+          title="جاري التحديث..." // iOS
+          titleColor="#2c9167" // iOS
+        />
+      }
+    >
       <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `مرحباً، ${currentPersonName}` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
@@ -576,7 +627,7 @@ const styles = StyleSheet.create({
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#666',
+    color: '#22c55e',
   },
   actionButton: {
     backgroundColor: '#22c55e',

@@ -238,7 +238,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create user profile
   app.post("/api/users", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      // Map nested fields to flat fields
+      const mappedBody = {
+        ...req.body,
+        smokingAmount: req.body.smokingDetails?.amount,
+        smokingDuration: req.body.smokingDetails?.duration,
+        sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
+      };
+
+      const userData = insertUserSchema.parse(mappedBody);
       
       // Hash password before storing
       const hashedPassword = await bcrypt.hash(userData.password || "temp_password", 10);
@@ -257,6 +265,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Check if screening applies to this user's gender and age range
         const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === userData.gender;
         const withinAgeRange = screening.endAge === null || userAge <= screening.endAge;
+        
+        // Skip SMK screenings for non-smokers
+          if (screening.specialCode === "SMK" && !userData.isSmoker) {
+            continue;
+          }
+
+          // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
+          if (screening.specialCode === "BMI_DM" && userData.height && userData.weight) {
+            const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
+            if (userBMI <= 24.9) {
+              continue;
+            }
+          }
+
+          // Skip Obesity screening for users with BMI <= 29.9
+          if (screening.specialCode === "BMI_OB" && userData.height && userData.weight) {
+            const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
+            if (userBMI <= 29.9) {
+              continue;
+            }
+          }
+        
+
         
         if (genderMatches && withinAgeRange) {
           // Calculate next due date - always set to January of the target year
@@ -482,9 +513,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter and calculate appropriate screenings
       const applicableScreenings = allScreenings.filter(screening => {
         const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === familyMember.gender;
+        
+        // Skip SMK screenings for non-smokers
+        if (screening.specialCode === "SMK" && !familyMember.isSmoker) {
+          return false;
+        }
+
+        // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
+        if (screening.specialCode === "BMI_DM" && familyMember.height && familyMember.weight) {
+          const memberBMI = (parseFloat(familyMember.weight) / Math.pow(parseFloat(familyMember.height) / 100, 2));
+          if (memberBMI <= 24.9) {
+            return false;
+          }
+        }
+
+        // Skip Obesity screening for users with BMI <= 29.9
+        if (screening.specialCode === "BMI_OB" && familyMember.height && familyMember.weight) {
+          const memberBMI = (parseFloat(familyMember.weight) / Math.pow(parseFloat(familyMember.height) / 100, 2));
+          if (memberBMI <= 29.9) {
+            return false;
+          }
+        }
+        
         // Include all gender-appropriate screenings regardless of age to show "later" screenings
         // We'll filter by age in the status calculation
-        
         return genderMatches;
       }).map(screening => {
         // Check if there's an existing family member screening record
@@ -539,9 +591,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter(screening => screening !== null); // Remove screenings beyond end age
       
+      // Calculate BMI if height and weight are available
+      let bmiInfo = null;
+      if (familyMember.height && familyMember.weight) {
+        const bmi = calculateBMI(parseFloat(familyMember.height), parseFloat(familyMember.weight));
+        bmiInfo = {
+          value: bmi,
+          category: getBMICategory(bmi)
+        };
+      }
+
       res.json({
         familyMember,
-        screenings: applicableScreenings
+        screenings: applicableScreenings,
+        bmiInfo
       });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -950,3 +1013,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Add BMI calculation functions
+const calculateBMI = (heightCm: number, weightKg: number): number => {
+  const heightM = heightCm / 100;
+  return weightKg / (heightM * heightM);
+};
+
+const getBMICategory = (bmi: number): string => {
+  if (bmi < 18.4) return 'نقص في الوزن';
+  if (18.5 <= bmi && bmi < 24.9) return 'وزنك طبيعي';
+  if (25 <= bmi && bmi < 29.9) return 'مرحلة ماقبل السمنة';
+  if (30 <= bmi && bmi < 34.9) return 'سمنة درجة أولى';
+  if (35 <= bmi && bmi < 39.9) return 'سمنة درجة ثانية';
+  if (bmi > 40) return 'سمنة مفرطة درجة ثالثة';
+  return 'حاول مرة أخرى';
+};

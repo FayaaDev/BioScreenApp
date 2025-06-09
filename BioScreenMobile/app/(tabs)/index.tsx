@@ -50,6 +50,24 @@ interface EducationalContent {
   isActive: boolean;
 }
 
+interface UserDataResponse {
+  screenings: any[];
+}
+
+interface FamilyMember {
+  id: number;
+  name: string;
+}
+
+interface FamilyMemberResponse {
+  familyMember: { name: string; dateOfBirth: string; gender: string };
+  screenings: any[];
+  bmiInfo?: {
+    value: number;
+    category: string;
+  };
+}
+
 const { width } = Dimensions.get('window');
 const isRTL = I18nManager.isRTL;
 
@@ -61,6 +79,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', content: '' });
+  const [selectedPersonId, setSelectedPersonId] = useState<string>("user");
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -83,18 +102,61 @@ export default function HomeScreen() {
     loadUser();
   }, []);
 
+  // Load selected person from AsyncStorage
+  useEffect(() => {
+    (async () => {
+      const savedSelectedPerson = await AsyncStorage.getItem('selectedPersonId');
+      if (savedSelectedPerson) {
+        setSelectedPersonId(savedSelectedPerson);
+      }
+    })();
+  }, []);
+
+  // Save selected person to AsyncStorage
+  useEffect(() => {
+    (async () => {
+      if (selectedPersonId) {
+        await AsyncStorage.setItem('selectedPersonId', selectedPersonId);
+      }
+    })();
+  }, [selectedPersonId]);
+
   // Fetch user data with screenings
-  const { data: userDataWithScreenings, isLoading, refetch } = useQuery({
-    queryKey: ['/api/users', userId],
+  const { data: userDataWithScreenings, isLoading, refetch } = useQuery<UserDataResponse>({
+    queryKey: [`/api/users/${userId}`],
     queryFn: () => apiRequest('GET', `/api/users/${userId}`),
     enabled: !!userId,
   });
 
-  // Extract screenings from user data
+  // Fetch family members data
+  const { data: familyMembersData } = useQuery<FamilyMember[]>({
+    queryKey: [`/api/users/${userId}/family`],
+    queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
+    enabled: !!userId,
+  });
+
+  // Fetch selected person's screenings
+  const { data: selectedPersonData } = useQuery({
+    queryKey: selectedPersonId === "user" 
+      ? [`/api/users/${userId}`] 
+      : [`/api/family/${selectedPersonId}/screenings`],
+    queryFn: () =>
+      selectedPersonId === "user"
+        ? apiRequest('GET', `/api/users/${userId}`)
+        : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
+    enabled: !!userId && !!selectedPersonId,
+  });
+
+  // Extract screenings based on selected person
   let screenings: any[] = [];
-  if (userDataWithScreenings && typeof userDataWithScreenings === 'object' && userDataWithScreenings !== null && 'screenings' in userDataWithScreenings) {
-    const userData = userDataWithScreenings as { screenings: any[] };
-    screenings = userData.screenings || [];
+  if (selectedPersonData) {
+    if (selectedPersonId === "user") {
+      const userResponse = selectedPersonData as UserDataResponse;
+      screenings = userResponse.screenings || [];
+    } else {
+      const familyResponse = selectedPersonData as FamilyMemberResponse;
+      screenings = familyResponse.screenings || [];
+    }
   }
 
   // Fetch educational content
@@ -134,14 +196,19 @@ export default function HomeScreen() {
     return stats;
   };
 
-  // Calculate stats from fetched screenings
+  // Calculate stats from the selected person's screenings
   const stats = calculateDashboardStats(screenings);
 
-  const onRefresh = async () => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -170,7 +237,14 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#2c9167']} // Android
+          tintColor="#2c9167" // iOS
+          title="جاري التحديث..." // iOS
+          titleColor="#2c9167" // iOS
+        />
       }
     >
       {/* Header with Gradient */}
@@ -194,6 +268,24 @@ export default function HomeScreen() {
             <Ionicons name="person-circle-outline" size={32} color="white" />
           </TouchableOpacity>
         </View>
+        {/* Family Selector */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, marginBottom: 8 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 8 }}>
+          <TouchableOpacity
+            style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
+            onPress={() => setSelectedPersonId('user')}
+          >
+            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>أنت</Text>
+          </TouchableOpacity>
+          {Array.isArray(familyMembersData) && familyMembersData.map((member) => (
+            <TouchableOpacity
+              key={member.id}
+              style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
+              onPress={() => setSelectedPersonId(member.id.toString())}
+            >
+              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </LinearGradient>
 
       {/* Test Status Stats - Top Section */}
@@ -203,38 +295,65 @@ export default function HomeScreen() {
         </ThemedText>
         
         <View style={styles.statsRow}>
-          <View style={styles.statBox}>
+          <TouchableOpacity 
+            style={styles.statBox}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/upcoming-tests',
+                params: { initialTab: 'due' }
+              });
+            }}
+          >
             <Text style={[styles.statNumber, styles.statNumberDue]}>
               {stats?.dueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
               حالاً
             </Text>
-          </View>
-          <View style={styles.statBox}>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statBox}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/upcoming-tests',
+                params: { initialTab: 'overdue' }
+              });
+            }}
+          >
             <Text style={[styles.statNumber, styles.statNumberOverdue]}>
               {stats?.overdueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
               متأخر
             </Text>
-          </View>
-          <View style={styles.statBox}>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statBox}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/upcoming-tests',
+                params: { initialTab: 'later' }
+              });
+            }}
+          >
             <Text style={[styles.statNumber, styles.statNumberLater]}>
               {stats?.laterScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
               لاحقاً
             </Text>
-          </View>
-          <View style={styles.statBox}>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statBox}
+            onPress={() => router.push('/(tabs)/completed-tests')}
+          >
             <Text style={[styles.statNumber, styles.statNumberCompleted]}>
               {stats?.completedThisYear || 0}
             </Text>
             <Text style={styles.statLabel}>
               مكتمل
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -553,5 +672,26 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: 20,
+  },
+  familyButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#22c55e',
+    marginRight: 8,
+  },
+  familyButtonSelected: {
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e',
+  },
+  familyButtonText: {
+    color: '#22c55e',
+    fontWeight: 'bold',
+  },
+  familyButtonSelectedText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "screenings" ADD COLUMN "special_code" text; 

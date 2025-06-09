@@ -15,6 +15,41 @@
       "when": 1749350768007,
       "tag": "0001_overjoyed_galactus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749350768008,
+      "tag": "0002_medical_survey",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1749350768009,
+      "tag": "0003_admin_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1749350768010,
+      "tag": "0004_educational_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1749350768011,
+      "tag": "0005_add_special_code_to_screenings",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1749433758940,
+      "tag": "0006_bumpy_longshot",
+      "breakpoints": true
     }
   ]
 }

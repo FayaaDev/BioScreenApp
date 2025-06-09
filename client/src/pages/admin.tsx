@@ -44,6 +44,7 @@ export default function Admin() {
     frequencyYears: 1,
     iconUrl: null,
     priority: "recommended",
+    specialCode: "",
   });
   const [selectedIcon, setSelectedIcon] = useState<File | null>(null);
   const [editSelectedIcon, setEditSelectedIcon] = useState<File | null>(null);
@@ -180,6 +181,7 @@ export default function Admin() {
         frequencyYears: 1,
         iconUrl: null,
         priority: "recommended",
+        specialCode: "",
       });
       setSelectedIcon(null);
       setIsRepeating(true);
@@ -1154,6 +1156,18 @@ export default function Admin() {
                   )}
                 </div>
 
+                <div>
+                  <Label htmlFor="edit-specialCode">كود خاص (اختياري)</Label>
+                  <Input
+                    id="edit-specialCode"
+                    value={editingScreening?.specialCode || ""}
+                    onChange={(e) => setEditingScreening(editingScreening ? { ...editingScreening, specialCode: e.target.value } : null)}
+                    placeholder="مثال: SMOKER_ONLY"
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+
                 <div className="flex justify-end gap-2 pt-4 flex-row-reverse">
                   <Button 
                     type="submit" 
@@ -1328,6 +1342,18 @@ export default function Admin() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="specialCode">كود خاص (اختياري)</Label>
+                <Input
+                  id="specialCode"
+                  value={newScreening.specialCode}
+                  onChange={(e) => setNewScreening({ ...newScreening, specialCode: e.target.value })}
+                  placeholder="مثال: SMOKER_ONLY"
+                  className="text-right"
+                  dir="rtl"
+                />
               </div>
 
               <div>

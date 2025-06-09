@@ -28,6 +28,20 @@ interface SignupFormData {
   confirmPassword: string;
   gender: string;
   dateOfBirth: string;
+  isDiabetic: boolean;
+  isHypertensive: boolean;
+  isSmoker: boolean;
+  smokingDetails?: {
+    amount: string;
+    duration: string;
+  };
+  height: string;
+  weight: string;
+  isPregnant?: boolean;
+  isSexuallyActive: boolean;
+  sexualActivityDetails?: {
+    partnerCount: 'single' | 'multiple';
+  };
 }
 
 interface FormErrors {
@@ -37,6 +51,12 @@ interface FormErrors {
   confirmPassword?: string;
   gender?: string;
   dateOfBirth?: string;
+  height?: string;
+  weight?: string;
+  smokingDetails?: {
+    amount?: string;
+    duration?: string;
+  };
 }
 
 export default function Onboarding() {
@@ -50,6 +70,20 @@ export default function Onboarding() {
     confirmPassword: '',
     gender: '',
     dateOfBirth: '',
+    isDiabetic: false,
+    isHypertensive: false,
+    isSmoker: false,
+    smokingDetails: {
+      amount: '',
+      duration: '',
+    },
+    height: '',
+    weight: '',
+    isPregnant: false,
+    isSexuallyActive: false,
+    sexualActivityDetails: {
+      partnerCount: 'single',
+    },
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -109,6 +143,21 @@ export default function Onboarding() {
       newErrors.dateOfBirth = 'الرجاء إدخال تاريخ الميلاد';
     }
 
+    if (!formData.height) {
+      newErrors.height = 'الرجاء إدخال الطول';
+    }
+
+    if (!formData.weight) {
+      newErrors.weight = 'الرجاء إدخال الوزن';
+    }
+
+    if (formData.isSmoker && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
+      newErrors.smokingDetails = {
+        amount: !formData.smokingDetails?.amount ? 'الرجاء تحديد كمية التدخين' : undefined,
+        duration: !formData.smokingDetails?.duration ? 'الرجاء تحديد مدة التدخين' : undefined,
+      };
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -131,6 +180,21 @@ export default function Onboarding() {
         setErrors({ ...errors, dateOfBirth: undefined });
       }
     }
+  };
+
+  const calculateBMI = (heightCm: number, weightKg: number): number => {
+    const heightM = heightCm / 100;
+    return weightKg / (heightM * heightM);
+  };
+
+  const getBMICategory = (bmi: number): string => {
+    if (bmi < 18.4) return 'نقص في الوزن';
+    if (18.5 <= bmi && bmi < 24.9) return 'وزنك طبيعي';
+    if (25 <= bmi && bmi < 29.9) return 'مرحلة ماقبل السمنة';
+    if (30 <= bmi && bmi < 34.9) return 'سمنة درجة أولى';
+    if (35 <= bmi && bmi < 39.9) return 'سمنة درجة ثانية';
+    if (bmi > 40) return 'سمنة مفرطة درجة ثالثة';
+    return 'حاول مرة أخرى';
   };
 
   return (
@@ -340,6 +404,195 @@ export default function Onboarding() {
               )}
             </View>
 
+            {/* Medical Survey Section */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>الاستبيان الطبي</Text>
+            </View>
+
+            <View style={styles.medicalSurveyContainer}>
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isDiabetic: !formData.isDiabetic })}
+                >
+                  {formData.isDiabetic && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل أنت مصاب بالسكري؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isHypertensive: !formData.isHypertensive })}
+                >
+                  {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isSmoker: !formData.isSmoker })}
+                >
+                  {formData.isSmoker && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل أنت مدخن؟</Text>
+              </View>
+
+              {formData.isSmoker && (
+                <View style={styles.smokingDetailsContainer}>
+                  <TextInput
+                    style={[styles.input, errors.smokingDetails?.amount && styles.inputError]}
+                    placeholder="كم عدد السجائر في اليوم؟"
+                    value={formData.smokingDetails?.amount}
+                    onChangeText={(text) =>
+                      setFormData({
+                        ...formData,
+                        smokingDetails: {
+                          amount: text,
+                          duration: formData.smokingDetails?.duration || '',
+                        },
+                      })
+                    }
+                  />
+                  <TextInput
+                    style={[styles.input, errors.smokingDetails?.duration && styles.inputError]}
+                    placeholder="منذ متى تدخن؟ (بالسنوات)"
+                    value={formData.smokingDetails?.duration}
+                    onChangeText={(text) =>
+                      setFormData({
+                        ...formData,
+                        smokingDetails: {
+                          amount: formData.smokingDetails?.amount || '',
+                          duration: text,
+                        },
+                      })
+                    }
+                  />
+                </View>
+              )}
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>الطول (سم)</Text>
+                <TextInput
+                  style={[styles.input, errors.height && styles.inputError]}
+                  value={formData.height}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, height: text });
+                    if (errors.height) {
+                      setErrors({ ...errors, height: undefined });
+                    }
+                  }}
+                  keyboardType="numeric"
+                  placeholder="أدخل طولك"
+                />
+                {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>الوزن (كجم)</Text>
+                <TextInput
+                  style={[styles.input, errors.weight && styles.inputError]}
+                  value={formData.weight}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, weight: text });
+                    if (errors.weight) {
+                      setErrors({ ...errors, weight: undefined });
+                    }
+                  }}
+                  keyboardType="numeric"
+                  placeholder="أدخل وزنك"
+                />
+                {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+              </View>
+
+              {/* BMI Display */}
+              {formData.height && formData.weight && (
+                <View style={styles.bmiContainer}>
+                  <Text style={styles.bmiLabel}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text style={styles.bmiValue}>
+                    {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
+                  </Text>
+                  <Text style={styles.bmiCategory}>
+                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
+                  </Text>
+                </View>
+              )}
+
+              {formData.gender === 'female' && (
+                <View style={styles.checkboxContainer}>
+                  <TouchableOpacity
+                    style={styles.checkbox}
+                    onPress={() => setFormData({ ...formData, isPregnant: !formData.isPregnant })}
+                  >
+                    {formData.isPregnant && <MaterialIcons name="check" size={20} color="#008553" />}
+                  </TouchableOpacity>
+                  <Text style={styles.checkboxLabel}>هل أنت حامل؟</Text>
+                </View>
+              )}
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isSexuallyActive: !formData.isSexuallyActive })}
+                >
+                  {formData.isSexuallyActive && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل أنت نشط جنسياً؟</Text>
+              </View>
+
+              {formData.isSexuallyActive && (
+                <View style={styles.partnerCountContainer}>
+                  <Text style={styles.label}>عدد الشركاء</Text>
+                  <View style={styles.partnerCountButtons}>
+                    <TouchableOpacity
+                      style={[
+                        styles.partnerCountButton,
+                        formData.sexualActivityDetails?.partnerCount === 'single' && styles.partnerCountButtonSelected,
+                      ]}
+                      onPress={() =>
+                        setFormData({
+                          ...formData,
+                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'single' },
+                        })
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.partnerCountButtonText,
+                          formData.sexualActivityDetails?.partnerCount === 'single' && styles.partnerCountButtonTextSelected,
+                        ]}
+                      >
+                        شريك واحد
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.partnerCountButton,
+                        formData.sexualActivityDetails?.partnerCount === 'multiple' && styles.partnerCountButtonSelected,
+                      ]}
+                      onPress={() =>
+                        setFormData({
+                          ...formData,
+                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'multiple' },
+                        })
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.partnerCountButtonText,
+                          formData.sexualActivityDetails?.partnerCount === 'multiple' && styles.partnerCountButtonTextSelected,
+                        ]}
+                      >
+                        أكثر من شريك
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+
             {showDatePicker && (
               <DateTimePicker
                 value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
@@ -511,5 +764,91 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#008553',
     fontSize: 16,
+  },
+  sectionHeader: {
+    marginTop: 24,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#008553',
+  },
+  medicalSurveyContainer: {
+    gap: 16,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#008553',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  smokingDetailsContainer: {
+    gap: 8,
+    marginLeft: 32,
+  },
+  partnerCountContainer: {
+    marginLeft: 32,
+    gap: 8,
+  },
+  partnerCountButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  partnerCountButton: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#008553',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  partnerCountButtonSelected: {
+    backgroundColor: '#008553',
+  },
+  partnerCountButtonText: {
+    fontSize: 14,
+    color: '#008553',
+  },
+  partnerCountButtonTextSelected: {
+    color: '#fff',
+  },
+  bmiContainer: {
+    backgroundColor: '#f0fdf4',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  bmiLabel: {
+    fontSize: 16,
+    color: '#008553',
+    fontWeight: '600',
+  },
+  bmiValue: {
+    fontSize: 24,
+    color: '#008553',
+    fontWeight: 'bold',
+    marginVertical: 4,
+  },
+  bmiCategory: {
+    fontSize: 14,
+    color: '#666',
   },
 }); 
