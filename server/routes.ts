@@ -271,6 +271,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
 
+          // Skip PRG screenings for non-Pregnant women
+          if (screening.specialCode === "PRG" && !userData.isPregnant) {
+            continue;
+          }
+
+          // Skip STD screenings for partners with a single spouse.
+          if (screening.specialCode === "SEX" && userData.sexualPartnerCount === "single") {
+            continue;
+          }
+
           // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
           if (screening.specialCode === "BMI_DM" && userData.height && userData.weight) {
             const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));

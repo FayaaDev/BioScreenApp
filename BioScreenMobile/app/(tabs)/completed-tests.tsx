@@ -148,14 +148,45 @@ export default function CompletedTests() {
     enabled: !!userId,
   });
 
-  const { data: selectedPersonData, isLoading: isLoadingSelectedPerson } = useQuery({
+  const { data: selectedPersonData, isLoading: isLoadingSelectedPerson, error: selectedPersonError } = useQuery({
     queryKey: ['selectedPerson', selectedPersonId, userId],
     queryFn: () =>
       selectedPersonId === 'user'
         ? apiRequest('GET', `/api/users/${userId}`)
         : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId,
+    enabled: !!userId && !!selectedPersonId && (
+      selectedPersonId === "user" || 
+      (Array.isArray(familyMembersData) && familyMembersData.some((member: any) => member.id.toString() === selectedPersonId))
+    ),
+    retry: (failureCount, error: any) => {
+      // If it's a family member not found error, don't retry
+      if (error?.message?.includes('Family member not found')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  // Handle family member not found error - reset to user
+  useEffect(() => {
+    if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
+      console.log('Selected family member not found, switching to user');
+      setSelectedPersonId('user');
+      AsyncStorage.setItem('selectedPersonId', 'user');
+    }
+  }, [selectedPersonError]);
+
+  // Validate selected person when family members data changes
+  useEffect(() => {
+    if (Array.isArray(familyMembersData) && selectedPersonId !== 'user') {
+      const familyMemberExists = familyMembersData.some((member: any) => member.id.toString() === selectedPersonId);
+      if (!familyMemberExists) {
+        console.log('Selected family member no longer exists, switching to user');
+        setSelectedPersonId('user');
+        AsyncStorage.setItem('selectedPersonId', 'user');
+      }
+    }
+  }, [familyMembersData, selectedPersonId]);
 
   // Data normalization
   let familyMembers: any[] = Array.isArray(familyMembersData) ? familyMembersData : [];

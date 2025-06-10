@@ -27,9 +27,27 @@ export const SelectedPersonProvider = ({ children }: { children: React.ReactNode
   const [selectedPerson, setSelectedPerson] = useState<SelectedPerson | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem('selectedPersonId').then(id => {
-      if (id) setSelectedPersonId(id);
-    });
+    const loadSelectedPerson = async () => {
+      try {
+        const id = await AsyncStorage.getItem('selectedPersonId');
+        if (id) {
+          // Only set if it's "user" or a valid number
+          if (id === "user" || !isNaN(parseInt(id))) {
+            setSelectedPersonId(id);
+          } else {
+            // Invalid saved value, default to "user"
+            console.log('Invalid selectedPersonId found in storage, defaulting to user');
+            setSelectedPersonId('user');
+            await AsyncStorage.setItem('selectedPersonId', 'user');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load selectedPersonId from AsyncStorage:', error);
+        setSelectedPersonId('user');
+      }
+    };
+    
+    loadSelectedPerson();
   }, []);
 
   useEffect(() => {

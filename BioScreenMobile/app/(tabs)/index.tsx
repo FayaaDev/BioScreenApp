@@ -105,9 +105,22 @@ export default function HomeScreen() {
   // Load selected person from AsyncStorage
   useEffect(() => {
     (async () => {
-      const savedSelectedPerson = await AsyncStorage.getItem('selectedPersonId');
-      if (savedSelectedPerson) {
-        setSelectedPersonId(savedSelectedPerson);
+      try {
+        const savedSelectedPerson = await AsyncStorage.getItem('selectedPersonId');
+        if (savedSelectedPerson) {
+          // Only set if it's "user" or a valid number
+          if (savedSelectedPerson === "user" || !isNaN(parseInt(savedSelectedPerson))) {
+            setSelectedPersonId(savedSelectedPerson);
+          } else {
+            // Invalid saved value, default to "user"
+            console.log('Invalid selectedPersonId found in storage, defaulting to user');
+            setSelectedPersonId("user");
+            await AsyncStorage.setItem('selectedPersonId', "user");
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load selectedPersonId:', error);
+        setSelectedPersonId("user");
       }
     })();
   }, []);
@@ -135,8 +148,20 @@ export default function HomeScreen() {
     enabled: !!userId,
   });
 
+  // Validate selected person when family members data changes
+  useEffect(() => {
+    if (familyMembersData && selectedPersonId !== "user") {
+      const familyMemberExists = familyMembersData.some(member => member.id.toString() === selectedPersonId);
+      if (!familyMemberExists) {
+        console.log('Selected family member no longer exists, switching to user');
+        setSelectedPersonId("user");
+        AsyncStorage.setItem('selectedPersonId', "user");
+      }
+    }
+  }, [familyMembersData, selectedPersonId]);
+
   // Fetch selected person's screenings
-  const { data: selectedPersonData } = useQuery({
+  const { data: selectedPersonData, error: selectedPersonError } = useQuery({
     queryKey: selectedPersonId === "user" 
       ? [`/api/users/${userId}`] 
       : [`/api/family/${selectedPersonId}/screenings`],
@@ -144,8 +169,27 @@ export default function HomeScreen() {
       selectedPersonId === "user"
         ? apiRequest('GET', `/api/users/${userId}`)
         : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId,
+    enabled: !!userId && !!selectedPersonId && (
+      selectedPersonId === "user" || 
+      (familyMembersData && familyMembersData.some(member => member.id.toString() === selectedPersonId))
+    ),
+    retry: (failureCount, error: any) => {
+      // If it's a family member not found error, don't retry
+      if (error?.message?.includes('Family member not found')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  // Handle family member not found error - reset to user
+  useEffect(() => {
+    if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
+      console.log('Selected family member not found, switching to user');
+      setSelectedPersonId("user");
+      AsyncStorage.setItem('selectedPersonId', "user");
+    }
+  }, [selectedPersonError]);
 
   // Extract screenings based on selected person
   let screenings: any[] = [];
