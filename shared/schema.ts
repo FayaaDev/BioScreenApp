@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   // Medical survey fields
   isDiabetic: boolean("is_diabetic").default(false),
   isHypertensive: boolean("is_hypertensive").default(false),
+  isCholesterol: boolean("is_cholesterol").default(false),
   isSmoker: boolean("is_smoker").default(false),
   smokingAmount: text("smoking_amount"),
   smokingDuration: text("smoking_duration"),
@@ -59,6 +60,7 @@ export const familyMembers = pgTable("family_members", {
   // Medical survey fields
   isDiabetic: boolean("is_diabetic").default(false),
   isHypertensive: boolean("is_hypertensive").default(false),
+  isCholesterol: boolean("is_cholesterol").default(false),
   isSmoker: boolean("is_smoker").default(false),
   smokingAmount: text("smoking_amount"),
   smokingDuration: text("smoking_duration"),

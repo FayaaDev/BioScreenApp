@@ -30,6 +30,7 @@ interface SignupFormData {
   dateOfBirth: string;
   isDiabetic: boolean;
   isHypertensive: boolean;
+  isCholesterol: boolean;
   isSmoker: boolean;
   smokingDetails?: {
     amount: string;
@@ -72,6 +73,7 @@ export default function Onboarding() {
     dateOfBirth: '',
     isDiabetic: false,
     isHypertensive: false,
+    isCholesterol: false,
     isSmoker: false,
     smokingDetails: {
       amount: '',
@@ -428,6 +430,16 @@ export default function Onboarding() {
                   {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
                 <Text style={styles.checkboxLabel}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isCholesterol: !formData.isCholesterol })}
+                >
+                  {formData.isCholesterol && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل أنت مصاب بارتفاع في الكوليسترول؟</Text>
               </View>
 
               <View style={styles.checkboxContainer}>

@@ -23,6 +23,7 @@ export const users = pgTable("users", {
 	createdAt: text("created_at").notNull(),
 	isDiabetic: boolean("is_diabetic").default(false),
 	isHypertensive: boolean("is_hypertensive").default(false),
+	isCholesterol: boolean("is_cholesterol").default(false),
 	isSmoker: boolean("is_smoker").default(false),
 	smokingAmount: text("smoking_amount"),
 	smokingDuration: text("smoking_duration"),
@@ -57,6 +58,7 @@ export const familyMembers = pgTable("family_members", {
 	dateOfBirth: text("date_of_birth").notNull(),
 	createdAt: text("created_at").notNull(),
 	isDiabetic: boolean("is_diabetic").default(false),
+	isCholesterol: boolean("is_cholesterol").default(false),
 });
 
 export const familyMemberScreenings = pgTable("family_member_screenings", {

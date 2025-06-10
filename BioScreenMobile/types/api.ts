@@ -8,6 +8,7 @@ export interface User {
   // Medical survey fields
   isDiabetic?: boolean;
   isHypertensive?: boolean;
+  isCholesterol?: boolean;
   isSmoker?: boolean;
   smokingAmount?: string;
   smokingDuration?: string;

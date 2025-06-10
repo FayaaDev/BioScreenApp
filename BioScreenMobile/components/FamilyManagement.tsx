@@ -29,6 +29,7 @@ interface FamilyMember {
   // Medical survey fields
   isDiabetic: boolean;
   isHypertensive: boolean;
+  isCholesterol: boolean;
   isSmoker: boolean;
   smokingDetails?: {
     amount: string;
@@ -65,6 +66,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     // Medical survey fields
     isDiabetic: false,
     isHypertensive: false,
+    isCholesterol: false,
     isSmoker: false,
     smokingDetails: {
       amount: '',
@@ -140,6 +142,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       dateOfBirth: '',
       isDiabetic: false,
       isHypertensive: false,
+      isCholesterol: false,
       isSmoker: false,
       smokingDetails: {
         amount: '',
@@ -176,6 +179,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       dateOfBirth: member.dateOfBirth,
       isDiabetic: member.isDiabetic ?? false,
       isHypertensive: member.isHypertensive ?? false,
+      isCholesterol: member.isCholesterol ?? false,
       isSmoker: member.isSmoker ?? false,
       smokingDetails: member.smokingDetails ?? { amount: '', duration: '' },
       height: member.height ?? '',
@@ -453,6 +457,16 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
                 <Text style={styles.checkboxLabel}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
+              </View>
+
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => setFormData({ ...formData, isCholesterol: !formData.isCholesterol })}
+                >
+                  {formData.isCholesterol && <MaterialIcons name="check" size={20} color="#008553" />}
+                </TouchableOpacity>
+                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
               </View>
 
               <View style={styles.checkboxContainer}>

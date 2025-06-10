@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
 
-          // Skip STD screenings for partners with a single spouse.
+          // Skip STD screenings (STD)for partners with a single spouse.
           if (screening.specialCode === "SEX" && userData.sexualPartnerCount === "single") {
             continue;
           }
@@ -287,6 +287,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (userBMI <= 24.9) {
               continue;
             }
+          }
+
+          // Skip Heart screening (RF) for medically free users.
+          if (
+            screening.specialCode === "RF" &&
+            !userData.isDiabetic &&
+            !userData.isHypertensive &&
+            !userData.isCholesterol &&
+            !userData.isSmoker
+          ) {
+            continue;
           }
 
           // Skip Obesity screening for users with BMI <= 29.9
@@ -543,6 +554,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (memberBMI <= 29.9) {
             return false;
           }
+        }
+        
+        // Skip PRG screenings for non-Pregnant women
+        if (screening.specialCode === "PRG" && !familyMember.isPregnant) {
+          return false;
+        }
+
+        // Skip STD screenings (STD)for partners with a single spouse.
+        if (screening.specialCode === "SEX" && familyMember.sexualPartnerCount === "single") {
+          return false;
+
+
+        } // Skip Heart screening (RF) for medically free users.
+        if (
+          screening.specialCode === "RF" &&
+          !familyMember.isDiabetic &&
+          !familyMember.isHypertensive &&
+          !familyMember.isCholesterol &&
+          !familyMember.isSmoker
+        ) {
+          return false;
         }
         
         // Include all gender-appropriate screenings regardless of age to show "later" screenings
