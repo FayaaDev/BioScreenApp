@@ -289,6 +289,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
 
+          // Skip Lung Cancer screening (LungCa) for non-smokers or non-heavy smokers
+          if (
+            screening.specialCode === "LungCa" &&
+            (
+              userData.isSmoker === false || // Skip if user is a non-smoker
+              !userData.smokingAmount ||
+              !userData.smokingDuration ||
+              (parseFloat(userData.smokingAmount) * parseFloat(userData.smokingDuration) < 20)
+            )
+          ) {
+            continue;
+          }
+
           // Skip Heart screening (RF) for medically free users.
           if (
             screening.specialCode === "RF" &&
@@ -394,30 +407,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate user age for status determination
       const userAge = new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear();
       
-      const screeningsWithDetails = userScreenings.map(us => {
+      // Check for new screenings based on current age
+      for (const screening of allScreenings) {
+        // Skip if user already has this screening
+        if (userScreenings.some(us => us.screeningId === screening.id && us.status !== 'completed')) {
+          continue;
+        }
+
+        // Skip if this is a one-time test (frequencyYears === 0) and user already has it (completed or not)
+        if (screening.frequencyYears === 0 && userScreenings.some(us => us.screeningId === screening.id)) {
+          continue;
+        }
+
+        // Check if screening applies to this user's gender and age range
+        const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === user.gender;
+        const withinAgeRange = screening.endAge === null || userAge <= screening.endAge;
+        
+        // Apply special conditions (same as in user creation)
+        if (screening.specialCode === "SMK" && !user.isSmoker) continue;
+        if (screening.specialCode === "PRG" && !user.isPregnant) continue;
+        if (screening.specialCode === "SEX" && user.sexualPartnerCount === "single") continue;
+        if (screening.specialCode === "BMI_DM" && user.height && user.weight) {
+          const userBMI = (parseFloat(user.weight) / Math.pow(parseFloat(user.height) / 100, 2));
+          if (userBMI <= 24.9) continue;
+        }
+        if (screening.specialCode === "LungCa" && (!user.isSmoker || !user.smokingAmount || !user.smokingDuration || 
+            (parseFloat(user.smokingAmount) * parseFloat(user.smokingDuration) < 20))) continue;
+        if (screening.specialCode === "RF" && !user.isDiabetic && !user.isHypertensive && 
+            !user.isCholesterol && !user.isSmoker) continue;
+        if (screening.specialCode === "BMI_OB" && user.height && user.weight) {
+          const userBMI = (parseFloat(user.weight) / Math.pow(parseFloat(user.height) / 100, 2));
+          if (userBMI <= 29.9) continue;
+        }
+
+        if (genderMatches && withinAgeRange) {
+          // Calculate next due date
+          const birthDate = new Date(user.dateOfBirth);
+          const birthYear = birthDate.getFullYear();
+          const currentYear = new Date().getFullYear();
+          
+          // Calculate the year when user turns the start age
+          const targetYear = birthYear + screening.startAge;
+          const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
+          
+          // Determine status based on current date vs target date
+          let status: "due" | "overdue" | "later";
+          
+          if (currentYear < targetYear) {
+            status = "later";
+          } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+            status = "due";
+          } else {
+            status = "overdue";
+          }
+          
+          // Create new screening for user
+          await storage.createUserScreening({
+            userId: user.id,
+            screeningId: screening.id,
+            lastCompleted: null,
+            nextDue: nextDue.toISOString(),
+            status: status
+          });
+        }
+      }
+
+      // Get updated screenings after adding new ones
+      const updatedUserScreenings = await storage.getUserScreenings(userId);
+      
+      // Calculate status for all screenings
+      const screeningsWithDetails = await Promise.all(updatedUserScreenings.map(async us => {
         const screening = allScreenings.find(s => s.id === us.screeningId);
         
         // Dynamically calculate status if not completed
         let status = us.status;
         if (status !== "completed" && screening) {
-          const birthDate = new Date(user.dateOfBirth);
-          const birthYear = birthDate.getFullYear();
-          const currentYear = new Date().getFullYear();
-          const currentMonth = new Date().getMonth() + 1;
+          const now = new Date();
           
-          // Calculate the year when user turns the start age
-          const targetYear = birthYear + screening.startAge;
-          
-          // Determine status based on current date vs target date
-          if (currentYear < targetYear) {
-            // Before the target year - always "later"
-            status = "later";
-          } else if (currentYear === targetYear || currentYear === targetYear + 1) {
-            // User is AT StartAge or exactly one year past - "due"
-            status = "due";
+          // For repeatable screenings, use nextDue date to determine status
+          if (screening.frequencyYears > 0) {
+            const nextDue = new Date(us.nextDue);
+            const oneYearAfterNextDue = new Date(nextDue);
+            oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
+            
+            if (now < nextDue) {
+              status = "later";
+            } else if (now >= nextDue && now < oneYearAfterNextDue) {
+              status = "due";
+            } else {
+              status = "overdue";
+            }
           } else {
-            // More than one year past start age - "overdue"
-            status = "overdue";
+            // For non-repeatable screenings, use the original age-based logic
+            const birthDate = new Date(user.dateOfBirth);
+            const birthYear = birthDate.getFullYear();
+            const currentYear = now.getFullYear();
+            const targetYear = birthYear + screening.startAge;
+            
+            if (currentYear < targetYear) {
+              status = "later";
+            } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+              status = "due";
+            } else {
+              status = "overdue";
+            }
+          }
+
+          // Update the screening status in the database if it has changed
+          if (status !== us.status) {
+            await storage.updateUserScreening(us.id, {
+              status: status,
+              nextDue: us.nextDue // Keep the existing nextDue date
+            });
           }
         }
         
@@ -426,7 +527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status,
           screening
         };
-      });
+      }));
 
       res.json({
         user,
@@ -454,11 +555,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/:userId/family", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
-      const familyMemberData = insertFamilyMemberSchema.parse({
+      // Map nested fields to flat fields for smoking and sexual activity
+      const mappedBody = {
         ...req.body,
+        smokingAmount: req.body.smokingDetails?.amount,
+        smokingDuration: req.body.smokingDetails?.duration,
+        sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
         userId
-      });
-      
+      };
+      const familyMemberData = insertFamilyMemberSchema.parse(mappedBody);
       const familyMember = await storage.createFamilyMember(familyMemberData);
       res.json(familyMember);
     } catch (error) {
@@ -474,14 +579,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/family/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updates = insertFamilyMemberSchema.partial().parse(req.body);
+      // Map nested fields to flat fields for smoking and sexual activity
+      const mappedBody = {
+        ...req.body,
+        smokingAmount: req.body.smokingDetails?.amount,
+        smokingDuration: req.body.smokingDetails?.duration,
+        sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
+      };
+      const updates = insertFamilyMemberSchema.partial().parse(mappedBody);
       const familyMember = await storage.updateFamilyMember(id, updates);
-      
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
       res.json(familyMember);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -573,6 +683,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           !familyMember.isHypertensive &&
           !familyMember.isCholesterol &&
           !familyMember.isSmoker
+        ) {
+          return false;
+        }
+
+        // Skip Lung Cancer screening (LungCa) for non-smokers or non-heavy smokers
+        if (
+          screening.specialCode === "LungCa" &&
+          (
+            familyMember.isSmoker === false || // Skip if user is a non-smoker
+            !familyMember.smokingAmount ||
+            !familyMember.smokingDuration ||
+            (parseFloat(familyMember.smokingAmount) * parseFloat(familyMember.smokingDuration) < 20)
+          )
         ) {
           return false;
         }
@@ -769,42 +892,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = insertUserScreeningSchema.partial().parse(req.body);
+      console.log(`[PUT /api/user-screenings/${id}] Received updates:`, updates);
       
-      // If uncompleting (status is 'upcoming' and lastCompleted is null), recalculate status
-      if (updates.status === 'upcoming' && updates.lastCompleted === null) {
-        const userScreenings = await storage.getUserScreenings(id);
-        const userScreening = userScreenings.find(us => us.id === id);
-        if (!userScreening) {
-          res.status(404).json({ message: "User screening not found" });
-          return;
-        }
-        const user = await storage.getUser(userScreening.userId);
-        const screening = await storage.getScreening(userScreening.screeningId);
-        if (!user || !screening) {
-          res.status(404).json({ message: "User or screening not found" });
-          return;
-        }
-        const birthYear = new Date(user.dateOfBirth).getFullYear();
-        const targetYear = birthYear + screening.startAge;
-        const currentYear = new Date().getFullYear();
-        let newStatus: "due" | "overdue" | "later";
-        if (currentYear < targetYear) {
+      // Get the current screening to check frequency
+      const currentScreening = await storage.getUserScreeningById(id);
+      console.log(`[PUT /api/user-screenings/${id}] Current screening:`, currentScreening);
+      if (!currentScreening) {
+        console.log(`[PUT /api/user-screenings/${id}] User screening not found`);
+        res.status(404).json({ message: "User screening not found" });
+        return;
+      }
+
+      // Get the screening details to check frequency
+      const screening = await storage.getScreening(currentScreening.screeningId);
+      console.log(`[PUT /api/user-screenings/${id}] Screening details:`, screening);
+      if (!screening) {
+        console.log(`[PUT /api/user-screenings/${id}] Screening not found`);
+        res.status(404).json({ message: "Screening not found" });
+        return;
+      }
+
+      // Update the screening status in the database
+      const updatedScreening = await storage.updateUserScreening(id, updates);
+      console.log(`[PUT /api/user-screenings/${id}] Updated screening:`, updatedScreening);
+      if (!updatedScreening) {
+        console.log(`[PUT /api/user-screenings/${id}] User screening not found after update`);
+        res.status(404).json({ message: "User screening not found" });
+        return;
+      }
+
+      // If completing a screening and it has a frequency
+      if (updates.status === 'completed' && screening.frequencyYears > 0) {
+        // After updating, check for other incomplete screenings (excluding the one just updated)
+        const nextDue = new Date(updates.nextDue!);
+        const now = new Date();
+        let newStatus: "later" | "due" | "overdue";
+        // More precise status calculation using full date
+        const oneYearAfterNextDue = new Date(nextDue);
+        oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
+        if (now < nextDue) {
           newStatus = "later";
-        } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+        } else if (now >= nextDue && now < oneYearAfterNextDue) {
           newStatus = "due";
         } else {
           newStatus = "overdue";
         }
-        updates.status = newStatus;
+        // Check for other incomplete screening for this user and screeningId (excluding the just-completed one)
+        const otherIncomplete = (await storage.getUserScreenings(currentScreening.userId))
+          .find(us => us.screeningId === screening.id && us.status !== 'completed' && us.id !== id);
+        if (!otherIncomplete) {
+          console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDue.toISOString()}, status: ${newStatus}`);
+          await storage.createUserScreening({
+            userId: currentScreening.userId,
+            screeningId: screening.id,
+            lastCompleted: null,
+            nextDue: nextDue.toISOString(),
+            status: newStatus
+          });
+        } else {
+          console.log(`[PUT /api/user-screenings/${id}] Not creating repeatable screening: another incomplete exists with id ${otherIncomplete.id} and status ${otherIncomplete.status}`);
+        }
+      } else if (updates.status === 'completed' && screening.frequencyYears === 0) {
+        // For non-repeatable screenings, just mark as completed and don't create a new one
+        console.log(`[PUT /api/user-screenings/${id}] Non-repeatable screening marked as completed, no new screening created`);
       }
-      
-      const userScreening = await storage.updateUserScreening(id, updates);
-      if (!userScreening) {
-        res.status(404).json({ message: "User screening not found" });
-        return;
-      }
-      res.json(userScreening);
+      res.json(updatedScreening);
     } catch (error) {
+      console.error(`[PUT /api/user-screenings/:id] Error:`, error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {

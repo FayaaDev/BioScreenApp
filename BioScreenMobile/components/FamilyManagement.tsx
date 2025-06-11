@@ -82,6 +82,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   });
   const [isRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
     queryKey: ['/api/users', userId, 'family'],
@@ -159,6 +160,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   };
 
   const handleSubmit = () => {
+    setSubmitAttempted(true);
     const errors = validateForm();
     if (errors.length > 0) {
       showToast({ title: 'خطأ', description: errors[0], type: 'error' });
@@ -263,8 +265,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <Text style={styles.memberDetails}>تاريخ الميلاد: {member.dateOfBirth}</Text>
                   {member.isSmoker && member.smokingDetails && (
                     <View style={styles.packYearsBox}>
-                      <Text style={styles.packYearsLabel}>سنوات التدخين (Pack-Years):</Text>
-                      <Text style={styles.packYearsValue}>{calculatePackYears(member.smokingDetails)}</Text>
+                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(member.smokingDetails)}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -307,8 +309,13 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
           <ScrollView contentContainerStyle={styles.modalContent}>
             <Text style={styles.modalTitle}>{editingMember ? 'تعديل فرد العائلة' : 'إضافة فرد للعائلة'}</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                { textAlign: 'right', writingDirection: 'rtl' },
+                submitAttempted && !formData.name.trim() && styles.inputError,
+              ]}
               placeholder="الاسم"
+              placeholderTextColor="#999"
               value={formData.name}
               maxLength={3}
               onChangeText={(text) => {
@@ -345,6 +352,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.genderButton,
                     formData.gender === 'male' && styles.genderButtonSelected,
+                    submitAttempted && formData.gender !== 'male' && styles.inputError,
                   ]}
                   onPress={() => setFormData({ ...formData, gender: 'male' })}
                 >
@@ -366,6 +374,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.genderButton,
                     formData.gender === 'female' && styles.genderButtonSelected,
+                    submitAttempted && formData.gender !== 'female' && styles.inputError,
                   ]}
                   onPress={() => setFormData({ ...formData, gender: 'female' })}
                 >
@@ -387,34 +396,18 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             </View>
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
               <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>تاريخ الميلاد</Text>
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                style={[styles.input, { justifyContent: 'center' }]}
-              >
-                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'center' }}>
-                  {formData.dateOfBirth
-                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : 'اختر تاريخ الميلاد'}
-                </Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) {
-                      setFormData({ ...formData, dateOfBirth: selectedDate.toISOString().split('T')[0] });
-                    }
-                  }}
-                  maximumDate={new Date()}
-                />
-              )}
+              <DateTimePicker
+                value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    setFormData({ ...formData, dateOfBirth: selectedDate.toISOString().split('T')[0] });
+                  }
+                }}
+                maximumDate={new Date()}
+                style={{ alignSelf: 'flex-end', width: '100%' }}
+              />
             </View>
             {/* Medical Survey Section */}
             <View style={styles.section}>
@@ -422,34 +415,44 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               
               {/* Height and Weight with BMI */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>الطول (سم)</Text>
+                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الطول (سم)</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    { textAlign: 'right', writingDirection: 'rtl' },
+                    submitAttempted && !formData.height.trim() && styles.inputError,
+                  ]}
+                  placeholder="مثال: 170"
+                  placeholderTextColor="#999"
                   value={formData.height}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, height: text }));
                   }}
                   keyboardType="numeric"
-                  placeholder="مثال: 170"
                 />
               </View>
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>الوزن (كجم)</Text>
+                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    { textAlign: 'right', writingDirection: 'rtl' },
+                    submitAttempted && !formData.weight.trim() && styles.inputError,
+                  ]}
+                  placeholder="مثال: 70"
+                  placeholderTextColor="#999"
                   value={formData.weight}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, weight: text }));
                   }}
                   keyboardType="numeric"
-                  placeholder="مثال: 70"
                 />
               </View>
               {formData.height && formData.weight && calculateBMI(formData.height, formData.weight) && (
                 <View style={styles.bmiBox}>
-                  <Text style={styles.bmiLabel}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text style={styles.bmiValue}>{calculateBMI(formData.height, formData.weight)?.toFixed(1)}</Text>
-                  <Text style={styles.bmiCategoryText}>{getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}</Text>
+                  <Text style={[styles.bmiLabel, { textAlign: 'right', width: '100%' }]}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text style={[styles.bmiValue, { textAlign: 'right', width: '100%' }]}>{calculateBMI(formData.height, formData.weight)?.toFixed(1)}</Text>
+                  <Text style={[styles.bmiCategoryText, { textAlign: 'right', width: '100%' }]}>{getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}</Text>
                 </View>
               )}
             </View>
@@ -462,7 +465,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 >
                   {formData.isDiabetic && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
-                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بالسكري؟</Text>
+                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بالسكري؟</Text>
               </View>
 
               <View style={styles.checkboxContainer}>
@@ -472,7 +475,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 >
                   {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
-                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
+                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
               </View>
 
               <View style={styles.checkboxContainer}>
@@ -482,7 +485,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 >
                   {formData.isCholesterol && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
-                <Text style={styles.checkboxLabel}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
+                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
               </View>
 
               <View style={styles.checkboxContainer}>
@@ -492,14 +495,19 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 >
                   {formData.isSmoker && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
-                <Text style={styles.checkboxLabel}>هل هو/هي مدخن؟</Text>
+                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مدخن؟</Text>
               </View>
 
               {formData.isSmoker && (
                 <View style={styles.smokingDetailsContainer}>
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { textAlign: 'right', writingDirection: 'rtl' },
+                      submitAttempted && !formData.smokingDetails?.amount && styles.inputError,
+                    ]}
                     placeholder="كم عدد السجائر في اليوم؟"
+                    placeholderTextColor="#999"
                     value={formData.smokingDetails.amount}
                     onChangeText={(text) =>
                       setFormData({
@@ -512,8 +520,13 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                     }
                   />
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { textAlign: 'right', writingDirection: 'rtl' },
+                      submitAttempted && !formData.smokingDetails?.duration && styles.inputError,
+                    ]}
                     placeholder="منذ متى يدخن؟ (بالسنوات)"
+                    placeholderTextColor="#999"
                     value={formData.smokingDetails.duration}
                     onChangeText={(text) =>
                       setFormData({
@@ -527,8 +540,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   />
                   {formData.smokingDetails.amount && formData.smokingDetails.duration && (
                     <View style={styles.packYearsBox}>
-                      <Text style={styles.packYearsLabel}>سنوات التدخين (Pack-Years):</Text>
-                      <Text style={styles.packYearsValue}>{calculatePackYears(formData.smokingDetails)}</Text>
+                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(formData.smokingDetails)}</Text>
                     </View>
                   )}
                 </View>
@@ -542,7 +555,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   >
                     {formData.isPregnant && <MaterialIcons name="check" size={20} color="#008553" />}
                   </TouchableOpacity>
-                  <Text style={styles.checkboxLabel}>هل هي حامل؟</Text>
+                  <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هي حامل؟</Text>
                 </View>
               )}
 
@@ -553,17 +566,18 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 >
                   {formData.isSexuallyActive && <MaterialIcons name="check" size={20} color="#008553" />}
                 </TouchableOpacity>
-                <Text style={styles.checkboxLabel}>هل هو/هي نشط جنسياً؟</Text>
+                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي نشط جنسياً؟</Text>
               </View>
 
               {formData.isSexuallyActive && (
                 <View style={styles.partnerCountContainer}>
-                  <Text style={styles.label}>عدد الشركاء</Text>
-                  <View style={styles.partnerCountButtons}>
+                  <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>عدد الشركاء</Text>
+                  <View style={[styles.partnerCountButtons, { flexDirection: 'row-reverse' }]}>
                     <TouchableOpacity
                       style={[
                         styles.partnerCountButton,
                         formData.sexualActivityDetails.partnerCount === 'single' && styles.partnerCountButtonSelected,
+                        submitAttempted && formData.sexualActivityDetails.partnerCount !== 'single' && styles.inputError,
                       ]}
                       onPress={() =>
                         setFormData({
@@ -585,6 +599,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       style={[
                         styles.partnerCountButton,
                         formData.sexualActivityDetails.partnerCount === 'multiple' && styles.partnerCountButtonSelected,
+                        submitAttempted && formData.sexualActivityDetails.partnerCount !== 'multiple' && styles.inputError,
                       ]}
                       onPress={() =>
                         setFormData({
@@ -713,6 +728,7 @@ const styles = StyleSheet.create({
   modalContent: {
     alignItems: 'center',
     gap: 16,
+    paddingTop: 32,
     paddingBottom: 32,
     width: '100%',
     justifyContent: 'center',
@@ -809,13 +825,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#008553',
+    textAlign: 'center',
+    alignSelf: 'center',
   },
   medicalSurveyContainer: {
     gap: 16,
     width: '100%',
   },
   checkboxContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
@@ -917,5 +935,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 28,
     marginBottom: 4,
+  },
+  inputError: {
+    borderColor: '#ef4444',
+    borderWidth: 1,
   },
 }); 

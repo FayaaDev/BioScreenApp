@@ -131,9 +131,11 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
               </div>*/}
             </div>
             
-            {screening.status === 'later' && screening.screening?.startAge && (
+            {screening.status === 'later' && (
               <p className={`text-xs mb-3 ${isRTL ? 'text-right' : 'text-left'} text-gray-700`}>
-                {t("screening.takeAtAge", { age: screening.screening.startAge })}
+                {screening.screening?.frequencyYears && screening.screening.frequencyYears > 0
+                  ? t("screening.nextDue", { date: formatDate(screening.nextDue) })
+                  : t("screening.takeAtAge", { age: screening.screening?.startAge })}
               </p>
             )}
             

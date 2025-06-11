@@ -27,6 +27,7 @@ export interface IStorage {
   getUserScreenings(userId: number): Promise<UserScreening[]>;
   createUserScreening(userScreening: InsertUserScreening): Promise<UserScreening>;
   updateUserScreening(id: number, userScreening: Partial<InsertUserScreening>): Promise<UserScreening | undefined>;
+  getUserScreeningById(id: number): Promise<UserScreening | undefined>;
   
   // Family member screening operations  
   createFamilyMemberScreening(familyMemberScreening: InsertFamilyMemberScreening): Promise<FamilyMemberScreening>;
@@ -316,6 +317,10 @@ export class MemStorage implements IStorage {
     
     this.initialized = true;
   }
+
+  async getUserScreeningById(id: number): Promise<UserScreening | undefined> {
+    return this.userScreenings.get(id);
+  }
 }
 
 // Database storage implementation
@@ -539,6 +544,11 @@ export class DatabaseStorage implements IStorage {
     if (!this.initialized) {
       await this.initializeDefaultScreenings();
     }
+  }
+
+  async getUserScreeningById(id: number): Promise<UserScreening | undefined> {
+    const result = await db.select().from(userScreenings).where(eq(userScreenings.id, id));
+    return result[0];
   }
 }
 

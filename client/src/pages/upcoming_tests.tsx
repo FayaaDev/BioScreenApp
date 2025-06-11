@@ -263,13 +263,26 @@ export default function UpcomingTests() {
     return t("home.greetingDefault");
   };
 
+  // Filter screenings to only show the most recent incomplete (not 'completed') screening for each screeningId
+  const uniqueIncompleteScreeningsMap = new Map();
+  screenings.forEach((screening) => {
+    if (screening.status !== 'completed') {
+      // If there are multiple, keep the one with the latest nextDue
+      const existing = uniqueIncompleteScreeningsMap.get(screening.screeningId);
+      if (!existing || new Date(screening.nextDue) > new Date(existing.nextDue)) {
+        uniqueIncompleteScreeningsMap.set(screening.screeningId, screening);
+      }
+    }
+  });
+  const uniqueIncompleteScreenings = Array.from(uniqueIncompleteScreeningsMap.values());
+
   // Filter screenings based on active tab
   let filteredScreenings;
   if (activeTab === "all") {
-    // Show only non-completed screenings in "all" tab (upcoming tab)
-    filteredScreenings = screenings.filter((screening: any) => screening.status !== "completed");
+    // Show only non-completed, unique screenings in "all" tab (upcoming tab)
+    filteredScreenings = uniqueIncompleteScreenings;
   } else {
-    filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
+    filteredScreenings = filterScreeningsByStatus(uniqueIncompleteScreenings, activeTab);
   }
 
   return (
@@ -356,14 +369,14 @@ export default function UpcomingTests() {
           </TabsList>
 
           <TabsContent value="all" className="mt-4 space-y-3">
-            {screenings.filter((screening: any) => screening.status !== "completed").length === 0 ? (
+            {filteredScreenings.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-700">{t("home.noScreenings")}</p>
                 </CardContent>
               </Card>
             ) : (
-              screenings.filter((screening: any) => screening.status !== "completed").map((screening: any) => (
+              filteredScreenings.map((screening: any) => (
                 <ScreeningCard
                   key={screening.id}
                   screening={screening}
@@ -377,14 +390,14 @@ export default function UpcomingTests() {
           </TabsContent>
 
           <TabsContent value="due" className="mt-4 space-y-3">
-            {filterScreeningsByStatus(screenings, "due").length === 0 ? (
+            {filterScreeningsByStatus(filteredScreenings, "due").length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-700">{t("home.noDue")}</p>
                 </CardContent>
               </Card>
             ) : (
-              filterScreeningsByStatus(screenings, "due").map((screening) => (
+              filterScreeningsByStatus(filteredScreenings, "due").map((screening) => (
                 <ScreeningCard
                   key={screening.id}
                   screening={screening}
@@ -398,14 +411,14 @@ export default function UpcomingTests() {
           </TabsContent>
 
           <TabsContent value="overdue" className="mt-4 space-y-3">
-            {filterScreeningsByStatus(screenings, "overdue").length === 0 ? (
+            {filterScreeningsByStatus(filteredScreenings, "overdue").length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-700">{t("home.noOverdue")}</p>
                 </CardContent>
               </Card>
             ) : (
-              filterScreeningsByStatus(screenings, "overdue").map((screening) => (
+              filterScreeningsByStatus(filteredScreenings, "overdue").map((screening) => (
                 <ScreeningCard
                   key={screening.id}
                   screening={screening}
@@ -419,14 +432,14 @@ export default function UpcomingTests() {
           </TabsContent>
 
           <TabsContent value="later" className="mt-4 space-y-3">
-            {filterScreeningsByStatus(screenings, "later").length === 0 ? (
+            {filterScreeningsByStatus(filteredScreenings, "later").length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-700">{t("home.noLater")}</p>
                 </CardContent>
               </Card>
             ) : (
-              filterScreeningsByStatus(screenings, "later").map((screening) => (
+              filterScreeningsByStatus(filteredScreenings, "later").map((screening) => (
                 <ScreeningCard
                   key={screening.id}
                   screening={screening}
@@ -440,14 +453,14 @@ export default function UpcomingTests() {
           </TabsContent>
 
           <TabsContent value="completed" className="mt-4 space-y-3">
-            {filterScreeningsByStatus(screenings, "completed").length === 0 ? (
+            {filterScreeningsByStatus(filteredScreenings, "completed").length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-700">{t("home.noCompleted")}</p>
                 </CardContent>
               </Card>
             ) : (
-              filterScreeningsByStatus(screenings, "completed").map((screening) => (
+              filterScreeningsByStatus(filteredScreenings, "completed").map((screening) => (
                 <ScreeningCard
                   key={screening.id}
                   screening={screening}

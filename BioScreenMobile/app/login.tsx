@@ -130,11 +130,11 @@ export default function Login() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>البريد الإلكتروني</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.email && styles.inputError
                 ]}
                 value={formData.email}
@@ -145,6 +145,7 @@ export default function Login() {
                   }
                 }}
                 placeholder="أدخل البريد الإلكتروني"
+                placeholderTextColor="#999"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 textContentType="emailAddress"
@@ -156,11 +157,11 @@ export default function Login() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>كلمة المرور</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>كلمة المرور</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.password && styles.inputError
                 ]}
                 value={formData.password}
@@ -171,6 +172,7 @@ export default function Login() {
                   }
                 }}
                 placeholder="أدخل كلمة المرور"
+                placeholderTextColor="#999"
                 secureTextEntry
                 textContentType="password"
                 editable={!loginMutation.isPending}
