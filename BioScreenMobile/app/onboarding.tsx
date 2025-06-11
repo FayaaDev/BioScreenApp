@@ -199,6 +199,12 @@ export default function Onboarding() {
     return 'حاول مرة أخرى';
   };
 
+  const calculatePackYears = (smokingDetails: { amount: string; duration: string }): number => {
+    const amount = parseFloat(smokingDetails.amount);
+    const duration = parseFloat(smokingDetails.duration);
+    return amount * duration;
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -218,11 +224,11 @@ export default function Onboarding() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>الاسم الكامل</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
               <TextInput
                 style={[
                   styles.input,
-                  I18nManager.isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.name && styles.inputError,
                 ]}
                 value={formData.name}
@@ -233,6 +239,7 @@ export default function Onboarding() {
                   }
                 }}
                 placeholder="أدخل اسمك الكامل"
+                placeholderTextColor="#999"
                 editable={!createUserMutation.isPending}
               />
               {errors.name && (
@@ -241,11 +248,26 @@ export default function Onboarding() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>البريد الإلكتروني</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
+              <DateTimePicker
+                value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+                maximumDate={new Date()}
+                style={{ alignSelf: 'flex-end', width: '100%' }}
+              />
+              {errors.dateOfBirth && (
+                <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
+              )}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.email && styles.inputError,
                 ]}
                 value={formData.email}
@@ -256,6 +278,7 @@ export default function Onboarding() {
                   }
                 }}
                 placeholder="أدخل بريدك الإلكتروني"
+                placeholderTextColor="#999"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 textContentType="emailAddress"
@@ -267,11 +290,11 @@ export default function Onboarding() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>كلمة المرور</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>كلمة المرور</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.password && styles.inputError,
                 ]}
                 value={formData.password}
@@ -282,6 +305,7 @@ export default function Onboarding() {
                   }
                 }}
                 placeholder="أدخل كلمة المرور"
+                placeholderTextColor="#999"
                 secureTextEntry
                 textContentType="password"
                 editable={!createUserMutation.isPending}
@@ -292,11 +316,11 @@ export default function Onboarding() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>تأكيد كلمة المرور</Text>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تأكيد كلمة المرور</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.confirmPassword && styles.inputError,
                 ]}
                 value={formData.confirmPassword}
@@ -307,6 +331,7 @@ export default function Onboarding() {
                   }
                 }}
                 placeholder="أعد إدخال كلمة المرور"
+                placeholderTextColor="#999"
                 secureTextEntry
                 textContentType="password"
                 editable={!createUserMutation.isPending}
@@ -317,8 +342,8 @@ export default function Onboarding() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>الجنس</Text>
-              <View style={[styles.genderContainer, I18nManager.isRTL && { flexDirection: 'row-reverse' }]}>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
+              <View style={[styles.genderContainer, { flexDirection: 'row-reverse' }]}>
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
@@ -380,32 +405,6 @@ export default function Onboarding() {
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>تاريخ الميلاد</Text>
-              <TouchableOpacity
-                style={[
-                  styles.dateInput,
-                  I18nManager.isRTL && { alignSelf: 'flex-end' },
-                  errors.dateOfBirth && styles.inputError,
-                ]}
-                onPress={() => setShowDatePicker(true)}
-                disabled={createUserMutation.isPending}
-              >
-                <Text style={I18nManager.isRTL && { textAlign: 'right', writingDirection: 'rtl' }}>
-                  {formData.dateOfBirth
-                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : 'اختر تاريخ الميلاد'}
-                </Text>
-              </TouchableOpacity>
-              {errors.dateOfBirth && (
-                <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
-              )}
-            </View>
-
             {/* Medical Survey Section */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>الاستبيان الطبي</Text>
@@ -455,7 +454,11 @@ export default function Onboarding() {
               {formData.isSmoker && (
                 <View style={styles.smokingDetailsContainer}>
                   <TextInput
-                    style={[styles.input, errors.smokingDetails?.amount && styles.inputError]}
+                    style={[
+                      styles.input,
+                      { textAlign: 'right', writingDirection: 'rtl' },
+                      errors.smokingDetails?.amount && styles.inputError,
+                    ]}
                     placeholder="كم عدد السجائر في اليوم؟"
                     value={formData.smokingDetails?.amount}
                     onChangeText={(text) =>
@@ -467,9 +470,14 @@ export default function Onboarding() {
                         },
                       })
                     }
+                    placeholderTextColor="#999"
                   />
                   <TextInput
-                    style={[styles.input, errors.smokingDetails?.duration && styles.inputError]}
+                    style={[
+                      styles.input,
+                      { textAlign: 'right', writingDirection: 'rtl' },
+                      errors.smokingDetails?.duration && styles.inputError,
+                    ]}
                     placeholder="منذ متى تدخن؟ (بالسنوات)"
                     value={formData.smokingDetails?.duration}
                     onChangeText={(text) =>
@@ -481,14 +489,25 @@ export default function Onboarding() {
                         },
                       })
                     }
+                    placeholderTextColor="#999"
                   />
+                  {formData.smokingDetails?.amount && formData.smokingDetails?.duration && (
+                    <View style={[styles.metricBox, styles.packYearsBox]}>
+                      <Text style={[styles.metricLabel, styles.packYearsLabel]}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={[styles.metricValue, styles.packYearsValue]}>{calculatePackYears(formData.smokingDetails)}</Text>
+                    </View>
+                  )}
                 </View>
               )}
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>الطول (سم)</Text>
+                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الطول (سم)</Text>
                 <TextInput
-                  style={[styles.input, errors.height && styles.inputError]}
+                  style={[
+                    styles.input,
+                    { textAlign: 'right', writingDirection: 'rtl' },
+                    errors.height && styles.inputError,
+                  ]}
                   value={formData.height}
                   onChangeText={(text) => {
                     setFormData({ ...formData, height: text });
@@ -498,14 +517,19 @@ export default function Onboarding() {
                   }}
                   keyboardType="numeric"
                   placeholder="أدخل طولك"
+                  placeholderTextColor="#999"
                 />
                 {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>الوزن (كجم)</Text>
+                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
                 <TextInput
-                  style={[styles.input, errors.weight && styles.inputError]}
+                  style={[
+                    styles.input,
+                    { textAlign: 'right', writingDirection: 'rtl' },
+                    errors.weight && styles.inputError,
+                  ]}
                   value={formData.weight}
                   onChangeText={(text) => {
                     setFormData({ ...formData, weight: text });
@@ -515,20 +539,20 @@ export default function Onboarding() {
                   }}
                   keyboardType="numeric"
                   placeholder="أدخل وزنك"
+                  placeholderTextColor="#999"
                 />
                 {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
               </View>
 
               {/* BMI Display */}
               {formData.height && formData.weight && (
-                <View style={styles.bmiContainer}>
-                  <Text style={styles.bmiLabel}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text style={styles.bmiValue}>
+                <View style={[styles.metricBox, styles.bmiContainer]}>
+                  <Text style={[styles.metricLabel, styles.bmiLabel]}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text style={[styles.metricValue, styles.bmiValue]}>
                     {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                   </Text>
-                  <Text style={styles.bmiCategory}>
-                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
-                  </Text>
+                  <Text style={[styles.bmiCategory, { textAlign: 'right', width: '100%' }]}>
+                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}</Text>
                 </View>
               )}
 
@@ -556,8 +580,8 @@ export default function Onboarding() {
 
               {formData.isSexuallyActive && (
                 <View style={styles.partnerCountContainer}>
-                  <Text style={styles.label}>عدد الشركاء</Text>
-                  <View style={styles.partnerCountButtons}>
+                  <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>عدد الشركاء</Text>
+                  <View style={[styles.partnerCountButtons, { flexDirection: 'row-reverse' }]}>
                     <TouchableOpacity
                       style={[
                         styles.partnerCountButton,
@@ -605,16 +629,6 @@ export default function Onboarding() {
               )}
             </View>
 
-            {showDatePicker && (
-              <DateTimePicker
-                value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
-                maximumDate={new Date()}
-              />
-            )}
-
             <TouchableOpacity
               style={[
                 styles.submitButton,
@@ -648,6 +662,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fffe',
+    paddingTop: 32,
   },
   scrollContent: {
     flexGrow: 1,
@@ -783,17 +798,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
     paddingBottom: 8,
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#008553',
+    textAlign: 'center',
+    alignSelf: 'center',
   },
   medicalSurveyContainer: {
     gap: 16,
   },
   checkboxContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
@@ -844,23 +862,49 @@ const styles = StyleSheet.create({
   },
   bmiContainer: {
     backgroundColor: '#f0fdf4',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
   },
   bmiLabel: {
-    fontSize: 16,
     color: '#008553',
-    fontWeight: '600',
   },
   bmiValue: {
-    fontSize: 24,
     color: '#008553',
-    fontWeight: 'bold',
     marginVertical: 4,
   },
   bmiCategory: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'right',
+    width: '100%',
+  },
+  metricBox: {
+    width: '100%',
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 12,
+    alignItems: 'flex-start',
+    alignSelf: 'flex-end',
+  },
+  metricLabel: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 4,
+    textAlign: 'right',
+    width: '100%',
+  },
+  metricValue: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    marginBottom: 4,
+    textAlign: 'right',
+    width: '100%',
+  },
+  packYearsBox: {
+    backgroundColor: '#fffbe6',
+  },
+  packYearsLabel: {
+    color: '#bfa100',
+  },
+  packYearsValue: {
+    color: '#bfa100',
   },
 }); 

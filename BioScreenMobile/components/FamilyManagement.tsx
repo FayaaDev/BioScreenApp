@@ -159,8 +159,9 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.relationship || !formData.gender || !formData.dateOfBirth) {
-      showToast({ title: 'خطأ', description: 'يرجى ملء جميع الحقول', type: 'error' });
+    const errors = validateForm();
+    if (errors.length > 0) {
+      showToast({ title: 'خطأ', description: errors[0], type: 'error' });
       return;
     }
     if (editingMember) {
@@ -212,6 +213,9 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     if (!formData.dateOfBirth) errors.push('تاريخ الميلاد مطلوب');
     if (!formData.height.trim()) errors.push('الطول مطلوب');
     if (!formData.weight.trim()) errors.push('الوزن مطلوب');
+    if (formData.isSmoker && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
+      errors.push('يرجى تحديد كمية ومدة التدخين');
+    }
     return errors;
   };
 
@@ -235,6 +239,12 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     return 'حاول مرة أخرى';
   };
 
+  const calculatePackYears = (smokingDetails: { amount: string; duration: string }): number => {
+    const amount = parseFloat(smokingDetails.amount);
+    const duration = parseFloat(smokingDetails.duration);
+    return amount * duration;
+  };
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>إدارة العائلة</Text>
@@ -251,6 +261,12 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <Text style={styles.memberName}>{member.name}</Text>
                   <Text style={styles.memberDetails}>{relationshipOptions.find(r => r.value === member.relationship)?.label || member.relationship} • {member.gender === 'male' ? 'ذكر' : 'أنثى'}</Text>
                   <Text style={styles.memberDetails}>تاريخ الميلاد: {member.dateOfBirth}</Text>
+                  {member.isSmoker && member.smokingDetails && (
+                    <View style={styles.packYearsBox}>
+                      <Text style={styles.packYearsLabel}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={styles.packYearsValue}>{calculatePackYears(member.smokingDetails)}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
                 <View style={styles.memberActions}>
                   <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(member)}>
@@ -509,6 +525,12 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       })
                     }
                   />
+                  {formData.smokingDetails.amount && formData.smokingDetails.duration && (
+                    <View style={styles.packYearsBox}>
+                      <Text style={styles.packYearsLabel}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={styles.packYearsValue}>{calculatePackYears(formData.smokingDetails)}</Text>
+                    </View>
+                  )}
                 </View>
               )}
 
@@ -871,5 +893,29 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 24,
     width: '100%',
+  },
+  packYearsText: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  packYearsBox: {
+    backgroundColor: '#fffbe6',
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 12,
+    alignItems: 'flex-start',
+  },
+  packYearsLabel: {
+    color: '#bfa100',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  packYearsValue: {
+    color: '#bfa100',
+    fontWeight: 'bold',
+    fontSize: 28,
+    marginBottom: 4,
   },
 }); 
