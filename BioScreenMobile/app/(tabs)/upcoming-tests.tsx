@@ -18,7 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { STATUS_COLORS, calculateNextDueDate } from '../../lib/screening-utils';
+import { STATUS_COLORS, calculateNextDueDate, ScreeningWithDetails } from '../../lib/screening-utils';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useContext } from 'react';
@@ -26,21 +26,14 @@ import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
-type Screening = {
-  id: number;
-  status: string;
-  screening?: { name: string; frequencyYears?: number; description?: string; priority?: string; startAge?: number; };
-  name?: string;
-};
-
 type UserDataResponse = {
   user: { name?: string; dateOfBirth: string; gender: string };
-  screenings: Screening[];
+  screenings: ScreeningWithDetails[];
 };
 
 type FamilyMemberResponse = {
   familyMember: { name: string; dateOfBirth: string; gender: string };
-  screenings: Screening[];
+  screenings: ScreeningWithDetails[];
 };
 
 // Helper function to get frequency text in Arabic only
@@ -56,14 +49,14 @@ const getFrequencyText = (years: number) => {
 
 // Placeholder for ScreeningCard
 const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirthDate }: {
-  screening: Screening;
+  screening: ScreeningWithDetails;
   onSchedule: () => void;
   onMarkCompleted: () => void;
   isRTL: boolean;
   userBirthDate: string;
 }) => {
   const [showTip, setShowTip] = React.useState(false);
-  const priority = screening.screening?.priority;
+  const priority = screening.screening.priority;
   let priorityLabel = '';
   let priorityColor = '';
   if (priority === 'strongly_recommended') {
@@ -193,7 +186,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               </TouchableOpacity>
             </Tooltip>
           ) : null}
-          <Text style={styles.screeningTitle}>{screening.screening?.name || screening.name}</Text>
+          <Text style={styles.screeningTitle}>{screening.screening.name}</Text>
         </View>
         {/* Status label below name row */}
         <View style={{ width: '100%', marginTop: 4, alignItems: 'flex-end' }}>
@@ -231,7 +224,7 @@ function calculateAge(dateOfBirth: string) {
   return age;
 }
 
-function calculateScreeningStats(screenings: any[]) {
+function calculateScreeningStats(screenings: ScreeningWithDetails[]) {
   const stats = { due: 0, overdue: 0, later: 0, completed: 0 };
   screenings.forEach((s) => {
     if (s.status === 'due') stats.due++;
@@ -242,22 +235,29 @@ function calculateScreeningStats(screenings: any[]) {
   return stats;
 }
 
-function filterScreeningsByStatus(screenings: any[], status: string) {
-  return screenings.filter((s) => s.status === status);
+function filterScreeningsByStatus(screenings: ScreeningWithDetails[], status: string) {
+  if (status === 'all') {
+    // For 'all' status, show all screenings except completed non-repeatable ones
+    return screenings.filter(s => {
+      if (s.status !== 'completed') return true;
+      // For completed screenings, only show repeatable ones with a next due date
+      return s.screening.frequencyYears > 0 && s.nextDue;
+    });
+  }
+  return screenings.filter(s => s.status === status);
 }
 
 // Add sorting function for screenings
-function sortScreenings(screenings: Screening[]) {
+function sortScreenings(screenings: ScreeningWithDetails[]) {
   const statusOrder = { due: 0, overdue: 1, later: 2 };
   return [...screenings].sort((a, b) => {
     // First sort by status
-    const statusDiff = (statusOrder[a.status as keyof typeof statusOrder] || 0) - (statusOrder[b.status as keyof typeof statusOrder] || 0);
+    const statusDiff = (statusOrder[a.status as keyof typeof statusOrder] || 3) - 
+                      (statusOrder[b.status as keyof typeof statusOrder] || 3);
     if (statusDiff !== 0) return statusDiff;
-
-    // If status is the same, sort by priority
-    const aPriority = a.screening?.priority === 'strongly_recommended' ? 0 : 1;
-    const bPriority = b.screening?.priority === 'strongly_recommended' ? 0 : 1;
-    return aPriority - bPriority;
+    
+    // Then sort by name
+    return (a.screening.name || '').localeCompare(b.screening.name || '');
   });
 }
 
@@ -370,11 +370,11 @@ export default function UpcomingTests() {
     },
   });
 
-  const handleMarkCompleted = (screening: any) => {
+  const handleMarkCompleted = (screening: ScreeningWithDetails) => {
     markCompletedMutation.mutate(screening);
   };
 
-  const handleScheduleScreening = async (screening: any) => {
+  const handleScheduleScreening = async (screening: ScreeningWithDetails) => {
     const sehhatyAppStoreUrl = 'https://apps.apple.com/sa/app/%D8%B5%D8%AD%D8%AA%D9%8A-sehhaty/id1459266578?l';
     try {
       const supported = await Linking.canOpenURL(sehhatyAppStoreUrl);
@@ -399,7 +399,7 @@ export default function UpcomingTests() {
   // Data normalization
   let familyMembers: any[] = Array.isArray(familyMembersData) ? familyMembersData : [];
   let currentPerson: { name?: string; dateOfBirth: string; gender: string } = { dateOfBirth: '', gender: '' };
-  let screenings: Screening[] = [];
+  let screenings: ScreeningWithDetails[] = [];
 
   if (selectedPersonData && typeof selectedPersonData === 'object' && selectedPersonData !== null) {
     if (selectedPersonId === 'user' && 'user' in selectedPersonData && 'screenings' in selectedPersonData) {
@@ -433,7 +433,13 @@ export default function UpcomingTests() {
 
   let filteredScreenings = screenings;
   if (activeTab === 'all') {
-    filteredScreenings = screenings.filter((s) => s.status !== 'completed');
+    // Only filter out completed screenings that are not repeatable
+    filteredScreenings = screenings.filter((s) => {
+      // Keep the screening if it's not completed
+      if (s.status !== 'completed') return true;
+      // For completed screenings, only keep them if they are repeatable and have a next due date
+      return s.screening.frequencyYears > 0 && s.nextDue;
+    });
     filteredScreenings = sortScreenings(filteredScreenings);
   } else if (activeTab !== 'all') {
     filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
@@ -531,7 +537,7 @@ export default function UpcomingTests() {
         ) : (
           filteredScreenings.map((screening, index) => (
             <ScreeningCard
-              key={screening.id !== 0 ? screening.id : `${screening.screening?.name || screening.name}-${index}`}
+              key={screening.id !== 0 ? screening.id : `${screening.screening.name}-${index}`}
               screening={screening}
               onSchedule={() => handleScheduleScreening(screening)}
               onMarkCompleted={() => handleMarkCompleted(screening)}

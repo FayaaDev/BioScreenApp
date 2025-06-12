@@ -1,6 +1,7 @@
 import { users, screenings, userScreenings, familyMembers, familyMemberScreenings, type User, type InsertUser, type Screening, type InsertScreening, type UserScreening, type InsertUserScreening, type FamilyMember, type InsertFamilyMember, type FamilyMemberScreening, type InsertFamilyMemberScreening } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import { insertUserSchema, insertFamilyMemberSchema, insertScreeningSchema } from '@shared/schema';
 
 export interface IStorage {
   // User operations
@@ -28,12 +29,13 @@ export interface IStorage {
   createUserScreening(userScreening: InsertUserScreening): Promise<UserScreening>;
   updateUserScreening(id: number, userScreening: Partial<InsertUserScreening>): Promise<UserScreening | undefined>;
   getUserScreeningById(id: number): Promise<UserScreening | undefined>;
+  deleteUserScreening(id: number): Promise<boolean>;
   
   // Family member screening operations  
   createFamilyMemberScreening(familyMemberScreening: InsertFamilyMemberScreening): Promise<FamilyMemberScreening>;
   getFamilyMemberScreenings(familyMemberId: number): Promise<FamilyMemberScreening[]>;
   updateFamilyMemberScreening(id: number, familyMemberScreening: Partial<InsertFamilyMemberScreening>): Promise<FamilyMemberScreening | undefined>;
-  getScreening(id: number): Promise<Screening | undefined>;
+  deleteFamilyMemberScreening(id: number): Promise<boolean>;
   
   // Initialize with default screenings
   initializeDefaultScreenings(): Promise<void>;
@@ -66,14 +68,25 @@ export class MemStorage implements IStorage {
     this.initialized = false;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(userData: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
-      ...insertUser, 
+      ...userData,
       id,
-      password: insertUser.password || "temp_password",
-      isAdmin: insertUser.isAdmin || false,
-      createdAt: new Date().toISOString()
+      password: userData.password || "temp_password",
+      isAdmin: userData.isAdmin || false,
+      createdAt: new Date().toISOString(),
+      isDiabetic: userData.isDiabetic ?? null,
+      isHypertensive: userData.isHypertensive ?? null,
+      isCholesterol: userData.isCholesterol ?? null,
+      isSmoker: userData.isSmoker ?? null,
+      smokingAmount: userData.smokingAmount ?? null,
+      smokingDuration: userData.smokingDuration ?? null,
+      height: userData.height ?? null,
+      weight: userData.weight ?? null,
+      isPregnant: userData.isPregnant ?? null,
+      isSexuallyActive: userData.isSexuallyActive ?? null,
+      sexualPartnerCount: userData.sexualPartnerCount ?? null
     };
     this.users.set(id, user);
     return user;
@@ -100,12 +113,23 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
 
-  async createFamilyMember(insertFamilyMember: InsertFamilyMember): Promise<FamilyMember> {
+  async createFamilyMember(familyMemberData: InsertFamilyMember): Promise<FamilyMember> {
     const id = this.currentFamilyMemberId++;
     const familyMember: FamilyMember = { 
-      ...insertFamilyMember, 
+      ...familyMemberData,
       id,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isDiabetic: familyMemberData.isDiabetic ?? null,
+      isHypertensive: familyMemberData.isHypertensive ?? null,
+      isCholesterol: familyMemberData.isCholesterol ?? null,
+      isSmoker: familyMemberData.isSmoker ?? null,
+      smokingAmount: familyMemberData.smokingAmount ?? null,
+      smokingDuration: familyMemberData.smokingDuration ?? null,
+      height: familyMemberData.height ?? null,
+      weight: familyMemberData.weight ?? null,
+      isPregnant: familyMemberData.isPregnant ?? null,
+      isSexuallyActive: familyMemberData.isSexuallyActive ?? null,
+      sexualPartnerCount: familyMemberData.sexualPartnerCount ?? null
     };
     this.familyMembers.set(id, familyMember);
     return familyMember;
@@ -139,15 +163,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.screenings.values()).filter(s => s.isActive);
   }
 
-  async createScreening(insertScreening: InsertScreening): Promise<Screening> {
+  async createScreening(screeningData: InsertScreening): Promise<Screening> {
     const id = this.currentScreeningId++;
     const screening: Screening = { 
-      ...insertScreening,
+      ...screeningData,
       id,
       isActive: true,
-      endAge: insertScreening.endAge ?? null,
-      iconUrl: insertScreening.iconUrl ?? null,
-      priority: insertScreening.priority ?? "recommended"
+      endAge: screeningData.endAge ?? null,
+      iconUrl: screeningData.iconUrl ?? null,
+      priority: screeningData.priority ?? "recommended",
+      specialCode: screeningData.specialCode ?? null
     };
     this.screenings.set(id, screening);
     return screening;
@@ -321,21 +346,58 @@ export class MemStorage implements IStorage {
   async getUserScreeningById(id: number): Promise<UserScreening | undefined> {
     return this.userScreenings.get(id);
   }
+
+  async deleteUserScreening(id: number): Promise<boolean> {
+    try {
+      const [deleted] = await db.delete(userScreenings)
+        .where(eq(userScreenings.id, id))
+        .returning();
+      return !!deleted;
+    } catch (error) {
+      console.error('Error deleting user screening:', error);
+      return false;
+    }
+  }
+
+  async deleteFamilyMemberScreening(id: number): Promise<boolean> {
+    try {
+      const [deleted] = await db.delete(familyMemberScreenings)
+        .where(eq(familyMemberScreenings.id, id))
+        .returning();
+      return !!deleted;
+    } catch (error) {
+      console.error('Error deleting family member screening:', error);
+      return false;
+    }
+  }
 }
 
 // Database storage implementation
 export class DatabaseStorage implements IStorage {
   private initialized: boolean = false;
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values({
-        ...insertUser,
-        createdAt: new Date().toISOString()
-      })
-      .returning();
-    return user;
+  async createUser(userData: InsertUser): Promise<User> {
+    const result = await db.insert(users).values({
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      gender: userData.gender,
+      dateOfBirth: userData.dateOfBirth,
+      isAdmin: userData.isAdmin,
+      createdAt: new Date().toISOString(),
+      isDiabetic: userData.isDiabetic ?? null,
+      isHypertensive: userData.isHypertensive ?? null,
+      isCholesterol: userData.isCholesterol ?? null,
+      isSmoker: userData.isSmoker ?? null,
+      smokingAmount: userData.smokingAmount ?? null,
+      smokingDuration: userData.smokingDuration ?? null,
+      height: userData.height ?? null,
+      weight: userData.weight ?? null,
+      isPregnant: userData.isPregnant ?? null,
+      isSexuallyActive: userData.isSexuallyActive ?? null,
+      sexualPartnerCount: userData.sexualPartnerCount ?? null
+    }).returning();
+    return result[0];
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -361,15 +423,27 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createFamilyMember(insertFamilyMember: InsertFamilyMember): Promise<FamilyMember> {
-    const [familyMember] = await db
-      .insert(familyMembers)
-      .values({
-        ...insertFamilyMember,
-        createdAt: new Date().toISOString()
-      })
-      .returning();
-    return familyMember;
+  async createFamilyMember(familyMemberData: InsertFamilyMember): Promise<FamilyMember> {
+    const result = await db.insert(familyMembers).values({
+      name: familyMemberData.name,
+      gender: familyMemberData.gender,
+      dateOfBirth: familyMemberData.dateOfBirth,
+      userId: familyMemberData.userId,
+      relationship: familyMemberData.relationship,
+      createdAt: new Date().toISOString(),
+      isDiabetic: familyMemberData.isDiabetic ?? null,
+      isHypertensive: familyMemberData.isHypertensive ?? null,
+      isCholesterol: familyMemberData.isCholesterol ?? null,
+      isSmoker: familyMemberData.isSmoker ?? null,
+      smokingAmount: familyMemberData.smokingAmount ?? null,
+      smokingDuration: familyMemberData.smokingDuration ?? null,
+      height: familyMemberData.height ?? null,
+      weight: familyMemberData.weight ?? null,
+      isPregnant: familyMemberData.isPregnant ?? null,
+      isSexuallyActive: familyMemberData.isSexuallyActive ?? null,
+      sexualPartnerCount: familyMemberData.sexualPartnerCount ?? null
+    }).returning();
+    return result[0];
   }
 
   async getFamilyMembers(userId: number): Promise<FamilyMember[]> {
@@ -402,12 +476,21 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(screenings).where(eq(screenings.isActive, true));
   }
 
-  async createScreening(insertScreening: InsertScreening): Promise<Screening> {
-    const [screening] = await db
-      .insert(screenings)
-      .values({ ...insertScreening, isActive: true })
-      .returning();
-    return screening;
+  async createScreening(screeningData: InsertScreening): Promise<Screening> {
+    const result = await db.insert(screenings).values({
+      name: screeningData.name,
+      description: screeningData.description,
+      category: screeningData.category,
+      genderApplicable: screeningData.genderApplicable,
+      startAge: screeningData.startAge,
+      endAge: screeningData.endAge ?? null,
+      frequencyYears: screeningData.frequencyYears,
+      isActive: true,
+      iconUrl: screeningData.iconUrl ?? null,
+      priority: screeningData.priority ?? 'recommended',
+      specialCode: screeningData.specialCode ?? null
+    }).returning();
+    return result[0];
   }
 
   async updateScreening(id: number, updates: Partial<InsertScreening>): Promise<Screening | undefined> {
@@ -549,6 +632,30 @@ export class DatabaseStorage implements IStorage {
   async getUserScreeningById(id: number): Promise<UserScreening | undefined> {
     const result = await db.select().from(userScreenings).where(eq(userScreenings.id, id));
     return result[0];
+  }
+
+  async deleteUserScreening(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(userScreenings)
+        .where(eq(userScreenings.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting user screening:', error);
+      return false;
+    }
+  }
+
+  async deleteFamilyMemberScreening(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(familyMemberScreenings)
+        .where(eq(familyMemberScreenings.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting family member screening:', error);
+      return false;
+    }
   }
 }
 

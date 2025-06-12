@@ -674,9 +674,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Skip STD screenings (STD)for partners with a single spouse.
         if (screening.specialCode === "SEX" && familyMember.sexualPartnerCount === "single") {
           return false;
+        }
 
-
-        } // Skip Heart screening (RF) for medically free users.
+        // Skip Heart screening (RF) for medically free users.
         if (
           screening.specialCode === "RF" &&
           !familyMember.isDiabetic &&
@@ -708,6 +708,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingScreening = existingFamilyScreenings.find(fms => fms.screeningId === screening.id);
         
         if (existingScreening) {
+          // Dynamically calculate status if not completed
+          let status = existingScreening.status;
+          if (status !== "completed") {
+            const now = new Date();
+            
+            // For repeatable screenings, use nextDue date to determine status
+            if (screening.frequencyYears > 0) {
+              const nextDue = new Date(existingScreening.nextDue);
+              const oneYearAfterNextDue = new Date(nextDue);
+              oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
+              
+              if (now < nextDue) {
+                status = "later";
+              } else if (now >= nextDue && now < oneYearAfterNextDue) {
+                status = "due";
+              } else {
+                status = "overdue";
+              }
+            } else {
+              // For non-repeatable screenings, use the original age-based logic
+              const birthDate = new Date(familyMember.dateOfBirth);
+              const birthYear = birthDate.getFullYear();
+              const currentYear = now.getFullYear();
+              const targetYear = birthYear + screening.startAge;
+              
+              if (currentYear < targetYear) {
+                status = "later";
+              } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+                status = "due";
+              } else {
+                status = "overdue";
+              }
+            }
+
+            // Update the screening status in the database if it has changed
+            if (status !== existingScreening.status) {
+              storage.updateFamilyMemberScreening(existingScreening.id, {
+                status: status,
+                nextDue: existingScreening.nextDue // Keep the existing nextDue date
+              });
+            }
+          }
+
           // Return the existing screening record with full details
           return {
             id: existingScreening.id,
@@ -715,7 +758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             screeningId: screening.id,
             lastCompleted: existingScreening.lastCompleted,
             nextDue: existingScreening.nextDue,
-            status: existingScreening.status,
+            status: status,
             screening
           };
         }
@@ -923,35 +966,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // If completing a screening and it has a frequency
       if (updates.status === 'completed' && screening.frequencyYears > 0) {
-        // After updating, check for other incomplete screenings (excluding the one just updated)
-        const nextDue = new Date(updates.nextDue!);
-        const now = new Date();
-        let newStatus: "later" | "due" | "overdue";
-        // More precise status calculation using full date
-        const oneYearAfterNextDue = new Date(nextDue);
-        oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
-        if (now < nextDue) {
-          newStatus = "later";
-        } else if (now >= nextDue && now < oneYearAfterNextDue) {
-          newStatus = "due";
-        } else {
-          newStatus = "overdue";
-        }
-        // Check for other incomplete screening for this user and screeningId (excluding the just-completed one)
-        const otherIncomplete = (await storage.getUserScreenings(currentScreening.userId))
-          .find(us => us.screeningId === screening.id && us.status !== 'completed' && us.id !== id);
-        if (!otherIncomplete) {
-          console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDue.toISOString()}, status: ${newStatus}`);
-          await storage.createUserScreening({
-            userId: currentScreening.userId,
-            screeningId: screening.id,
-            lastCompleted: null,
-            nextDue: nextDue.toISOString(),
-            status: newStatus
+        // Check for existing future screening
+        const existingScreenings = await storage.getUserScreenings(currentScreening.userId);
+        const hasFutureScreening = existingScreenings.some(us => 
+          us.screeningId === screening.id && 
+          us.status === 'later' && 
+          us.id !== id
+        );
+
+        if (hasFutureScreening) {
+          console.log(`[PUT /api/user-screenings/${id}] Not creating repeatable screening: another future screening exists`);
+          res.status(400).json({ 
+            message: "You already have a future test scheduled. Please complete your current tests first.",
+            error: "FUTURE_TEST_EXISTS"
           });
-        } else {
-          console.log(`[PUT /api/user-screenings/${id}] Not creating repeatable screening: another incomplete exists with id ${otherIncomplete.id} and status ${otherIncomplete.status}`);
+          return;
         }
+
+        // Calculate the next due date based on the completed test's due date
+        const completedTestDueDate = new Date(currentScreening.nextDue);
+        const nextDue = new Date(completedTestDueDate);
+        nextDue.setFullYear(nextDue.getFullYear() + screening.frequencyYears);
+        
+        // Ensure the next due date is in the future
+        const now = new Date();
+        if (nextDue <= now) {
+          nextDue.setFullYear(now.getFullYear() + screening.frequencyYears);
+        }
+        
+        console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDue.toISOString()}, status: later`);
+        // Create the next screening with the calculated next due date
+        await storage.createUserScreening({
+          userId: currentScreening.userId,
+          screeningId: screening.id,
+          lastCompleted: null,
+          nextDue: nextDue.toISOString(),
+          status: "later" // Always set new screenings as "later"
+        });
+        // Delete the completed screening
+        await storage.deleteUserScreening(id);
       } else if (updates.status === 'completed' && screening.frequencyYears === 0) {
         // For non-repeatable screenings, just mark as completed and don't create a new one
         console.log(`[PUT /api/user-screenings/${id}] Non-repeatable screening marked as completed, no new screening created`);
@@ -987,15 +1040,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ message: "Screening not found" });
         return;
       }
+
+      // Get existing family member screening records
+      const existingFamilyScreenings = await storage.getFamilyMemberScreenings(familyId);
+      const existingScreening = existingFamilyScreenings.find(fms => fms.screeningId === screeningId);
       
       // Create or update the family member screening record
-      const familyScreening = await storage.createFamilyMemberScreening({
-        familyMemberId: familyId,
-        screeningId: screeningId,
-        lastCompleted: lastCompleted || null,
-        nextDue: nextDue || new Date().toISOString(),
-        status: status || "completed"
-      });
+      let familyScreening;
+      if (existingScreening) {
+        familyScreening = await storage.updateFamilyMemberScreening(existingScreening.id, {
+          lastCompleted: lastCompleted || new Date().toISOString(),
+          nextDue: existingScreening.nextDue, // Keep the existing next due date
+          status: status || "completed"
+        });
+      } else {
+        // For new screenings, calculate based on age
+        const birthDate = new Date(familyMember.dateOfBirth);
+        const birthYear = birthDate.getFullYear();
+        const targetYear = birthYear + screening.startAge;
+        const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
+        
+        familyScreening = await storage.createFamilyMemberScreening({
+          familyMemberId: familyId,
+          screeningId: screeningId,
+          lastCompleted: lastCompleted || new Date().toISOString(),
+          nextDue: nextDue.toISOString(),
+          status: status || "completed"
+        });
+      }
+
+      if (!familyScreening) {
+        res.status(500).json({ message: "Failed to create or update family member screening" });
+        return;
+      }
+
+      // If completing a screening and it has a frequency, create the next screening
+      if (screening.frequencyYears > 0) {
+        // Check for existing future screening
+        const hasFutureScreening = existingFamilyScreenings.some(fms => 
+          fms.screeningId === screening.id && 
+          fms.status === 'later' && 
+          fms.id !== familyScreening.id
+        );
+
+        if (hasFutureScreening) {
+          console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Not creating repeatable screening: another future screening exists`);
+          res.status(400).json({ 
+            message: "You already have a future test scheduled. Please complete your current tests first.",
+            error: "FUTURE_TEST_EXISTS"
+          });
+          return;
+        }
+
+        // Calculate the next due date based on the completed test's due date
+        const completedTestDueDate = new Date(familyScreening.nextDue);
+        const nextDueDate = new Date(completedTestDueDate);
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + screening.frequencyYears);
+
+        console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: later`);
+        // Create the next screening with the calculated next due date
+        await storage.createFamilyMemberScreening({
+          familyMemberId: familyId,
+          screeningId: screening.id,
+          lastCompleted: null,
+          nextDue: nextDueDate.toISOString(),
+          status: "later" // Always set new screenings as "later"
+        });
+        // Delete the completed screening
+        await storage.deleteFamilyMemberScreening(familyScreening.id);
+      } else {
+        console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Non-repeatable screening marked as completed, no new screening created`);
+      }
       
       res.json(familyScreening);
     } catch (error) {
@@ -1038,13 +1153,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate new next due date based on family member's age and screening frequency
-      const memberAge = new Date().getFullYear() - new Date(familyMember.dateOfBirth).getFullYear();
-      const birthYear = new Date(familyMember.dateOfBirth).getFullYear();
+      const birthDate = new Date(familyMember.dateOfBirth);
+      const birthYear = birthDate.getFullYear();
+      const currentYear = new Date().getFullYear();
       const targetYear = birthYear + screening.startAge;
       const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
       
       // Determine new status
-      const currentYear = new Date().getFullYear();
       let status: "due" | "overdue" | "later";
       
       if (currentYear < targetYear) {
