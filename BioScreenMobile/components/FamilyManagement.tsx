@@ -44,15 +44,6 @@ interface FamilyMember {
   };
 }
 
-const relationshipOptions = [
-  { value: 'father', label: 'الوالد' },
-  { value: 'mother', label: 'الوالدة' },
-  { value: 'spouse', label: 'الزوج/الزوجة' },
-  { value: 'child', label: 'الابن/الابنة' },
-  { value: 'sibling', label: 'الأخ/الأخت' },
-  { value: 'other', label: 'غيرهم' },
-];
-
 export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; onSwitchPerson?: (id: string) => void }) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -82,7 +73,9 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   });
   const [isRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
     queryKey: ['/api/users', userId, 'family'],
@@ -157,13 +150,75 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
         partnerCount: 'single',
       },
     });
+    setSubmitAttempted(false);
+    setValidationErrors({});
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'الرجاء إدخال الاسم';
+    }
+
+    if (!formData.relationship.trim()) {
+      newErrors.relationship = 'الرجاء إدخال القرابة';
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = 'الرجاء اختيار الجنس';
+    }
+
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'الرجاء إدخال تاريخ الميلاد';
+    } else {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const minDate = new Date();
+      minDate.setFullYear(today.getFullYear() - 120); // Maximum age of 120 years
+
+      if (isNaN(birthDate.getTime())) {
+        newErrors.dateOfBirth = 'تاريخ الميلاد غير صالح';
+      } else if (birthDate > today) {
+        newErrors.dateOfBirth = 'تاريخ الميلاد لا يمكن أن يكون في المستقبل';
+      } else if (birthDate < minDate) {
+        newErrors.dateOfBirth = 'تاريخ الميلاد غير منطقي';
+      }
+    }
+
+    if (!formData.height.trim()) {
+      newErrors.height = 'الرجاء إدخال الطول';
+    } else if (isNaN(parseFloat(formData.height)) || parseFloat(formData.height) <= 0) {
+      newErrors.height = 'الرجاء إدخال طول صحيح';
+    }
+
+    if (!formData.weight.trim()) {
+      newErrors.weight = 'الرجاء إدخال الوزن';
+    } else if (isNaN(parseFloat(formData.weight)) || parseFloat(formData.weight) <= 0) {
+      newErrors.weight = 'الرجاء إدخال وزن صحيح';
+    }
+
+    if (formData.isSmoker) {
+      if (!formData.smokingDetails?.amount) {
+        newErrors.smokingAmount = 'الرجاء تحديد كمية التدخين';
+      } else if (isNaN(parseFloat(formData.smokingDetails.amount)) || parseFloat(formData.smokingDetails.amount) <= 0) {
+        newErrors.smokingAmount = 'الرجاء إدخال كمية صحيحة';
+      }
+
+      if (!formData.smokingDetails?.duration) {
+        newErrors.smokingDuration = 'الرجاء تحديد مدة التدخين';
+      } else if (isNaN(parseFloat(formData.smokingDetails.duration)) || parseFloat(formData.smokingDetails.duration) <= 0) {
+        newErrors.smokingDuration = 'الرجاء إدخال مدة صحيحة';
+      }
+    }
+
+    setValidationErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
-    const errors = validateForm();
-    if (errors.length > 0) {
-      showToast({ title: 'خطأ', description: errors[0], type: 'error' });
+    if (!validateForm()) {
       return;
     }
     if (editingMember) {
@@ -207,20 +262,6 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     showToast({ title: 'تم التبديل', type: 'info' });
   };
 
-  const validateForm = () => {
-    const errors: string[] = [];
-    if (!formData.name.trim()) errors.push('الاسم مطلوب');
-    if (!formData.relationship) errors.push('العلاقة مطلوبة');
-    if (!formData.gender) errors.push('الجنس مطلوب');
-    if (!formData.dateOfBirth) errors.push('تاريخ الميلاد مطلوب');
-    if (!formData.height.trim()) errors.push('الطول مطلوب');
-    if (!formData.weight.trim()) errors.push('الوزن مطلوب');
-    if (formData.isSmoker && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
-      errors.push('يرجى تحديد كمية ومدة التدخين');
-    }
-    return errors;
-  };
-
   const calculateBMI = (height: string, weight: string): number | null => {
     const heightCm = parseFloat(height);
     const weightKg = parseFloat(weight);
@@ -261,7 +302,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               <View key={member.id} style={styles.memberRow}>
                 <TouchableOpacity style={styles.memberInfo} onPress={() => handleSwitch(member.id.toString())}>
                   <Text style={styles.memberName}>{member.name}</Text>
-                  <Text style={styles.memberDetails}>{relationshipOptions.find(r => r.value === member.relationship)?.label || member.relationship} • {member.gender === 'male' ? 'ذكر' : 'أنثى'}</Text>
+                  <Text style={styles.memberDetails}>{member.relationship} • {member.gender === 'male' ? 'ذكر' : 'أنثى'}</Text>
                   <Text style={styles.memberDetails}>تاريخ الميلاد: {member.dateOfBirth}</Text>
                   {member.isSmoker && member.smokingDetails && (
                     <View style={styles.packYearsBox}>
@@ -312,7 +353,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               style={[
                 styles.input,
                 { textAlign: 'right', writingDirection: 'rtl' },
-                submitAttempted && !formData.name.trim() && styles.inputError,
+                submitAttempted && validationErrors.name && styles.inputError,
               ]}
               placeholder="الاسم"
               placeholderTextColor="#999"
@@ -324,27 +365,33 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   return;
                 }
                 setFormData({ ...formData, name: text });
+                if (validationErrors.name) {
+                  setValidationErrors(prev => ({ ...prev, name: '' }));
+                }
               }}
             />
-            <View style={{ alignItems: 'center', width: '100%' }}>
-              <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>القرابة</Text>
-              <View style={{ flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-                {relationshipOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[styles.optionButton, formData.relationship === option.value && styles.optionButtonSelected]}
-                    onPress={() => setFormData({ ...formData, relationship: option.value })}
-                  >
-                    <Text style={[
-                      styles.optionButtonText,
-                      formData.relationship === option.value && styles.optionButtonTextSelected
-                    ]}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+            {submitAttempted && validationErrors.name && (
+              <Text style={styles.errorText}>{validationErrors.name}</Text>
+            )}
+            <TextInput
+              style={[
+                styles.input,
+                { textAlign: 'right', writingDirection: 'rtl' },
+                submitAttempted && validationErrors.relationship && styles.inputError,
+              ]}
+              placeholder="القرابة"
+              placeholderTextColor="#999"
+              value={formData.relationship}
+              onChangeText={(text) => {
+                setFormData({ ...formData, relationship: text });
+                if (validationErrors.relationship) {
+                  setValidationErrors(prev => ({ ...prev, relationship: '' }));
+                }
+              }}
+            />
+            {submitAttempted && validationErrors.relationship && (
+              <Text style={styles.errorText}>{validationErrors.relationship}</Text>
+            )}
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
               <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>الجنس</Text>
               <View style={{ flexDirection: 'row-reverse', gap: 8, justifyContent: 'center' }}>
@@ -352,9 +399,14 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.genderButton,
                     formData.gender === 'male' && styles.genderButtonSelected,
-                    submitAttempted && formData.gender !== 'male' && styles.inputError,
+                    submitAttempted && validationErrors.gender && styles.inputError,
                   ]}
-                  onPress={() => setFormData({ ...formData, gender: 'male' })}
+                  onPress={() => {
+                    setFormData({ ...formData, gender: 'male' });
+                    if (validationErrors.gender) {
+                      setValidationErrors(prev => ({ ...prev, gender: '' }));
+                    }
+                  }}
                 >
                   <MaterialIcons
                     name="male"
@@ -374,9 +426,14 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.genderButton,
                     formData.gender === 'female' && styles.genderButtonSelected,
-                    submitAttempted && formData.gender !== 'female' && styles.inputError,
+                    submitAttempted && validationErrors.gender && styles.inputError,
                   ]}
-                  onPress={() => setFormData({ ...formData, gender: 'female' })}
+                  onPress={() => {
+                    setFormData({ ...formData, gender: 'female' });
+                    if (validationErrors.gender) {
+                      setValidationErrors(prev => ({ ...prev, gender: '' }));
+                    }
+                  }}
                 >
                   <MaterialIcons
                     name="female"
@@ -393,21 +450,77 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   </Text>
                 </TouchableOpacity>
               </View>
+              {submitAttempted && validationErrors.gender && (
+                <Text style={styles.errorText}>{validationErrors.gender}</Text>
+              )}
             </View>
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
               <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>تاريخ الميلاد</Text>
-              <DateTimePicker
-                value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    setFormData({ ...formData, dateOfBirth: selectedDate.toISOString().split('T')[0] });
-                  }
+              <TouchableOpacity
+                style={[
+                  styles.datePickerButton,
+                  submitAttempted && validationErrors.dateOfBirth && styles.inputError,
+                ]}
+                onPress={() => {
+                  setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
+                  setShowDatePicker(true);
                 }}
-                maximumDate={new Date()}
-                style={{ alignSelf: 'flex-end', width: '100%' }}
-              />
+              >
+                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
+                  {formData.dateOfBirth
+                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'اختر تاريخ الميلاد'}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <View style={styles.datePickerModal}>
+                  <DateTimePicker
+                    value={tempDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setTempDate(selectedDate);
+                      }
+                    }}
+                    maximumDate={new Date()}
+                    minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                    style={{ alignSelf: 'flex-end', width: '100%' }}
+                  />
+                  <View style={styles.datePickerActions}>
+                    <TouchableOpacity
+                      style={styles.confirmButton}
+                      onPress={() => {
+                        if (tempDate) {
+                          setFormData({ ...formData, dateOfBirth: tempDate.toISOString().split('T')[0] });
+                          if (validationErrors.dateOfBirth) {
+                            setValidationErrors(prev => ({ ...prev, dateOfBirth: '' }));
+                          }
+                        }
+                        setShowDatePicker(false);
+                      }}
+                    >
+                      <Text style={styles.confirmButtonText}>تأكيد</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.cancelDateButton}
+                      onPress={() => {
+                        setShowDatePicker(false);
+                        setTempDate(null);
+                      }}
+                    >
+                      <Text style={styles.cancelDateButtonText}>إلغاء</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              {submitAttempted && validationErrors.dateOfBirth && (
+                <Text style={styles.errorText}>{validationErrors.dateOfBirth}</Text>
+              )}
             </View>
             {/* Medical Survey Section */}
             <View style={styles.section}>
@@ -420,16 +533,22 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.input,
                     { textAlign: 'right', writingDirection: 'rtl' },
-                    submitAttempted && !formData.height.trim() && styles.inputError,
+                    submitAttempted && validationErrors.height && styles.inputError,
                   ]}
                   placeholder="مثال: 170"
                   placeholderTextColor="#999"
                   value={formData.height}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, height: text }));
+                    if (validationErrors.height) {
+                      setValidationErrors(prev => ({ ...prev, height: '' }));
+                    }
                   }}
                   keyboardType="numeric"
                 />
+                {submitAttempted && validationErrors.height && (
+                  <Text style={styles.errorText}>{validationErrors.height}</Text>
+                )}
               </View>
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
@@ -437,16 +556,22 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   style={[
                     styles.input,
                     { textAlign: 'right', writingDirection: 'rtl' },
-                    submitAttempted && !formData.weight.trim() && styles.inputError,
+                    submitAttempted && validationErrors.weight && styles.inputError,
                   ]}
                   placeholder="مثال: 70"
                   placeholderTextColor="#999"
                   value={formData.weight}
                   onChangeText={(text) => {
                     setFormData(prev => ({ ...prev, weight: text }));
+                    if (validationErrors.weight) {
+                      setValidationErrors(prev => ({ ...prev, weight: '' }));
+                    }
                   }}
                   keyboardType="numeric"
                 />
+                {submitAttempted && validationErrors.weight && (
+                  <Text style={styles.errorText}>{validationErrors.weight}</Text>
+                )}
               </View>
               {formData.height && formData.weight && calculateBMI(formData.height, formData.weight) && (
                 <View style={styles.bmiBox}>
@@ -504,45 +629,53 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                     style={[
                       styles.input,
                       { textAlign: 'right', writingDirection: 'rtl' },
-                      submitAttempted && !formData.smokingDetails?.amount && styles.inputError,
+                      submitAttempted && validationErrors.smokingAmount && styles.inputError,
                     ]}
                     placeholder="كم عدد السجائر في اليوم؟"
                     placeholderTextColor="#999"
                     value={formData.smokingDetails.amount}
-                    onChangeText={(text) =>
+                    onChangeText={(text) => {
                       setFormData({
                         ...formData,
                         smokingDetails: {
                           ...formData.smokingDetails,
                           amount: text,
                         },
-                      })
-                    }
+                      });
+                      if (validationErrors.smokingAmount) {
+                        setValidationErrors(prev => ({ ...prev, smokingAmount: '' }));
+                      }
+                    }}
+                    keyboardType="numeric"
                   />
+                  {submitAttempted && validationErrors.smokingAmount && (
+                    <Text style={styles.errorText}>{validationErrors.smokingAmount}</Text>
+                  )}
                   <TextInput
                     style={[
                       styles.input,
                       { textAlign: 'right', writingDirection: 'rtl' },
-                      submitAttempted && !formData.smokingDetails?.duration && styles.inputError,
+                      submitAttempted && validationErrors.smokingDuration && styles.inputError,
                     ]}
                     placeholder="منذ متى يدخن؟ (بالسنوات)"
                     placeholderTextColor="#999"
                     value={formData.smokingDetails.duration}
-                    onChangeText={(text) =>
+                    onChangeText={(text) => {
                       setFormData({
                         ...formData,
                         smokingDetails: {
                           ...formData.smokingDetails,
                           duration: text,
                         },
-                      })
-                    }
+                      });
+                      if (validationErrors.smokingDuration) {
+                        setValidationErrors(prev => ({ ...prev, smokingDuration: '' }));
+                      }
+                    }}
+                    keyboardType="numeric"
                   />
-                  {formData.smokingDetails.amount && formData.smokingDetails.duration && (
-                    <View style={styles.packYearsBox}>
-                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
-                      <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(formData.smokingDetails)}</Text>
-                    </View>
+                  {submitAttempted && validationErrors.smokingDuration && (
+                    <Text style={styles.errorText}>{validationErrors.smokingDuration}</Text>
                   )}
                 </View>
               )}
@@ -577,7 +710,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       style={[
                         styles.partnerCountButton,
                         formData.sexualActivityDetails.partnerCount === 'single' && styles.partnerCountButtonSelected,
-                        submitAttempted && formData.sexualActivityDetails.partnerCount !== 'single' && styles.inputError,
+                        submitAttempted && validationErrors.sexualActivityDetailsPartnerCount && styles.inputError,
                       ]}
                       onPress={() =>
                         setFormData({
@@ -599,7 +732,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       style={[
                         styles.partnerCountButton,
                         formData.sexualActivityDetails.partnerCount === 'multiple' && styles.partnerCountButtonSelected,
-                        submitAttempted && formData.sexualActivityDetails.partnerCount !== 'multiple' && styles.inputError,
+                        submitAttempted && validationErrors.sexualActivityDetailsPartnerCount && styles.inputError,
                       ]}
                       onPress={() =>
                         setFormData({
@@ -939,5 +1072,63 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: '#ef4444',
     borderWidth: 1,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: -4,
+    marginBottom: 8,
+    textAlign: 'right',
+    alignSelf: 'flex-end',
+  },
+  datePickerButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignSelf: 'flex-end',
+    marginTop: 4,
+    marginBottom: 4,
+    width: '100%',
+  },
+  datePickerModal: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  datePickerActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  confirmButton: {
+    backgroundColor: '#008553',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  cancelDateButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  cancelDateButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 }); 

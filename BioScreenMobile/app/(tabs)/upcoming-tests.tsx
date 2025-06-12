@@ -249,7 +249,7 @@ function filterScreeningsByStatus(screenings: ScreeningWithDetails[], status: st
 
 // Add sorting function for screenings
 function sortScreenings(screenings: ScreeningWithDetails[]) {
-  const statusOrder = { due: 0, overdue: 1, later: 2 };
+  const statusOrder = { due: 1, overdue: 2, later: 0 };
   return [...screenings].sort((a, b) => {
     // First sort by status
     const statusDiff = (statusOrder[a.status as keyof typeof statusOrder] || 3) - 

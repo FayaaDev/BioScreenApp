@@ -42,6 +42,7 @@ export default function Profile() {
   const [showAgreement, setShowAgreement] = useState(false);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   useEffect(() => {
@@ -170,7 +171,10 @@ export default function Profile() {
             {isEditing ? (
               <>
                 <TouchableOpacity
-                  onPress={() => setShowDatePicker(true)}
+                  onPress={() => {
+                    setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
+                    setShowDatePicker(true);
+                  }}
                   style={styles.datePickerButton}
                 >
                   <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
@@ -184,18 +188,43 @@ export default function Profile() {
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
-                  <DateTimePicker
-                    value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'default' : 'calendar'}
-                    onChange={(event, selectedDate) => {
-                      setShowDatePicker(false);
-                      if (selectedDate) {
-                        setFormData({ ...formData, dateOfBirth: selectedDate.toISOString().split('T')[0] });
-                      }
-                    }}
-                    maximumDate={new Date()}
-                  />
+                  <View style={styles.datePickerModal}>
+                    <DateTimePicker
+                      value={tempDate || new Date()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'default' : 'calendar'}
+                      onChange={(event, selectedDate) => {
+                        if (selectedDate) {
+                          setTempDate(selectedDate);
+                        }
+                      }}
+                      maximumDate={new Date()}
+                      minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                      style={{ alignSelf: 'flex-end', width: '100%' }}
+                    />
+                    <View style={styles.datePickerActions}>
+                      <TouchableOpacity
+                        style={styles.confirmButton}
+                        onPress={() => {
+                          if (tempDate) {
+                            setFormData({ ...formData, dateOfBirth: tempDate.toISOString().split('T')[0] });
+                          }
+                          setShowDatePicker(false);
+                        }}
+                      >
+                        <Text style={styles.confirmButtonText}>تأكيد</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelDateButton}
+                        onPress={() => {
+                          setShowDatePicker(false);
+                          setTempDate(null);
+                        }}
+                      >
+                        <Text style={styles.cancelDateButtonText}>إلغاء</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 )}
               </>
             ) : (
@@ -559,5 +588,46 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginTop: 4,
     marginBottom: 4,
+    width: '100%',
+  },
+  datePickerModal: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  datePickerActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  confirmButton: {
+    backgroundColor: '#008553',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  cancelDateButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  cancelDateButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 }); 

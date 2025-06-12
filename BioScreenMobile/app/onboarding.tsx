@@ -64,6 +64,7 @@ export default function Onboarding() {
   const router = useRouter();
   const { showToast } = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState<SignupFormData>({
     name: '',
     email: '',
@@ -172,15 +173,8 @@ export default function Onboarding() {
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
     if (selectedDate) {
-      setFormData({
-        ...formData,
-        dateOfBirth: selectedDate.toISOString().split('T')[0],
-      });
-      if (errors.dateOfBirth) {
-        setErrors({ ...errors, dateOfBirth: undefined });
-      }
+      setTempDate(selectedDate);
     }
   };
 
@@ -249,14 +243,69 @@ export default function Onboarding() {
 
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
-              <DateTimePicker
-                value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
-                maximumDate={new Date()}
-                style={{ alignSelf: 'flex-end', width: '100%' }}
-              />
+              <TouchableOpacity
+                style={[
+                  styles.datePickerButton,
+                  errors.dateOfBirth && styles.inputError,
+                ]}
+                onPress={() => {
+                  setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
+                  setShowDatePicker(true);
+                }}
+              >
+                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
+                  {formData.dateOfBirth
+                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'اختر تاريخ الميلاد'}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <View style={styles.datePickerOverlay}>
+                  <View style={styles.datePickerModalBox}>
+                    <DateTimePicker
+                      value={tempDate || new Date()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                      maximumDate={new Date()}
+                      minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                      style={{ width: '100%' }}
+                    />
+                    <View style={styles.datePickerActionsRow}>
+                      <TouchableOpacity
+                        style={styles.confirmButton}
+                        onPress={() => {
+                          if (tempDate) {
+                            setFormData({
+                              ...formData,
+                              dateOfBirth: tempDate.toISOString().split('T')[0],
+                            });
+                            if (errors.dateOfBirth) {
+                              setErrors({ ...errors, dateOfBirth: undefined });
+                            }
+                          }
+                          setShowDatePicker(false);
+                        }}
+                      >
+                        <Text style={styles.confirmButtonText}>تأكيد</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelDateButton}
+                        onPress={() => {
+                          setShowDatePicker(false);
+                          setTempDate(null);
+                        }}
+                      >
+                        <Text style={styles.cancelDateButtonText}>إلغاء</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              )}
               {errors.dateOfBirth && (
                 <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
               )}
@@ -751,7 +800,7 @@ const styles = StyleSheet.create({
   genderButtonTextSelected: {
     color: '#fff',
   },
-  dateInput: {
+  datePickerButton: {
     height: 48,
     borderWidth: 1,
     borderColor: '#ddd',
@@ -760,12 +809,59 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  dateInputText: {
-    fontSize: 16,
-    color: '#333',
+  datePickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
-  dateInputPlaceholder: {
-    color: '#999',
+  datePickerModalBox: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 24,
+    width: '85%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  datePickerActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 16,
+  },
+  confirmButton: {
+    backgroundColor: '#008553',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelDateButton: {
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelDateButtonText: {
+    color: '#008553',
+    fontSize: 16,
+    fontWeight: '600',
   },
   submitButton: {
     height: 48,
