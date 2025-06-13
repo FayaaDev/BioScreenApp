@@ -74,7 +74,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   if (screening.status === 'later' || screening.status === 'laterRecreated') {
     if (screening.status === 'laterRecreated' && screening.nextDue) {
       statusLabel = t('home.later');
-      const nextAppointmentText = t('screening.NextOPD', { date: new Date(screening.nextDue).toLocaleDateString('ar-SA') });
+      const nextAppointmentText = t('screening.NextOPD', { date: new Date(screening.nextDue).toLocaleDateString('en-GB') });
       statusLabelStyle = [
         styles.screeningStatus,
         {
