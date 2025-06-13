@@ -984,15 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Calculate the next due date based on the completed test's due date
-        const completedTestDueDate = new Date(currentScreening.nextDue);
-        const nextDue = new Date(completedTestDueDate);
-        nextDue.setFullYear(nextDue.getFullYear() + screening.frequencyYears);
-        
-        // Ensure the next due date is in the future
-        const now = new Date();
-        if (nextDue <= now) {
-          nextDue.setFullYear(now.getFullYear() + screening.frequencyYears);
-        }
+        const nextDue = new Date(updates.nextDue!);
         
         console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDue.toISOString()}, status: later`);
         // Create the next screening with the calculated next due date
