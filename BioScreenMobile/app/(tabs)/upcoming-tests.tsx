@@ -24,6 +24,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useContext } from 'react';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type UserDataResponse = {
@@ -56,6 +57,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   userBirthDate: string;
 }) => {
   const [showTip, setShowTip] = React.useState(false);
+  const { t } = useTranslation();
   const priority = screening.screening.priority;
   let priorityLabel = '';
   let priorityColor = '';
@@ -69,8 +71,92 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   // Translate and color the status label for each status
   let statusLabel = screening.status;
   let statusLabelStyle = [styles.screeningStatus];
-  if (screening.status === 'later') {
-    statusLabel = 'لاحقاً';
+  if (screening.status === 'later' || screening.status === 'laterRecreated') {
+    if (screening.status === 'laterRecreated' && screening.nextDue) {
+      statusLabel = t('home.later');
+      const nextAppointmentText = t('screening.NextOPD', { date: new Date(screening.nextDue).toLocaleDateString('ar-SA') });
+      statusLabelStyle = [
+        styles.screeningStatus,
+        {
+          color: '#f59e42',
+          backgroundColor: '#fff7ed',
+          borderRadius: 8,
+          paddingHorizontal: 8,
+          paddingVertical: 2,
+          alignSelf: 'flex-end',
+          overflow: 'hidden',
+          fontWeight: 'bold',
+        } as any,
+      ];
+      return (
+        <View style={[styles.screeningCard, { flexDirection: 'row', position: 'relative' }]}> 
+          {/* Priority tag in top left corner */}
+          {priority && (
+            <View style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 2,
+              backgroundColor: priorityColor,
+              borderRadius: 12,
+              paddingHorizontal: 10,
+              paddingVertical: 3,
+              alignSelf: 'flex-start',
+            }}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
+            </View>
+          )}
+          {/* Buttons on the left */}
+          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
+              <Text style={styles.actionButtonText}>أحجز مع صحتي</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
+              <Text style={styles.actionButtonText}>تم</Text>
+            </TouchableOpacity>
+          </View>
+          {/* Details on the right, aligned right */}
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            {/* Name row: info icon, name */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {screening.screening?.description ? (
+                <Tooltip
+                  isVisible={showTip}
+                  content={<Text style={{ maxWidth: 200 }}>{screening.screening.description}</Text>}
+                  placement="top"
+                  onClose={() => setShowTip(false)}
+                  showChildInTooltip={false}
+                  backgroundColor="rgba(0,0,0,0.2)"
+                >
+                  <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
+                    <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
+                  </TouchableOpacity>
+                </Tooltip>
+              ) : null}
+              <Text style={styles.screeningTitle}>{screening.screening.name}</Text>
+            </View>
+            {/* Status label below name row */}
+            <View style={{ width: '100%', marginTop: 4, alignItems: 'flex-end' }}>
+              <View>
+                <Text style={[...statusLabelStyle, { textAlign: 'right', alignSelf: 'flex-end' }]}>{statusLabel}</Text>
+              </View>
+            </View>
+            {/* Next appointment date for recreated tests */}
+            <Text style={{ color: '#f59e42', fontSize: 14, marginBottom: 2, textAlign: 'right', fontWeight: 'bold' }}>
+              {nextAppointmentText}
+            </Text>
+            {/* Repetition frequency */}
+            {typeof screening.screening?.frequencyYears === 'number' && (
+              <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
+                {getFrequencyText(screening.screening.frequencyYears)}
+              </Text>
+            )}
+          </View>
+        </View>
+      );
+    } else {
+      statusLabel = t('home.later');
+    }
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -200,10 +286,10 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
             {getFrequencyText(screening.screening.frequencyYears)}
           </Text>
         )}
-        {/* Next due message (only for not overdue, not due, not completed) */}
-        {screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due' && typeof screening.screening?.startAge === 'number' && userBirthDate && (
+        {/* Next due message (only for original later, not recreated) */}
+        {screening.status === 'later' && typeof screening.screening?.startAge === 'number' && userBirthDate && (
           <Text style={{ color: '#22223b', fontSize: 14, marginBottom: 2, textAlign: 'right' }}>
-            {`يجب عليك إجراء هذا الفحص عند بلوغك ${screening.screening.startAge} سنة`}
+            {t('screening.takeAtAge', { age: screening.screening.startAge })}
           </Text>
         )}
         {/* Overdue years label */}

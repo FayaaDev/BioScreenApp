@@ -478,18 +478,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate status for all screenings
       const screeningsWithDetails = await Promise.all(updatedUserScreenings.map(async us => {
         const screening = allScreenings.find(s => s.id === us.screeningId);
-        
         // Dynamically calculate status if not completed
         let status = us.status;
         if (status !== "completed" && screening) {
+          // Preserve 'laterRecreated' status for repeatable screenings
+          if (status === "laterRecreated") {
+            // Do not overwrite, just return as is
+            return {
+              ...us,
+              status,
+              screening
+            };
+          }
           const now = new Date();
-          
           // For repeatable screenings, use nextDue date to determine status
           if (screening.frequencyYears > 0) {
             const nextDue = new Date(us.nextDue);
             const oneYearAfterNextDue = new Date(nextDue);
             oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
-            
             if (now < nextDue) {
               status = "later";
             } else if (now >= nextDue && now < oneYearAfterNextDue) {
@@ -503,7 +509,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const birthYear = birthDate.getFullYear();
             const currentYear = now.getFullYear();
             const targetYear = birthYear + screening.startAge;
-            
             if (currentYear < targetYear) {
               status = "later";
             } else if (currentYear === targetYear || currentYear === targetYear + 1) {
@@ -512,7 +517,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status = "overdue";
             }
           }
-
           // Update the screening status in the database if it has changed
           if (status !== us.status) {
             await storage.updateUserScreening(us.id, {
@@ -521,7 +525,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
         }
-        
         return {
           ...us,
           status,
@@ -711,6 +714,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Dynamically calculate status if not completed
           let status = existingScreening.status;
           if (status !== "completed") {
+            // Preserve 'laterRecreated' status for repeatable screenings
+            if (status === "laterRecreated") {
+              // Do not overwrite, just return as is
+              return {
+                ...existingScreening,
+                status,
+                screening
+              };
+            }
             const now = new Date();
             
             // For repeatable screenings, use nextDue date to determine status
@@ -983,17 +995,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
 
-        // Calculate the next due date based on the completed test's due date
-        const nextDue = new Date(updates.nextDue!);
-        
-        console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDue.toISOString()}, status: later`);
+        // Calculate the next due date based on the current date
+        const nextDueDate = new Date();
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + screening.frequencyYears);
+
+        console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: laterRecreated`);
         // Create the next screening with the calculated next due date
         await storage.createUserScreening({
           userId: currentScreening.userId,
           screeningId: screening.id,
           lastCompleted: null,
-          nextDue: nextDue.toISOString(),
-          status: "later" // Always set new screenings as "later"
+          nextDue: nextDueDate.toISOString(),
+          status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
         // Delete the completed screening
         await storage.deleteUserScreening(id);
@@ -1084,19 +1097,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
 
-        // Calculate the next due date based on the completed test's due date
-        const completedTestDueDate = new Date(familyScreening.nextDue);
-        const nextDueDate = new Date(completedTestDueDate);
+        // Calculate the next due date based on the current date
+        const nextDueDate = new Date();
         nextDueDate.setFullYear(nextDueDate.getFullYear() + screening.frequencyYears);
 
-        console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: later`);
+        console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: laterRecreated`);
         // Create the next screening with the calculated next due date
         await storage.createFamilyMemberScreening({
           familyMemberId: familyId,
           screeningId: screening.id,
           lastCompleted: null,
           nextDue: nextDueDate.toISOString(),
-          status: "later" // Always set new screenings as "later"
+          status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
         // Delete the completed screening
         await storage.deleteFamilyMemberScreening(familyScreening.id);

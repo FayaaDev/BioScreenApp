@@ -29,6 +29,7 @@ export function getScreeningStatusClass(status: string): string {
     case 'overdue':
       return 'screening-border-overdue status-overdue';
     case 'later':
+    case 'laterRecreated':
       return 'screening-border-later status-later';
     case 'completed':
       return 'screening-border-completed status-completed';
@@ -45,6 +46,8 @@ export function getScreeningStatusLabel(status: string): string {
       return 'متأخر';
     case 'later':
       return 'لم يحل موعده بعد';
+    case 'laterRecreated':
+      return 'لاحقاً';
     case 'completed':
       return 'مكتمل';
     default:
@@ -88,6 +91,7 @@ export function calculateScreeningStats(screenings: ScreeningWithDetails[]) {
         stats.overdue++;
         break;
       case 'later':
+      case 'laterRecreated':
         stats.later++;
         break;
       case 'completed':
@@ -102,6 +106,10 @@ export function calculateScreeningStats(screenings: ScreeningWithDetails[]) {
 export function filterScreeningsByStatus(screenings: ScreeningWithDetails[], status: string): ScreeningWithDetails[] {
   if (status === 'all') {
     return screenings;
+  }
+  if (status === 'later') {
+    // For 'later' status, include both 'later' and 'laterRecreated'
+    return screenings.filter(screening => screening.status === 'later' || screening.status === 'laterRecreated');
   }
   return screenings.filter(screening => screening.status === status);
 }

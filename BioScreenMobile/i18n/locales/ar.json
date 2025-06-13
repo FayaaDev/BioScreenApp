@@ -229,6 +229,7 @@
     "noRepetition": "لا يتكرر",
     "nextDue": " موعد الفحص القادم: {{date}}",
     "takeAtAge": "يجب عليك إجراء هذا الفحص عند بلوغك {{age}} سنة",
+    "NextOPD": "موعد الفحص القادم: {{date}}",
     "status": {
       "overdue": "متأخر",
       "upcoming": "قادمة",

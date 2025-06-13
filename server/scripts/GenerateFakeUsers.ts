@@ -5,7 +5,7 @@ import { faker } from "@faker-js/faker";
 import bcrypt from "bcrypt";
 import { storage } from "../storage";
 
-async function generateTestUsers(count: number = 3) {
+async function generateTestUsers(count: number = 10) {
   const testUsers = [];
 
   for (let i = 0; i < count; i++) {
