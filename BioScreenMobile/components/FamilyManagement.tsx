@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   I18nManager,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -346,8 +348,17 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       )}
       {/* Modal for add/edit */}
       <Modal visible={isModalOpen} animationType="slide" onRequestClose={() => setIsModalOpen(false)}>
-        <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.modalContent}>
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <View style={styles.modalContainer}>
+            <ScrollView 
+              contentContainerStyle={styles.modalContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
             <Text style={styles.modalTitle}>{editingMember ? 'تعديل فرد العائلة' : 'إضافة فرد للعائلة'}</Text>
             <TextInput
               style={[
@@ -525,14 +536,13 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             {/* Medical Survey Section */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>البيانات الصحية</Text>
-              
-              {/* Height and Weight with BMI */}
+              {/* Height */}
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الطول (سم)</Text>
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl' },
+                    { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                     submitAttempted && validationErrors.height && styles.inputError,
                   ]}
                   placeholder="مثال: 170"
@@ -546,16 +556,17 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   }}
                   keyboardType="numeric"
                 />
-                {submitAttempted && validationErrors.height && (
-                  <Text style={styles.errorText}>{validationErrors.height}</Text>
-                )}
               </View>
+              {submitAttempted && validationErrors.height && (
+                <Text style={styles.errorText}>{validationErrors.height}</Text>
+              )}
+              {/* Weight */}
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl' },
+                    { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                     submitAttempted && validationErrors.weight && styles.inputError,
                   ]}
                   placeholder="مثال: 70"
@@ -569,10 +580,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   }}
                   keyboardType="numeric"
                 />
-                {submitAttempted && validationErrors.weight && (
-                  <Text style={styles.errorText}>{validationErrors.weight}</Text>
-                )}
               </View>
+              {submitAttempted && validationErrors.weight && (
+                <Text style={styles.errorText}>{validationErrors.weight}</Text>
+              )}
               {formData.height && formData.weight && calculateBMI(formData.height, formData.weight) && (
                 <View style={styles.bmiBox}>
                   <Text style={[styles.bmiLabel, { textAlign: 'right', width: '100%' }]}>مؤشر كتلة الجسم (BMI):</Text>
@@ -628,7 +639,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <TextInput
                     style={[
                       styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl' },
+                      { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                       submitAttempted && validationErrors.smokingAmount && styles.inputError,
                     ]}
                     placeholder="كم عدد السجائر في اليوم؟"
@@ -654,7 +665,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <TextInput
                     style={[
                       styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl' },
+                      { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                       submitAttempted && validationErrors.smokingDuration && styles.inputError,
                     ]}
                     placeholder="منذ متى يدخن؟ (بالسنوات)"
@@ -676,6 +687,12 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   />
                   {submitAttempted && validationErrors.smokingDuration && (
                     <Text style={styles.errorText}>{validationErrors.smokingDuration}</Text>
+                  )}
+                  {formData.smokingDetails.amount && formData.smokingDetails.duration && (
+                    <View style={styles.packYearsBox}>
+                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(formData.smokingDetails)}</Text>
+                    </View>
                   )}
                 </View>
               )}
@@ -762,8 +779,9 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 <Text style={styles.cancelButtonText}>إلغاء</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -854,18 +872,15 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
   },
   modalContent: {
     alignItems: 'center',
     gap: 16,
     paddingTop: 32,
     paddingBottom: 32,
+    paddingHorizontal: 24,
     width: '100%',
-    justifyContent: 'center',
-    minHeight: '80%',
+    flexGrow: 1,
   },
   modalTitle: {
     fontSize: 20,

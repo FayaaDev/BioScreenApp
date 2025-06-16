@@ -124,13 +124,13 @@ const NotificationSettings: React.FC = () => {
     <View style={styles.frequencyContainer}>
       <Text style={styles.settingTitle}>Reminder Frequency</Text>
       <Text style={styles.settingDescription}>
-        How often should we remind you about upcoming screenings?
+        How often should we remind you about upcoming screenings? Notifications will only be sent for screenings due within the next 30 days.
       </Text>
       <View style={styles.frequencyButtons}>
         {([
-          { key: 'low', label: 'Low', description: 'Only essential reminders' },
-          { key: 'medium', label: 'Medium', description: 'Balanced reminders' },
-          { key: 'high', label: 'High', description: 'All possible reminders' },
+          { key: 'low', label: 'Low', description: 'One reminder 7 days before due date' },
+          { key: 'medium', label: 'Medium', description: 'Reminders 14 and 7 days before due date' },
+          { key: 'high', label: 'High', description: 'Reminders 30, 14, and 7 days before due date' },
         ] as const).map(({ key, label, description }) => (
           <TouchableOpacity
             key={key}
@@ -193,7 +193,7 @@ const NotificationSettings: React.FC = () => {
           
           {renderSettingRow(
             'Screening Reminders',
-            'Get notified about upcoming health screenings and checkups',
+            'Get notified about upcoming health screenings due within the next 30 days',
             settings.screeningReminders,
             (value) => updateSetting('screeningReminders', value),
             !hasPermission

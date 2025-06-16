@@ -93,8 +93,9 @@ class NotificationService {
       const trigger = new Date(notificationData.scheduledDate);
       const now = new Date();
 
-      if (trigger <= now) {
-        console.warn('Cannot schedule notification in the past');
+      // Don't schedule if the date is in the past or more than 30 days in the future
+      if (trigger <= now || trigger > new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)) {
+        console.warn('Cannot schedule notification - date is either in the past or too far in the future');
         return null;
       }
 

@@ -20,16 +20,25 @@ export const useAutoNotifications = (screenings?: any[]) => {
         const notificationsEnabled = await AsyncStorage.getItem('notifications_enabled');
         
         if (notificationsEnabled === 'true' && hasPermission) {
-          // Schedule notifications for relevant screenings
+          // Schedule notifications only for screenings that are due
           for (const screening of screenings) {
             if (screening.status !== 'completed') {
-              await smartScheduleForScreening({
-                id: screening.id.toString(),
-                name: screening.screening?.name || 'فحص طبي',
-                status: screening.status,
-                nextDue: screening.nextDue,
-                frequencyYears: screening.screening?.frequencyYears || 0,
-              });
+              const nextDueDate = new Date(screening.nextDue);
+              const now = new Date();
+              
+              // Only schedule if the screening is due within the next 30 days
+              if (nextDueDate > now && nextDueDate <= new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)) {
+                await smartScheduleForScreening({
+                  id: screening.id.toString(),
+                  name: screening.screening?.name || 'فحص طبي',
+                  status: screening.status,
+                  nextDue: screening.nextDue,
+                  frequencyYears: screening.screening?.frequencyYears || 0,
+                });
+              } else {
+                // Cancel notifications for screenings that are not due
+                await cancelScreeningNotifications(screening.id.toString());
+              }
             }
           }
         } else {

@@ -14,11 +14,12 @@ const getApiBaseUrl = () => {
   
   // For web browsers, use relative URLs or localhost
   if (typeof window !== 'undefined') {
-    return window.location.origin;
+    // Use the backend IP for development
+    return 'http://192.168.0.205:5000';
   }
   
   // Fallback for server-side rendering
-  return 'http://172.20.10.2:5000';
+  return 'http://192.168.0.205:5000';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
