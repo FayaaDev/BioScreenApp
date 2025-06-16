@@ -2,8 +2,8 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'BioScreen',
-  slug: 'bioscreen',
+  name: 'Bakker',
+  slug: 'bakker',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -18,14 +18,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.bioscreen.app'
+    bundleIdentifier: 'com.bakker.app'
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#ffffff'
     },
-    package: 'com.bioscreen.app'
+    package: 'com.bakker.app'
   },
   web: {
     favicon: './assets/favicon.png'
@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.API_URL || 'http://localhost:3000',
     eas: {
-      projectId: 'your-project-id'
+      projectId: process.env.EXPO_PROJECT_ID || 'your-project-id'
     }
   },
   plugins: [

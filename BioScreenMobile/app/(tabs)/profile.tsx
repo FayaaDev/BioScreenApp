@@ -422,9 +422,29 @@ export default function Profile() {
       {/* User Agreement Modal */}
       <Modal visible={showAgreement} animationType="slide" onRequestClose={() => setShowAgreement(false)}>
         <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.modalContent}>
+          <ScrollView contentContainerStyle={[styles.modalContent, { paddingTop: 60 }]}>
             <Text style={styles.modalTitle}>اتفاقية المستخدم لتطبيق الفحص الطبي</Text>
-            <Text style={styles.modalText}>هنا يمكنك وضع نص اتفاقية المستخدم...</Text>
+            <Text style={styles.modalText}>
+تهدف هذه الاتفاقية إلى تحديد شروط وأحكام استخدامك لتطبيق الفحص الطبي ("بكّر")، والذي تم تطويره بواسطة الدكتور/ أحمد ال فائع.
+
+باستخدامك للتطبيق، فإنك توافق على الالتزام بجميع الشروط التالية:
+
+بكّر هو أداة لتسهيل حجز مواعيد الفحص الطبي وليس بديلاً عن الاستشارة الطبية المهنية. 
+
+جميع التوصيات والإرشادات في التطبيق مستندة إلى الدليل السعودي للإجراءات الوقائية السريرية (الإصدار النهائي 2023) الصادر عن الهيئة السعودية للصحة العامة.
+
+يقر المستخدم بأن الدكتور/ أحمد ال فائع لا يتحمل أي مسؤولية عن أية أضرار أو خسائر تنجم عن استخدام التطبيق، بما في ذلك الأخطاء أو الأعطال أو القرارات المبنية على المعلومات المقدمة. 
+
+جميع حقوق الملكية الفكرية محفوظة للدكتور/ أحمد ال فائع، ويمنع نسخ أو تعديل أو استخدام التطبيق لأغراض تجارية دون إذن خطي. 
+
+يلتزم المستخدم باستخدام التطبيق لأغراض مشروعة فقط، ويُمنع أي استخدام يضر بالتطبيق أو يخل بحقوق الآخرين.
+
+يحق للدكتور/ أحمد ال فائع إنهاء استخدام التطبيق في حال مخالفة الشروط دون إشعار مسبق. 
+
+تخضع هذه الاتفاقية لقوانين المملكة العربية السعودية. يجوز تعديل الشروط في أي وقت، ويُعتبر استمرار الاستخدام موافقة على التعديلات. للاستفسارات، 
+
+باستخدامك للتطبيق، فإنك تقر بأنك قرأت ووافقت على هذه الاتفاقية.
+            </Text>
             <TouchableOpacity style={styles.closeModalButton} onPress={() => setShowAgreement(false)}>
               <Text style={styles.closeModalButtonText}>إغلاق</Text>
             </TouchableOpacity>
@@ -630,8 +650,11 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 16,
     color: '#333',
-    textAlign: 'center',
+    textAlign: 'right',
     marginBottom: 16,
+    lineHeight: 24,
+    writingDirection: 'rtl',
+    paddingHorizontal: 16,
   },
   closeModalButton: {
     backgroundColor: '#2c9167',

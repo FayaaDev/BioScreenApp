@@ -1,28 +1,36 @@
 {
   "expo": {
-    "name": "BioScreenMobile",
-    "slug": "BioScreenMobile",
+    "name": "Bakker",
+    "slug": "bakker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "bioscreenmobile",
+    "scheme": "bakker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Bakker helps you stay on top of your health with personalized medical screening reminders and appointment notifications.",
+    "keywords": ["health", "medical", "screening", "reminders", "healthcare", "appointments"],
+    "privacy": "public",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.bioscreenmobile",
+      "bundleIdentifier": "com.bakker.app",
+      "buildNumber": "1",
+      "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": ["remote-notification"],
+        "CFBundleDisplayName": "Bakker",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourcompany.bioscreenmobile",
+      "package": "com.bakker.app",
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
