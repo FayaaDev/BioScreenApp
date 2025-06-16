@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import { ApiError } from '../types/api';
 
 // Get the API URL from environment variables or use a default
-const API_BASE_URL = 'http://192.168.0.205:5000';
+const API_BASE_URL = 'http://172.20.10.2:5000';
 
 export const apiRequest = async <T>(
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',

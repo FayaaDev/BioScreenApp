@@ -9,6 +9,7 @@ const getApiBaseUrl = () => {
   // If running on native mobile platforms, use the same IP as Capacitor config
   if (isMobile) {
     return 'http://192.168.0.205:5000';
+
   }
   
   // For web browsers, use relative URLs or localhost
@@ -17,7 +18,7 @@ const getApiBaseUrl = () => {
   }
   
   // Fallback for server-side rendering
-  return 'http://localhost:5000';
+  return 'http://172.20.10.2:5000';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

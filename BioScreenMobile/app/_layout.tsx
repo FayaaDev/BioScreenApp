@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
+import { NotificationProvider } from '../context/NotificationContext';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -71,20 +72,22 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
-        <SelectedPersonProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="login" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-          <Toast config={toastConfig} />
-        </SelectedPersonProvider>
+        <NotificationProvider>
+          <SelectedPersonProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name="login" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+            <Toast config={toastConfig} />
+          </SelectedPersonProvider>
+        </NotificationProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

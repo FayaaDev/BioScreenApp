@@ -25,6 +25,8 @@ import { useContext } from 'react';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useAutoNotifications } from '../../hooks/useAutoNotifications';
+import { useScreeningNotifications } from '../../hooks/useScreeningNotifications';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type UserDataResponse = {
@@ -358,6 +360,7 @@ export default function UpcomingTests() {
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const { smartScheduleForScreening } = useScreeningNotifications();
 
   // Get initial tab from route params
   useEffect(() => {
@@ -447,9 +450,27 @@ export default function UpcomingTests() {
         });
       }
     },
-    onSuccess: () => {
+    onSuccess: async (data, screening) => {
       queryClient.invalidateQueries();
       showToast({ title: 'تم تحديث الفحص', type: 'success' });
+      
+      // Schedule notification for the next due date if it's a repeatable screening
+      try {
+        if (screening.screening?.frequencyYears > 0) {
+          const nextDue = new Date();
+          nextDue.setFullYear(nextDue.getFullYear() + screening.screening.frequencyYears);
+          
+          await smartScheduleForScreening({
+            id: screening.id.toString(),
+            name: screening.screening?.name || 'فحص طبي',
+            status: 'later', // Next screening will be later
+            nextDue: nextDue.toISOString(),
+            frequencyYears: screening.screening.frequencyYears,
+          });
+        }
+      } catch (error) {
+        console.error('Error scheduling notification for completed screening:', error);
+      }
     },
     onError: (error: any) => {
       showToast({ title: 'خطأ', description: error.message || 'حدث خطأ', type: 'error' });
@@ -507,6 +528,9 @@ export default function UpcomingTests() {
   const currentPersonName = currentPerson.name || 'أنت';
   const currentPersonGender = currentPerson.gender || '';
   const stats = calculateScreeningStats(screenings);
+
+  // Auto-schedule notifications for screenings when data is loaded
+  useAutoNotifications(screenings);
 
   // Tabs logic
   const tabOptions = [

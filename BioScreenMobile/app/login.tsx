@@ -82,9 +82,9 @@ export default function Login() {
         
         // Redirect based on user role
         if (data.user.isAdmin) {
-          router.replace('/admin');
+          router.replace('/(tabs)');
         } else {
-          router.replace('/');
+          router.replace('/(tabs)');
         }
       } catch (error) {
         console.error('Failed to store user data:', error);
