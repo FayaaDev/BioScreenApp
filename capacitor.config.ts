@@ -6,11 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    // Development server URL using your IP address
-    url: 'http://192.168.0.205:5000',
+    // Development server URL using your VPS IP address
+    url: 'http://192.64.87.218:5000',
     cleartext: true,
     allowNavigation: [
-      "http://192.168.0.205:5000",
+      "http://192.64.87.218:5000",
       "http://localhost:5000",
       "http://127.0.0.1:5000"
     ]

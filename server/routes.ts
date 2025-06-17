@@ -100,6 +100,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      server: 'BioScreen API'
+    });
+  });
+
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {

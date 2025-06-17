@@ -3,7 +3,25 @@ import Constants from 'expo-constants';
 import { ApiError } from '../types/api';
 
 // Get the API URL from environment variables or use a default
-const API_BASE_URL = 'http://192.168.0.205:5000';
+const API_BASE_URL = 'http://192.64.87.218:5000';
+
+// Test connectivity function
+export const testConnectivity = async (): Promise<boolean> => {
+  try {
+    console.log('Testing connectivity to:', API_BASE_URL);
+    const response = await fetch(`${API_BASE_URL}/api/health`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Connectivity test response status:', response.status);
+    return response.ok;
+  } catch (error) {
+    console.error('Connectivity test failed:', error);
+    return false;
+  }
+};
 
 export const apiRequest = async <T>(
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
@@ -12,6 +30,10 @@ export const apiRequest = async <T>(
 ): Promise<T> => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    console.log('Making API request to:', url);
+    console.log('Request method:', method);
+    console.log('Request data:', data);
+    
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
@@ -26,22 +48,98 @@ export const apiRequest = async <T>(
       console.warn('Failed to get auth token:', error);
     }
 
+    console.log('Request headers:', headers);
+
+    // Add timeout to the request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch(url, {
       method,
       headers,
       body: data ? JSON.stringify(data) : undefined,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
+
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
 
     const responseData = await response.json();
 
     if (!response.ok) {
       const error = responseData as ApiError;
+      console.error('API error response:', error);
       throw new Error(error.message || 'An error occurred');
     }
 
     return responseData as T;
   } catch (error) {
     console.error('API request failed:', error);
-    throw error;
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error?.constructor?.name);
+    
+    if (error instanceof TypeError) {
+      if (error.message.includes('Network request failed')) {
+        console.error('Network error details:', {
+          url: `${API_BASE_URL}${endpoint}`,
+          method,
+          message: error.message,
+          stack: error.stack
+        });
+        throw new Error(`Network error: Unable to reach server at ${API_BASE_URL}. Please check your internet connection and server status.`);
+      }
+      if (error.message.includes('aborted')) {
+        throw new Error('Request timeout: The server took too long to respond.');
+      }
+    }
+    
+    if (error instanceof Error) {
+      throw error;
+    }
+    
+    throw new Error('An unknown error occurred');
   }
-}; 
+};
+
+// Debug function to test different aspects of connectivity
+export const debugNetworkIssue = async (): Promise<void> => {
+  console.log('=== NETWORK DEBUG START ===');
+  console.log('API_BASE_URL:', API_BASE_URL);
+  
+  // Test 1: Basic connectivity
+  console.log('Test 1: Basic connectivity test');
+  const connectivityResult = await testConnectivity();
+  console.log('Connectivity test result:', connectivityResult);
+  
+  // Test 2: Simple fetch to Google (to verify internet connection)
+  console.log('Test 2: Internet connectivity test');
+  try {
+    const googleResponse = await fetch('https://www.google.com', {
+      method: 'HEAD',
+      cache: 'no-cache'
+    });
+    console.log('Google connectivity:', googleResponse.ok ? 'SUCCESS' : 'FAILED');
+  } catch (error) {
+    console.log('Google connectivity: FAILED -', error);
+  }
+  
+  // Test 3: Try different endpoints on your server
+  console.log('Test 3: Testing different server endpoints');
+  const endpoints = ['/api/health', '/api/users', '/'];
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      console.log(`${endpoint}: Status ${response.status} - ${response.ok ? 'OK' : 'FAILED'}`);
+    } catch (error) {
+      console.log(`${endpoint}: FAILED -`, error);
+    }
+  }
+  
+  console.log('=== NETWORK DEBUG END ===');
+};

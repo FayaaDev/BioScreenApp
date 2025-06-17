@@ -12,8 +12,8 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'http://192.168.0.205:5173',
-    'http://192.168.0.205:5000',
+    'http://192.64.87.218:5173',
+    'http://192.64.87.218:5000',
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
