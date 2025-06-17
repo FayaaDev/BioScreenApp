@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
 import { useScreeningNotifications } from './useScreeningNotifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { shouldScheduleNotifications, getNotificationReason, ScreeningData } from '../lib/notificationUtils';
 
 /**
  * Hook to automatically manage screening notifications based on user preferences
@@ -17,30 +18,59 @@ export const useAutoNotifications = (screenings?: any[]) => {
     const manageNotifications = async () => {
       try {
         // Check if user has enabled notifications
-        const notificationsEnabled = await AsyncStorage.getItem('notifications_enabled');
+        let notificationsEnabled = await AsyncStorage.getItem('notifications_enabled');
+        
+        // If not set, enable by default for users with due/overdue screenings
+        if (notificationsEnabled === null) {
+          const hasDueOrOverdue = screenings.some(s => s.status === 'due' || s.status === 'overdue');
+          if (hasDueOrOverdue) {
+            await AsyncStorage.setItem('notifications_enabled', 'true');
+            notificationsEnabled = 'true';
+            console.log('🔔 Auto-enabled notifications due to due/overdue screenings');
+          }
+        }
+        
+        // Check if we've already processed these screenings recently
+        const lastProcessed = await AsyncStorage.getItem('last_notification_processing');
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000;
+        
+        if (lastProcessed && (now - parseInt(lastProcessed)) < oneHour) {
+          console.log('⏭️ Skipping notification processing - done recently');
+          return;
+        }
         
         if (notificationsEnabled === 'true' && hasPermission) {
-          // Schedule notifications only for screenings that are due
+          console.log(`🔔 Auto-scheduling notifications for ${screenings.length} screenings`);
+          
+          // Schedule notifications for screenings based on their status
           for (const screening of screenings) {
             if (screening.status !== 'completed') {
-              const nextDueDate = new Date(screening.nextDue);
-              const now = new Date();
+              const screeningData: ScreeningData = {
+                id: screening.id.toString(),
+                name: screening.screening?.name || 'فحص طبي',
+                status: screening.status,
+                nextDue: screening.nextDue,
+                frequencyYears: screening.screening?.frequencyYears || 0,
+              };
               
-              // Only schedule if the screening is due within the next 30 days
-              if (nextDueDate > now && nextDueDate <= new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)) {
-                await smartScheduleForScreening({
-                  id: screening.id.toString(),
-                  name: screening.screening?.name || 'فحص طبي',
-                  status: screening.status,
-                  nextDue: screening.nextDue,
-                  frequencyYears: screening.screening?.frequencyYears || 0,
-                });
+              const shouldSchedule = shouldScheduleNotifications(screeningData);
+              const reason = getNotificationReason(screeningData);
+              
+              console.log(`📋 ${screeningData.name}: ${reason}`);
+
+              if (shouldSchedule) {
+                console.log(`✅ Scheduling notifications for ${screeningData.name}`);
+                await smartScheduleForScreening(screeningData);
               } else {
-                // Cancel notifications for screenings that are not due
-                await cancelScreeningNotifications(screening.id.toString());
+                console.log(`❌ Canceling notifications for ${screeningData.name}`);
+                await cancelScreeningNotifications(screeningData.id);
               }
             }
           }
+          
+          // Update the last processed time
+          await AsyncStorage.setItem('last_notification_processing', now.toString());
         } else {
           // Cancel all notifications if disabled
           for (const screening of screenings) {

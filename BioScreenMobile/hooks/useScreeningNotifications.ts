@@ -29,109 +29,122 @@ export const useScreeningNotifications = () => {
       const identifiers: string[] = [];
 
       // Check if notifications for this screening are already scheduled
-      const existingKey = `screening_notifications_${screening.id}`;
-      const existing = await AsyncStorage.getItem(existingKey);
+      const storageKey = `screening_notifications_${screening.id}`;
+      const existing = await AsyncStorage.getItem(storageKey);
       
       if (existing) {
-        console.log(`Notifications already scheduled for screening ${screening.id}`);
+        console.log(`⏭️ Notifications already scheduled for screening ${screening.id}`);
         return JSON.parse(existing);
       }
 
       const now = new Date();
 
       if (screening.status === 'due') {
-        // Schedule immediate reminder (in 5 minutes) and follow-up reminders
+        console.log(`📅 Scheduling simple reminders for DUE screening: ${screening.name}`);
+        
+        // Schedule one immediate reminder and one follow-up
         const immediateId = await scheduleReminderIn(
-          `${screening.name} Due Now`,
-          `Your ${screening.name} screening is due. Schedule your appointment today!`,
-          5, // 5 minutes from now
+          `${screening.name} Due`,
+          `Your ${screening.name} screening is due. Please schedule your appointment.`,
+          2, // 2 minutes from now
           'screening_reminder'
         );
-        if (immediateId) identifiers.push(immediateId);
+        if (immediateId) {
+          identifiers.push(immediateId);
+          console.log(`✅ Scheduled immediate reminder for ${screening.name}`);
+        }
 
-        // Schedule daily reminders for the next week
-        for (let i = 1; i <= 7; i++) {
-          const reminderId = await scheduleReminderIn(
-            `${screening.name} Reminder`,
-            `Don't forget to schedule your ${screening.name} screening - it's overdue!`,
-            i * 24 * 60, // Daily reminders
-            'screening_reminder'
-          );
-          if (reminderId) identifiers.push(reminderId);
+        // Schedule one follow-up in 24 hours
+        const followUpId = await scheduleReminderIn(
+          `${screening.name} Reminder`,
+          `Reminder: Your ${screening.name} screening is still due.`,
+          24 * 60, // 24 hours
+          'screening_reminder'
+        );
+        if (followUpId) {
+          identifiers.push(followUpId);
+          console.log(`✅ Scheduled follow-up reminder for ${screening.name}`);
         }
       } else if (screening.status === 'overdue') {
-        // Schedule urgent reminders more frequently
+        console.log(`🚨 Scheduling simple reminders for OVERDUE screening: ${screening.name}`);
+        
+        // Schedule one immediate urgent reminder
         const urgentId = await scheduleReminderIn(
-          `${screening.name} OVERDUE`,
-          `Your ${screening.name} screening is overdue! Please schedule your appointment immediately.`,
+          `${screening.name} Overdue`,
+          `Your ${screening.name} screening is overdue! Please schedule your appointment.`,
           1, // 1 minute from now
           'screening_reminder'
         );
-        if (urgentId) identifiers.push(urgentId);
+        if (urgentId) {
+          identifiers.push(urgentId);
+          console.log(`✅ Scheduled overdue reminder for ${screening.name}`);
+        }
 
-        // Schedule urgent follow-up reminders every 3 days for 2 weeks
-        for (let i = 1; i <= 5; i++) {
-          const urgentReminderId = await scheduleReminderIn(
-            `${screening.name} URGENT`,
-            `URGENT: Your ${screening.name} screening is seriously overdue. Please take action now!`,
-            i * 3 * 24 * 60, // Every 3 days
-            'screening_reminder'
-          );
-          if (urgentReminderId) identifiers.push(urgentReminderId);
+        // Schedule one follow-up in 3 days
+        const followUpId = await scheduleReminderIn(
+          `${screening.name} Still Overdue`,
+          `Reminder: Your ${screening.name} screening is still overdue.`,
+          3 * 24 * 60, // 3 days
+          'screening_reminder'
+        );
+        if (followUpId) {
+          identifiers.push(followUpId);
+          console.log(`✅ Scheduled follow-up for ${screening.name}`);
         }
       } else if (screening.status === 'later' && screening.nextDue) {
-        // Schedule reminders based on when it's actually due
+        console.log(`📅 Scheduling simple reminder for LATER screening: ${screening.name}`);
+        
+        // For "later" screenings (like completed repeatable tests), schedule only ONE simple reminder
         const dueDate = new Date(screening.nextDue);
         const timeToDue = dueDate.getTime() - now.getTime();
         const daysToDue = Math.floor(timeToDue / (1000 * 60 * 60 * 24));
 
-        if (daysToDue > 30) {
-          // Schedule reminder 1 month before
-          const earlyReminder = new Date(dueDate);
-          earlyReminder.setDate(dueDate.getDate() - 30);
-          
-          if (earlyReminder > now) {
-            const earlyId = await scheduleReminderIn(
-              `${screening.name} Coming Up`,
-              `Your ${screening.name} screening is due in 1 month. Start planning your appointment.`,
-              Math.floor((earlyReminder.getTime() - now.getTime()) / (1000 * 60)),
-              'screening_reminder'
-            );
-            if (earlyId) identifiers.push(earlyId);
-          }
+        // Only schedule one reminder based on how far away the next screening is
+        let reminderDate: Date | null = null;
+        let reminderTitle: string = '';
+        let reminderMessage: string = '';
+
+        if (daysToDue > 180) {
+          // If more than 6 months away, don't schedule any notification yet
+          console.log(`⏳ ${screening.name} is ${daysToDue} days away - no notification needed yet`);
+        } else if (daysToDue > 60) {
+          // If 2-6 months away, remind 1 month before
+          reminderDate = new Date(dueDate);
+          reminderDate.setDate(dueDate.getDate() - 30);
+          reminderTitle = `${screening.name} Coming Up`;
+          reminderMessage = `Your next ${screening.name} screening is due in 1 month.`;
+        } else if (daysToDue > 7) {
+          // If 1 week to 2 months away, remind 1 week before
+          reminderDate = new Date(dueDate);
+          reminderDate.setDate(dueDate.getDate() - 7);
+          reminderTitle = `${screening.name} Due Soon`;
+          reminderMessage = `Your ${screening.name} screening is due in 1 week.`;
+        } else if (daysToDue > 0) {
+          // If less than 7 days, remind on due date
+          reminderDate = dueDate;
+          reminderTitle = `${screening.name} Due Today`;
+          reminderMessage = `Your ${screening.name} screening is due today.`;
         }
 
-        if (daysToDue > 7) {
-          // Schedule reminder 1 week before
-          const weekReminder = new Date(dueDate);
-          weekReminder.setDate(dueDate.getDate() - 7);
-          
-          if (weekReminder > now) {
-            const weekId = await scheduleReminderIn(
-              `${screening.name} Due Soon`,
-              `Your ${screening.name} screening is due in 1 week. Time to schedule your appointment.`,
-              Math.floor((weekReminder.getTime() - now.getTime()) / (1000 * 60)),
-              'screening_reminder'
-            );
-            if (weekId) identifiers.push(weekId);
-          }
-        }
-
-        // Schedule reminder on the due date
-        if (dueDate > now) {
-          const dueDateId = await scheduleReminderIn(
-            `${screening.name} Due Today`,
-            `Your ${screening.name} screening is due today! Don't forget to schedule your appointment.`,
-            Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60)),
+        // Schedule the single reminder
+        if (reminderDate && reminderDate > now) {
+          const reminderId = await scheduleReminderIn(
+            reminderTitle,
+            reminderMessage,
+            Math.floor((reminderDate.getTime() - now.getTime()) / (1000 * 60)),
             'screening_reminder'
           );
-          if (dueDateId) identifiers.push(dueDateId);
+          if (reminderId) {
+            identifiers.push(reminderId);
+            console.log(`✅ Scheduled single reminder for ${screening.name} - ${reminderTitle}`);
+          }
         }
       }
 
-      // Store the scheduled notification IDs for this screening
+      // Store the scheduled notification IDs for this screening (simplified)
       if (identifiers.length > 0) {
-        await AsyncStorage.setItem(existingKey, JSON.stringify(identifiers));
+        await AsyncStorage.setItem(storageKey, JSON.stringify(identifiers));
+        console.log(`💾 Stored ${identifiers.length} notification IDs for ${screening.name}`);
       }
 
       return identifiers;

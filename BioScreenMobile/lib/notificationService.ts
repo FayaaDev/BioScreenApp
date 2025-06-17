@@ -93,13 +93,27 @@ class NotificationService {
       const trigger = new Date(notificationData.scheduledDate);
       const now = new Date();
 
-      // Don't schedule if the date is in the past or more than 30 days in the future
-      if (trigger <= now || trigger > new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)) {
-        console.warn('Cannot schedule notification - date is either in the past or too far in the future');
+      // Don't schedule if the date is in the past
+      if (trigger <= now) {
+        console.warn(`Cannot schedule notification - date is in the past (trigger: ${trigger.toISOString()}, now: ${now.toISOString()})`);
         return null;
       }
 
-      console.log(`Scheduling notification: "${notificationData.title}" for ${trigger.toLocaleString()}`);
+      // For screening reminders, allow longer scheduling periods (up to 1 year)
+      // For other notifications, keep the 30-day limit
+      const maxFutureTime = notificationData.type === 'screening_reminder' 
+        ? new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) // 1 year
+        : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);  // 30 days
+
+      if (trigger > maxFutureTime) {
+        const maxDays = notificationData.type === 'screening_reminder' ? 365 : 30;
+        console.warn(`Cannot schedule notification - date is too far in the future (max ${maxDays} days)`);
+        return null;
+      }
+
+      console.log(`🔔 Scheduling notification: "${notificationData.title}" for ${trigger.toLocaleString()}`);
+      console.log(`⏰ Current time: ${now.toLocaleString()}`);
+      console.log(`📊 Time difference: ${Math.round((trigger.getTime() - now.getTime()) / (1000 * 60))} minutes`);
 
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
@@ -117,21 +131,12 @@ class NotificationService {
         } as Notifications.DateTriggerInput,
       });
 
-      console.log(`Notification scheduled with identifier: ${identifier}`);
+      console.log(`✅ Notification scheduled successfully with identifier: ${identifier}`);
 
-      // Verify the notification was actually scheduled
-      const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
-      const scheduled = allScheduled.find(n => n.identifier === identifier);
-      
-      if (!scheduled) {
-        console.error('Notification was not found in scheduled list after scheduling');
-        return null;
+      // Save notification data for management (skip for simple screening reminders to avoid clutter)
+      if (notificationData.type !== 'screening_reminder') {
+        await this.saveNotificationData(notificationData, identifier);
       }
-
-      console.log(`Verified notification is scheduled. Total scheduled: ${allScheduled.length}`);
-
-      // Save notification data for management
-      await this.saveNotificationData(notificationData, identifier);
 
       return identifier;
     } catch (error) {

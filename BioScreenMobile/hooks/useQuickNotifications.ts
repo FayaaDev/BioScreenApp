@@ -1,5 +1,6 @@
 import { useNotifications } from '../context/NotificationContext';
 import { NotificationData } from '../lib/notificationService';
+import { validateNotificationParams } from '../lib/notificationUtils';
 
 /**
  * Custom hook for easy notification scheduling with common use cases
@@ -21,6 +22,15 @@ export const useQuickNotifications = () => {
     minutes: number,
     type: 'screening_reminder' | 'appointment' | 'medication' | 'general' = 'general'
   ) => {
+    // Validate parameters
+    const validation = validateNotificationParams(title, minutes);
+    if (!validation.isValid) {
+      console.warn(`❌ Cannot schedule notification "${title}": ${validation.reason}`);
+      return null;
+    }
+    
+    console.log(`✅ Validation passed for "${title}": ${validation.reason}`);
+    
     const notificationDate = new Date();
     notificationDate.setMinutes(notificationDate.getMinutes() + minutes);
 
