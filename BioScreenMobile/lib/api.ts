@@ -3,7 +3,19 @@ import Constants from 'expo-constants';
 import { ApiError } from '../types/api';
 
 // Get the API URL from environment variables or use a default
-const API_BASE_URL = 'http://192.64.87.218:5000';
+const getApiBaseUrl = () => {
+  // Check for environment variable from Expo
+  const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
+  
+  if (envApiUrl) {
+    return envApiUrl;
+  }
+  
+  // Fallback to Interserver deployment
+  return 'http://192.64.87.218:5000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Test connectivity function
 export const testConnectivity = async (): Promise<boolean> => {

@@ -1,0 +1,93 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Web Client - Local Backend",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "dev"],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": ["$tsc"],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "web-client"
+			}
+		},
+		{
+			"label": "Web Client - Interserver Backend",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "start:staging"],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": ["$tsc"],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "web-client"
+			}
+		},
+		{
+			"label": "Mobile App - Local Backend",
+			"type": "shell",
+			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=http://localhost:5000 npx expo start",
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "mobile-app"
+			}
+		},
+		{
+			"label": "Mobile App - Interserver Backend",
+			"type": "shell",
+			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=http://192.64.87.218:5000 npx expo start",
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "mobile-app"
+			}
+		},
+		{
+			"label": "Local Backend Server (API Only)",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "dev:backend-only"],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "backend"
+			}
+		},
+		{
+			"label": "Test Interserver Connection",
+			"type": "shell",
+			"command": "curl",
+			"args": ["-f", "http://192.64.87.218:5000/api/health"],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "new"
+			}
+		}
+	]
+}

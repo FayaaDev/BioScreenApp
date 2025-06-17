@@ -1,25 +1,38 @@
 // Configuration for API base URL
 const getApiBaseUrl = () => {
+  // First check for environment variable from Vite
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Check for runtime environment variable
+  if (typeof window !== 'undefined' && (window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  
   // Check if we're in a mobile environment
   const isMobile = typeof window !== 'undefined' && 
     (window.location.protocol === 'capacitor:' || 
      window.location.protocol === 'ionic:' ||
      (window as any).Capacitor);
   
-  // If running on native mobile platforms, use the same IP as Capacitor config
+  // If running on native mobile platforms, use the Interserver IP
   if (isMobile) {
-    return 'http://192.168.0.205:5000';
-
+    return 'http://192.64.87.218:5000';
   }
   
-  // For web browsers, use relative URLs or localhost
+  // For web browsers, check if we're in development or production
   if (typeof window !== 'undefined') {
-    // Use the backend IP for development
-    return 'http://192.168.0.205:5000';
+    // Check if we're on localhost (development)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://192.64.87.218:5000'; // Point to Interserver for testing
+    }
+    // Use relative URLs for production web deployment
+    return '';
   }
   
   // Fallback for server-side rendering
-  return 'http://192.168.0.205:5000';
+  return 'http://192.64.87.218:5000';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

@@ -369,10 +369,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               placeholder="الاسم"
               placeholderTextColor="#999"
               value={formData.name}
-              maxLength={3}
+              maxLength={4}
               onChangeText={(text) => {
-                if (text.length > 3) {
-                  showToast({ title: 'خطأ', description: 'الاسم يجب أن يكون 3 أحرف فقط', type: 'error' });
+                if (text.length > 4) {
+                  showToast({ title: 'خطأ', description: 'الاسم يجب أن يكون 4 أحرف كحد أقصى', type: 'error' });
                   return;
                 }
                 setFormData({ ...formData, name: text });
@@ -381,6 +381,11 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                 }
               }}
             />
+            {formData.name.length > 0 && (
+              <Text style={[styles.warningText, { alignSelf: 'flex-end', textAlign: 'right' }]}>
+                {formData.name.length}/4 أحرف
+              </Text>
+            )}
             {submitAttempted && validationErrors.name && (
               <Text style={styles.errorText}>{validationErrors.name}</Text>
             )}
@@ -1095,6 +1100,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'right',
     alignSelf: 'flex-end',
+  },
+  warningText: {
+    color: '#f59e0b',
+    fontSize: 12,
+    marginTop: -4,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   datePickerButton: {
     paddingVertical: 12,

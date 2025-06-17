@@ -31,7 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/favicon.png'
   },
   extra: {
-    apiUrl: process.env.API_URL || 'http://192.64.87.218:5000',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://192.64.87.218:5000',
     eas: {
       projectId: process.env.EXPO_PROJECT_ID || 'your-project-id'
     }

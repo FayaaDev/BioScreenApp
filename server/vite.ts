@@ -23,7 +23,6 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
   };
 
   const vite = await createViteServer({
@@ -33,7 +32,8 @@ export async function setupVite(app: Express, server: Server) {
       ...viteLogger,
       error: (msg, options) => {
         viteLogger.error(msg, options);
-        process.exit(1);
+        // Don't exit on vite errors, just log them
+        console.error('Vite error:', msg);
       },
     },
     server: serverOptions,
@@ -44,6 +44,11 @@ export async function setupVite(app: Express, server: Server) {
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
+    // Skip API routes
+    if (url.startsWith('/api')) {
+      return next();
+    }
+
     try {
       const clientTemplate = path.resolve(
         import.meta.dirname,
@@ -51,6 +56,12 @@ export async function setupVite(app: Express, server: Server) {
         "client",
         "index.html",
       );
+
+      // Check if the template file exists
+      if (!fs.existsSync(clientTemplate)) {
+        console.error('Template file not found:', clientTemplate);
+        return res.status(404).send('Template not found');
+      }
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
@@ -61,6 +72,7 @@ export async function setupVite(app: Express, server: Server) {
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
+      console.error('Error in vite setup:', e);
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }

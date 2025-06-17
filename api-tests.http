@@ -1,0 +1,61 @@
+### Test Interserver Health Endpoint
+GET http://192.64.87.218:5000/api/health
+Content-Type: application/json
+
+###
+
+### Test Local Health Endpoint
+GET http://localhost:5000/api/health
+Content-Type: application/json
+
+###
+
+### Test User Login (Interserver)
+POST http://192.64.87.218:5000/api/users/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password123"
+}
+
+###
+
+### Test User Login (Local)
+POST http://localhost:5000/api/users/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com", 
+  "password": "password123"
+}
+
+###
+
+### Get Screenings (Interserver)
+GET http://192.64.87.218:5000/api/screenings
+Content-Type: application/json
+
+###
+
+### Get Screenings (Local)
+GET http://localhost:5000/api/screenings
+Content-Type: application/json
+
+###
+
+### Test Admin Login (Interserver)
+POST http://192.64.87.218:5000/api/admin/login
+Content-Type: application/json
+
+{
+  "email": "admin@bioscreen.com",
+  "password": "admin123"
+}
+
+###
+
+### Test Admin Dashboard (Interserver) - Replace TOKEN with actual token
+GET http://192.64.87.218:5000/api/admin/dashboard
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE

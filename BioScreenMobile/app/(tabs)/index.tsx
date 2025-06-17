@@ -143,7 +143,7 @@ export default function HomeScreen() {
 
   // Fetch family members data
   const { data: familyMembersData } = useQuery<FamilyMember[]>({
-    queryKey: [`/api/users/${userId}/family`],
+    queryKey: ['/api/users', userId, 'family'],
     queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
     enabled: !!userId,
   });
