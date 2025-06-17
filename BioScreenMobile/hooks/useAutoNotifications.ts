@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
 import { useScreeningNotifications } from './useScreeningNotifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { shouldScheduleNotifications, getNotificationReason, ScreeningData } from '../lib/notificationUtils';
+import { shouldScheduleNotifications, getNotificationReason, ScreeningData, cancelOverdueNotifications } from '../lib/notificationUtils';
 
 /**
  * Hook to automatically manage screening notifications based on user preferences
@@ -38,6 +38,15 @@ export const useAutoNotifications = (screenings?: any[]) => {
         if (lastProcessed && (now - parseInt(lastProcessed)) < oneHour) {
           console.log('⏭️ Skipping notification processing - done recently');
           return;
+        }
+        
+        // Clean up any existing overdue notifications (one-time cleanup)
+        const overdueCleanupDone = await AsyncStorage.getItem('overdue_cleanup_done');
+        if (!overdueCleanupDone) {
+          console.log('🧹 One-time cleanup: Canceling existing overdue notifications...');
+          const canceledCount = await cancelOverdueNotifications();
+          console.log(`🔕 Canceled ${canceledCount} overdue notifications to prevent spam`);
+          await AsyncStorage.setItem('overdue_cleanup_done', 'true');
         }
         
         if (notificationsEnabled === 'true' && hasPermission) {

@@ -1,4 +1,5 @@
 import { differenceInDays, parseISO } from 'date-fns';
+import * as Notifications from 'expo-notifications';
 
 /**
  * Utility functions for notification logic
@@ -16,9 +17,14 @@ export interface ScreeningData {
  * Determines if a screening should have notifications scheduled
  */
 export function shouldScheduleNotifications(screening: ScreeningData): boolean {
-  // Always schedule for due and overdue screenings
-  if (screening.status === 'due' || screening.status === 'overdue') {
+  // Only schedule for due screenings (overdue notifications disabled)
+  if (screening.status === 'due') {
     return true;
+  }
+  
+  // Skip overdue screenings - no annoying notifications for new users
+  if (screening.status === 'overdue') {
+    return false;
   }
   
   // Never schedule for completed screenings
@@ -53,7 +59,7 @@ export function getNotificationReason(screening: ScreeningData): string {
   }
   
   if (screening.status === 'overdue') {
-    return `🚨 Screening is OVERDUE - urgent notifications will be scheduled`;
+    return `� Screening is OVERDUE - notifications disabled to avoid spam`;
   }
   
   if (screening.status === 'completed') {
@@ -118,4 +124,37 @@ export function validateNotificationParams(title: string, minutes: number): {
     isValid: true, 
     reason: `Valid - scheduled for ${scheduledDate.toLocaleString()}` 
   };
+}
+
+/**
+ * Cancel any existing overdue notifications (used when disabling overdue notifications)
+ */
+export async function cancelOverdueNotifications(): Promise<number> {
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    let canceledCount = 0;
+    
+    for (const notification of scheduled) {
+      const title = notification.content.title || '';
+      const body = notification.content.body || '';
+      
+      // Check if this is an overdue notification based on title/body content
+      if (
+        title.toLowerCase().includes('overdue') ||
+        body.toLowerCase().includes('overdue') ||
+        title.includes('متأخر') ||
+        body.includes('متأخر')
+      ) {
+        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+        canceledCount++;
+        console.log(`🔕 Canceled overdue notification: ${title}`);
+      }
+    }
+    
+    console.log(`🔕 Canceled ${canceledCount} overdue notifications`);
+    return canceledCount;
+  } catch (error) {
+    console.error('Error canceling overdue notifications:', error);
+    return 0;
+  }
 }

@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * This will automatically schedule reminders based on screening status and due dates
  */
 export const useScreeningNotifications = () => {
-  const { hasPermission } = useNotifications();
+  const { hasPermission, cancelNotification } = useNotifications();
   const { schedulePeriodicScreening, scheduleReminderIn } = useQuickNotifications();
 
   /**
@@ -164,7 +164,6 @@ export const useScreeningNotifications = () => {
       
       if (existing) {
         const identifiers = JSON.parse(existing);
-        const { cancelNotification } = useNotifications();
         
         // Cancel all scheduled notifications for this screening
         for (const id of identifiers) {
