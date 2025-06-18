@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
+import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 
 interface DashboardStats {
   totalScreenings: number;
@@ -79,7 +80,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', content: '' });
-  const [selectedPersonId, setSelectedPersonId] = useState<string>("user");
+  const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -102,38 +103,6 @@ export default function HomeScreen() {
     loadUser();
   }, []);
 
-  // Load selected person from AsyncStorage
-  useEffect(() => {
-    (async () => {
-      try {
-        const savedSelectedPerson = await AsyncStorage.getItem('selectedPersonId');
-        if (savedSelectedPerson) {
-          // Only set if it's "user" or a valid number
-          if (savedSelectedPerson === "user" || !isNaN(parseInt(savedSelectedPerson))) {
-            setSelectedPersonId(savedSelectedPerson);
-          } else {
-            // Invalid saved value, default to "user"
-            console.log('Invalid selectedPersonId found in storage, defaulting to user');
-            setSelectedPersonId("user");
-            await AsyncStorage.setItem('selectedPersonId', "user");
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load selectedPersonId:', error);
-        setSelectedPersonId("user");
-      }
-    })();
-  }, []);
-
-  // Save selected person to AsyncStorage
-  useEffect(() => {
-    (async () => {
-      if (selectedPersonId) {
-        await AsyncStorage.setItem('selectedPersonId', selectedPersonId);
-      }
-    })();
-  }, [selectedPersonId]);
-
   // Fetch user data with screenings
   const { data: userDataWithScreenings, isLoading, refetch } = useQuery<UserDataResponse>({
     queryKey: [`/api/users/${userId}`],
@@ -155,7 +124,6 @@ export default function HomeScreen() {
       if (!familyMemberExists) {
         console.log('Selected family member no longer exists, switching to user');
         setSelectedPersonId("user");
-        AsyncStorage.setItem('selectedPersonId', "user");
       }
     }
   }, [familyMembersData, selectedPersonId]);
@@ -187,7 +155,6 @@ export default function HomeScreen() {
     if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
       console.log('Selected family member not found, switching to user');
       setSelectedPersonId("user");
-      AsyncStorage.setItem('selectedPersonId', "user");
     }
   }, [selectedPersonError]);
 
@@ -723,15 +690,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#22c55e',
+    borderColor: '#2c9167',
     marginRight: 8,
   },
   familyButtonSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: '#2c9167',
+    borderColor: '#2c9167',
   },
   familyButtonText: {
-    color: '#22c55e',
+    color: '#2c9167',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {

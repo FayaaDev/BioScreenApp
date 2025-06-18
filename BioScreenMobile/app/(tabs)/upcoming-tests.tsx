@@ -709,14 +709,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#22c55e',
+    borderColor: '#2c9167',
   },
   familyButtonSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: '#2c9167',
+    borderColor: '#2c9167',
   },
   familyButtonText: {
-    color: '#22c55e',
+    color: '#2c9167',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {
