@@ -1,3 +1,10 @@
+/**
+ * NOTIFICATIONS COMPLETELY DISABLED
+ * 
+ * This file has been modified to disable all notification functionality.
+ * All quick notification methods return early without scheduling any notifications.
+ */
+
 import { useNotifications } from '../context/NotificationContext';
 import { NotificationData } from '../lib/notificationService';
 import { validateNotificationParams } from '../lib/notificationUtils';
@@ -22,28 +29,9 @@ export const useQuickNotifications = () => {
     minutes: number,
     type: 'screening_reminder' | 'appointment' | 'medication' | 'general' = 'general'
   ) => {
-    // Validate parameters
-    const validation = validateNotificationParams(title, minutes);
-    if (!validation.isValid) {
-      console.warn(`❌ Cannot schedule notification "${title}": ${validation.reason}`);
-      return null;
-    }
-    
-    console.log(`✅ Validation passed for "${title}": ${validation.reason}`);
-    
-    const notificationDate = new Date();
-    notificationDate.setMinutes(notificationDate.getMinutes() + minutes);
-
-    const notificationData: NotificationData = {
-      id: `reminder_${Date.now()}`,
-      title,
-      body: message,
-      scheduledDate: notificationDate,
-      type,
-      data: { reminderMinutes: minutes },
-    };
-
-    return scheduleNotification(notificationData);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping reminder for:', title);
+    return null;
   };
 
   /**
@@ -55,22 +43,9 @@ export const useQuickNotifications = () => {
     timeOfDay: { hour: number; minute: number },
     startDate?: Date
   ) => {
-    const start = startDate || new Date();
-    const reminderTimes: Date[] = [];
-
-    // Schedule for next 30 days
-    for (let i = 0; i < 30; i++) {
-      const reminderDate = new Date(start);
-      reminderDate.setDate(start.getDate() + i);
-      reminderDate.setHours(timeOfDay.hour, timeOfDay.minute, 0, 0);
-      
-      // Only schedule future dates
-      if (reminderDate > new Date()) {
-        reminderTimes.push(reminderDate);
-      }
-    }
-
-    return scheduleMedicationReminder(medicationName, dosage, reminderTimes);
+    // NOTIFICATIONS DISABLED - Return empty array
+    console.log('📵 Notifications disabled - skipping daily medication for:', medicationName);
+    return [];
   };
 
   /**
@@ -82,30 +57,9 @@ export const useQuickNotifications = () => {
     nextDueDate: Date,
     howManyReminders: number = 3
   ) => {
-    const identifiers: string[] = [];
-
-    for (let i = 0; i < howManyReminders; i++) {
-      const reminderDate = new Date(nextDueDate);
-      reminderDate.setMonth(reminderDate.getMonth() + (intervalMonths * i));
-
-      if (reminderDate > new Date()) {
-        const identifier = await scheduleScreeningReminder(
-          screeningType,
-          reminderDate,
-          {
-            intervalMonths,
-            reminderNumber: i + 1,
-            totalReminders: howManyReminders,
-          }
-        );
-        
-        if (identifier) {
-          identifiers.push(identifier);
-        }
-      }
-    }
-
-    return identifiers;
+    // NOTIFICATIONS DISABLED - Return empty array
+    console.log('📵 Notifications disabled - skipping periodic screening for:', screeningType);
+    return [];
   };
 
   /**
@@ -120,29 +74,9 @@ export const useQuickNotifications = () => {
       { beforeMinutes: 15, message: 'In 15 minutes you have: ' }, // 15 minutes before
     ]
   ) => {
-    const identifiers: string[] = [];
-
-    for (const reminder of reminders) {
-      const reminderDate = new Date(appointmentDate);
-      reminderDate.setMinutes(reminderDate.getMinutes() - reminder.beforeMinutes);
-
-      if (reminderDate > new Date()) {
-        const identifier = await scheduleAppointmentReminder(
-          `${reminder.message}${appointmentDetails}`,
-          reminderDate,
-          {
-            originalAppointmentDate: appointmentDate.toISOString(),
-            minutesBefore: reminder.beforeMinutes,
-          }
-        );
-
-        if (identifier) {
-          identifiers.push(identifier);
-        }
-      }
-    }
-
-    return identifiers;
+    // NOTIFICATIONS DISABLED - Return empty array
+    console.log('📵 Notifications disabled - skipping appointment reminders for:', appointmentDetails);
+    return [];
   };
 
   /**
@@ -153,32 +87,9 @@ export const useQuickNotifications = () => {
     riskFactors: string[] = [],
     lastCheckDate?: Date
   ) => {
-    const identifiers: string[] = [];
-    
-    // Determine screening schedule based on age
-    const screenings = getRecommendedScreenings(age, riskFactors);
-    
-    for (const screening of screenings) {
-      const nextDue = calculateNextDueDate(screening, lastCheckDate);
-      
-      if (nextDue > new Date()) {
-        const identifier = await scheduleScreeningReminder(
-          screening.name,
-          nextDue,
-          {
-            ageBasedRecommendation: true,
-            riskFactors,
-            intervalMonths: screening.intervalMonths,
-          }
-        );
-        
-        if (identifier) {
-          identifiers.push(identifier);
-        }
-      }
-    }
-
-    return identifiers;
+    // NOTIFICATIONS DISABLED - Return empty array
+    console.log('📵 Notifications disabled - skipping health check reminder for age:', age);
+    return [];
   };
 
   return {

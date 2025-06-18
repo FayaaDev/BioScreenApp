@@ -1,3 +1,11 @@
+/**
+ * NOTIFICATIONS COMPLETELY DISABLED
+ * 
+ * This file has been modified to disable all notification functionality.
+ * All notification methods return early without performing any actions.
+ * No permissions are requested and no notifications are scheduled.
+ */
+
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -36,64 +44,30 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   }, []);
 
   const initializeNotifications = async () => {
-    try {
-      const success = await notificationService.initialize();
-      setIsInitialized(true);
-      setHasPermission(success);
-    } catch (error) {
-      console.error('Failed to initialize notifications:', error);
-      setIsInitialized(true);
-      setHasPermission(false);
-    }
+    // NOTIFICATIONS DISABLED - Skip initialization
+    console.log('📵 Notifications disabled - skipping initialization');
+    setIsInitialized(true);
+    setHasPermission(false); // Always false when disabled
   };
 
   const setupNotificationListeners = () => {
-    // Listen for notification interactions when app is in foreground
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
-      
-      // In development/Expo Go, show an alert to simulate the notification
-      if (__DEV__) {
-        Alert.alert(
-          notification.request.content.title || 'Notification',
-          notification.request.content.body || 'You have a new notification',
-          [{ text: 'OK' }]
-        );
-      }
-    });
-
-    // Listen for notification interactions when user taps on notification
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
-      // Handle user interaction with notification
-      const data = response.notification.request.content.data;
-      
-      // You can navigate to specific screens based on notification type
-      if (data?.type === 'screening_reminder') {
-        // Navigate to screening screen
-        console.log('Navigate to screening screen');
-      } else if (data?.type === 'appointment') {
-        // Navigate to appointment screen
-        console.log('Navigate to appointment screen');
-      }
-    });
-
+    // NOTIFICATIONS DISABLED - Skip setting up listeners
+    console.log('📵 Notifications disabled - skipping notification listeners setup');
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
+      // No cleanup needed since no listeners were set up
     };
   };
 
   const scheduleNotification = async (data: NotificationData): Promise<string | null> => {
-    if (!hasPermission) {
-      console.warn('No notification permission');
-      return null;
-    }
-    return notificationService.scheduleLocalNotification(data);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping schedule notification for:', data.title);
+    return null;
   };
 
   const cancelNotification = async (id: string): Promise<void> => {
-    return notificationService.cancelNotification(id);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping cancel notification for:', id);
+    return;
   };
 
   const scheduleScreeningReminder = async (
@@ -101,11 +75,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     date: Date,
     data?: any
   ): Promise<string | null> => {
-    if (!hasPermission) {
-      console.warn('No notification permission');
-      return null;
-    }
-    return notificationService.scheduleScreeningReminder(screeningType, date, data);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping screening reminder for:', screeningType);
+    return null;
   };
 
   const scheduleAppointmentReminder = async (
@@ -113,11 +85,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     date: Date,
     data?: any
   ): Promise<string | null> => {
-    if (!hasPermission) {
-      console.warn('No notification permission');
-      return null;
-    }
-    return notificationService.scheduleAppointmentReminder(details, date, data);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping appointment reminder for:', details);
+    return null;
   };
 
   const scheduleMedicationReminder = async (
@@ -126,19 +96,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     times: Date[],
     data?: any
   ): Promise<string[]> => {
-    if (!hasPermission) {
-      console.warn('No notification permission');
-      return [];
-    }
-    return notificationService.scheduleMedicationReminder(name, dosage, times, data);
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping medication reminder for:', name);
+    return [];
   };
 
   const getScheduledNotifications = async (): Promise<Notifications.NotificationRequest[]> => {
-    return notificationService.getScheduledNotifications();
+    // NOTIFICATIONS DISABLED - Return empty array
+    console.log('📵 Notifications disabled - returning empty scheduled notifications list');
+    return [];
   };
 
   const cancelAllNotifications = async (): Promise<void> => {
-    return notificationService.cancelAllNotifications();
+    // NOTIFICATIONS DISABLED - Return early
+    console.log('📵 Notifications disabled - skipping cancel all notifications');
+    return;
   };
 
   const value: NotificationContextType = {
