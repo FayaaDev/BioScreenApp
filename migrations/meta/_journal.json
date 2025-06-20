@@ -57,6 +57,13 @@
       "when": 1749572270831,
       "tag": "0007_curious_flatman",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1750403797562,
+      "tag": "0008_fearless_peter_parker",
+      "breakpoints": true
     }
   ]
 }

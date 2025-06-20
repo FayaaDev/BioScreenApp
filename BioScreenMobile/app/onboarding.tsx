@@ -24,6 +24,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 interface SignupFormData {
   name: string;
   email: string;
+  phoneNumber: string;
   password: string;
   confirmPassword: string;
   gender: string;
@@ -48,6 +49,7 @@ interface SignupFormData {
 interface FormErrors {
   name?: string;
   email?: string;
+  phoneNumber?: string;
   password?: string;
   confirmPassword?: string;
   gender?: string;
@@ -68,6 +70,7 @@ export default function Onboarding() {
   const [formData, setFormData] = useState<SignupFormData>({
     name: '',
     email: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: '',
     gender: '',
@@ -124,6 +127,12 @@ export default function Onboarding() {
       newErrors.email = 'الرجاء إدخال البريد الإلكتروني';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'الرجاء إدخال بريد إلكتروني صحيح';
+    }
+
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = 'الرجاء إدخال رقم الهاتف';
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s+/g, ''))) {
+      newErrors.phoneNumber = 'الرجاء إدخال رقم هاتف صحيح (مثال: +966501234567)';
     }
 
     if (!formData.password) {
@@ -335,6 +344,32 @@ export default function Onboarding() {
               />
               {errors.email && (
                 <Text style={styles.errorText}>{errors.email}</Text>
+              )}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>رقم الهاتف (واتساب)</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  { textAlign: 'right', writingDirection: 'rtl' },
+                  errors.phoneNumber && styles.inputError,
+                ]}
+                value={formData.phoneNumber}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, phoneNumber: text });
+                  if (errors.phoneNumber) {
+                    setErrors({ ...errors, phoneNumber: undefined });
+                  }
+                }}
+                placeholder="مثال: +966501234567"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+                textContentType="telephoneNumber"
+                editable={!createUserMutation.isPending}
+              />
+              {errors.phoneNumber && (
+                <Text style={styles.errorText}>{errors.phoneNumber}</Text>
               )}
             </View>
 

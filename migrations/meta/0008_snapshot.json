@@ -1,6 +1,6 @@
 {
-  "id": "030759c2-adfe-4e4c-ab0e-8d6a074e5fbe",
-  "prevId": "dcc7eba8-1868-4096-ab4b-fe19e1fd6c5a",
+  "id": "96b50005-e09d-4bd1-a50c-d87e5e1decb1",
+  "prevId": "030759c2-adfe-4e4c-ab0e-8d6a074e5fbe",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -196,6 +196,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "gender": {
           "name": "gender",
@@ -460,6 +466,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'temp_password'"
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "gender": {
           "name": "gender",

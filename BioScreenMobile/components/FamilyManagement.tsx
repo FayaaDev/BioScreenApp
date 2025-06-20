@@ -25,6 +25,7 @@ interface FamilyMember {
   userId: number;
   name: string;
   relationship: string;
+  phoneNumber?: string;
   gender: string;
   dateOfBirth: string;
   createdAt: string;
@@ -54,6 +55,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   const [formData, setFormData] = useState({
     name: '',
     relationship: '',
+    phoneNumber: '',
     gender: '',
     dateOfBirth: '',
     // Medical survey fields
@@ -134,6 +136,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     setFormData({
       name: '',
       relationship: '',
+      phoneNumber: '',
       gender: '',
       dateOfBirth: '',
       isDiabetic: false,
@@ -235,6 +238,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     setFormData({
       name: member.name,
       relationship: member.relationship,
+      phoneNumber: member.phoneNumber ?? '',
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
       isDiabetic: member.isDiabetic ?? false,
@@ -407,6 +411,26 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             />
             {submitAttempted && validationErrors.relationship && (
               <Text style={styles.errorText}>{validationErrors.relationship}</Text>
+            )}
+            <TextInput
+              style={[
+                styles.input,
+                { textAlign: 'right', writingDirection: 'rtl' },
+                submitAttempted && validationErrors.phoneNumber && styles.inputError,
+              ]}
+              placeholder="رقم الهاتف (واتساب) - اختياري"
+              placeholderTextColor="#999"
+              value={formData.phoneNumber}
+              onChangeText={(text) => {
+                setFormData({ ...formData, phoneNumber: text });
+                if (validationErrors.phoneNumber) {
+                  setValidationErrors(prev => ({ ...prev, phoneNumber: '' }));
+                }
+              }}
+              keyboardType="phone-pad"
+            />
+            {submitAttempted && validationErrors.phoneNumber && (
+              <Text style={styles.errorText}>{validationErrors.phoneNumber}</Text>
             )}
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
               <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>الجنس</Text>

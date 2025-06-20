@@ -387,6 +387,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
             nextDue: nextDue.toISOString(),
             status: status
           });
+          
+          // Schedule WhatsApp reminder if user has phone number and screening is due
+          if (userData.phoneNumber && status === "due") {
+            try {
+              const notificationScheduler = NotificationScheduler.getInstance();
+              const jobId = await notificationScheduler.scheduleScreeningReminder(
+                user.id,
+                screening.id,
+                nextDue,
+                7 // 7 days before due date
+              );
+              console.log(`✅ Scheduled WhatsApp reminder for new user ${userData.name} - ${screening.name} (Job ID: ${jobId})`);
+            } catch (error) {
+              console.error('Error scheduling WhatsApp reminder for new user screening:', error);
+            }
+          }
+        }
+      }
+      
+      // Send welcome message if phone number is provided
+      if (userData.phoneNumber) {
+        try {
+          const whatsappService = WhatsAppService.getInstance();
+          const welcomeSuccess = await whatsappService.sendWelcomeMessage(
+            userData.phoneNumber,
+            userData.name
+          );
+          
+          if (welcomeSuccess) {
+            console.log(`✅ Welcome message sent to new user: ${userData.name} (${userData.phoneNumber})`);
+          } else {
+            console.log(`⚠️ Failed to send welcome message to: ${userData.name} (${userData.phoneNumber})`);
+          }
+        } catch (error) {
+          console.error('Error sending welcome message during user creation:', error);
         }
       }
       
@@ -410,6 +445,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         res.status(404).json({ message: "User not found" });
         return;
+      }
+      
+      // Send welcome message if phone number is being added or updated
+      if (updates.phoneNumber && updates.phoneNumber !== user.phoneNumber) {
+        try {
+          const whatsappService = WhatsAppService.getInstance();
+          const welcomeSuccess = await whatsappService.sendWelcomeMessage(
+            updates.phoneNumber,
+            user.name
+          );
+          
+          if (welcomeSuccess) {
+            console.log(`✅ Welcome message sent to updated user: ${user.name} (${updates.phoneNumber})`);
+          } else {
+            console.log(`⚠️ Failed to send welcome message to: ${user.name} (${updates.phoneNumber})`);
+          }
+          
+          // Schedule WhatsApp reminders for existing due screenings
+          const userScreenings = await storage.getUserScreenings(user.id);
+          const notificationScheduler = NotificationScheduler.getInstance();
+          
+          for (const userScreening of userScreenings) {
+            if (userScreening.status === "due") {
+              try {
+                const jobId = await notificationScheduler.scheduleScreeningReminder(
+                  user.id,
+                  userScreening.screeningId,
+                  new Date(userScreening.nextDue),
+                  7 // 7 days before due date
+                );
+                console.log(`✅ Scheduled WhatsApp reminder for updated user ${user.name} - Screening ID ${userScreening.screeningId} (Job ID: ${jobId})`);
+              } catch (error) {
+                console.error(`Error scheduling WhatsApp reminder for user screening ${userScreening.id}:`, error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error sending welcome message during user update:', error);
+        }
       }
       
       res.json(user);
@@ -600,6 +674,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       const familyMemberData = insertFamilyMemberSchema.parse(mappedBody);
       const familyMember = await storage.createFamilyMember(familyMemberData);
+      
+      // Send welcome message if phone number is provided
+      if (familyMemberData.phoneNumber) {
+        try {
+          const whatsappService = WhatsAppService.getInstance();
+          const welcomeSuccess = await whatsappService.sendWelcomeMessage(
+            familyMemberData.phoneNumber,
+            familyMemberData.name
+          );
+          
+          if (welcomeSuccess) {
+            console.log(`✅ Welcome message sent to new family member: ${familyMemberData.name} (${familyMemberData.phoneNumber})`);
+          } else {
+            console.log(`⚠️ Failed to send welcome message to family member: ${familyMemberData.name} (${familyMemberData.phoneNumber})`);
+          }
+        } catch (error) {
+          console.error('Error sending welcome message during family member creation:', error);
+        }
+      }
+      
       res.json(familyMember);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -622,11 +716,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
       };
       const updates = insertFamilyMemberSchema.partial().parse(mappedBody);
+      
+      // Get original family member to compare phone numbers
+      const originalFamilyMember = await storage.getFamilyMember(id);
+      
       const familyMember = await storage.updateFamilyMember(id, updates);
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
+      
+      // Send welcome message if phone number is being added or updated
+      if (updates.phoneNumber && originalFamilyMember && updates.phoneNumber !== originalFamilyMember.phoneNumber) {
+        try {
+          const whatsappService = WhatsAppService.getInstance();
+          const welcomeSuccess = await whatsappService.sendWelcomeMessage(
+            updates.phoneNumber,
+            familyMember.name
+          );
+          
+          if (welcomeSuccess) {
+            console.log(`✅ Welcome message sent to updated family member: ${familyMember.name} (${updates.phoneNumber})`);
+          } else {
+            console.log(`⚠️ Failed to send welcome message to family member: ${familyMember.name} (${updates.phoneNumber})`);
+          }
+          
+          // Schedule WhatsApp reminders for existing due screenings
+          const familyScreenings = await storage.getFamilyMemberScreenings(id);
+          const notificationScheduler = NotificationScheduler.getInstance();
+          
+          for (const familyScreening of familyScreenings) {
+            if (familyScreening.status === "due") {
+              try {
+                const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+                  id,
+                  familyScreening.screeningId,
+                  new Date(familyScreening.nextDue),
+                  7 // 7 days before due date
+                );
+                console.log(`✅ Scheduled WhatsApp reminder for updated family member ${familyMember.name} - Screening ID ${familyScreening.screeningId} (Job ID: ${jobId})`);
+              } catch (error) {
+                console.error(`Error scheduling WhatsApp reminder for family screening ${familyScreening.id}:`, error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error sending welcome message during family member update:', error);
+        }
+      }
+      
       res.json(familyMember);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1033,13 +1171,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`[PUT /api/user-screenings/${id}] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: laterRecreated`);
         // Create the next screening with the calculated next due date
-        await storage.createUserScreening({
+        const newScreening = await storage.createUserScreening({
           userId: currentScreening.userId,
           screeningId: screening.id,
           lastCompleted: null,
           nextDue: nextDueDate.toISOString(),
           status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
+        
+        // Schedule WhatsApp reminder if user has phone number
+        try {
+          const user = await storage.getUser(currentScreening.userId);
+          if (user && user.phoneNumber) {
+            const notificationScheduler = NotificationScheduler.getInstance();
+            const jobId = await notificationScheduler.scheduleScreeningReminder(
+              currentScreening.userId,
+              screening.id,
+              nextDueDate,
+              7 // 7 days before due date
+            );
+            console.log(`✅ Scheduled WhatsApp reminder for user ${user.name} - ${screening.name} (Job ID: ${jobId})`);
+          }
+        } catch (error) {
+          console.error('Error scheduling WhatsApp reminder for user screening:', error);
+        }
+        
         // Delete the completed screening
         await storage.deleteUserScreening(id);
       } else if (updates.status === 'completed' && screening.frequencyYears === 0) {
@@ -1135,13 +1291,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Creating repeatable screening with nextDue: ${nextDueDate.toISOString()}, status: laterRecreated`);
         // Create the next screening with the calculated next due date
-        await storage.createFamilyMemberScreening({
+        const newFamilyScreening = await storage.createFamilyMemberScreening({
           familyMemberId: familyId,
           screeningId: screening.id,
           lastCompleted: null,
           nextDue: nextDueDate.toISOString(),
           status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
+        
+        // Schedule WhatsApp reminder if family member has phone number
+        try {
+          if (familyMember.phoneNumber) {
+            const notificationScheduler = NotificationScheduler.getInstance();
+            const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+              familyId,
+              screening.id,
+              nextDueDate,
+              7 // 7 days before due date
+            );
+            console.log(`✅ Scheduled WhatsApp reminder for family member ${familyMember.name} - ${screening.name} (Job ID: ${jobId})`);
+          }
+        } catch (error) {
+          console.error('Error scheduling WhatsApp reminder for family member screening:', error);
+        }
+        
         // Delete the completed screening
         await storage.deleteFamilyMemberScreening(familyScreening.id);
       } else {
@@ -1326,6 +1499,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error getting notification status:', error);
       res.status(500).json({ error: 'Failed to get notification status' });
+    }
+  });
+
+  // Schedule WhatsApp reminders for all due screenings of a user or family member
+  app.post("/api/notifications/schedule-all-reminders", async (req, res) => {
+    try {
+      const { userId, familyMemberId } = req.body;
+      
+      if (!userId && !familyMemberId) {
+        return res.status(400).json({ error: 'Either userId or familyMemberId is required' });
+      }
+
+      const notificationScheduler = NotificationScheduler.getInstance();
+      const scheduledJobs = [];
+
+      if (userId) {
+        // Schedule reminders for user screenings
+        const user = await storage.getUser(userId);
+        if (!user || !user.phoneNumber) {
+          return res.status(400).json({ error: 'User not found or no phone number' });
+        }
+
+        const userScreenings = await storage.getUserScreenings(userId);
+        for (const screening of userScreenings) {
+          if (screening.status === "due") {
+            try {
+              const jobId = await notificationScheduler.scheduleScreeningReminder(
+                userId,
+                screening.screeningId,
+                new Date(screening.nextDue),
+                7
+              );
+              scheduledJobs.push({
+                type: 'user',
+                screeningId: screening.screeningId,
+                jobId,
+                dueDate: screening.nextDue
+              });
+            } catch (error) {
+              console.error(`Error scheduling reminder for user screening ${screening.id}:`, error);
+            }
+          }
+        }
+      }
+
+      if (familyMemberId) {
+        // Schedule reminders for family member screenings
+        const familyMember = await storage.getFamilyMember(familyMemberId);
+        if (!familyMember || !familyMember.phoneNumber) {
+          return res.status(400).json({ error: 'Family member not found or no phone number' });
+        }
+
+        const familyScreenings = await storage.getFamilyMemberScreenings(familyMemberId);
+        for (const screening of familyScreenings) {
+          if (screening.status === "due") {
+            try {
+              const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+                familyMemberId,
+                screening.screeningId,
+                new Date(screening.nextDue),
+                7
+              );
+              scheduledJobs.push({
+                type: 'family',
+                screeningId: screening.screeningId,
+                jobId,
+                dueDate: screening.nextDue
+              });
+            } catch (error) {
+              console.error(`Error scheduling reminder for family screening ${screening.id}:`, error);
+            }
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Scheduled ${scheduledJobs.length} WhatsApp reminders`,
+        scheduledJobs
+      });
+    } catch (error) {
+      console.error('Error scheduling all reminders:', error);
+      res.status(500).json({ error: 'Failed to schedule reminders' });
     }
   });
 

@@ -19,13 +19,14 @@ export default function Signup() {
   const { t, i18n } = useTranslation();
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [selectedGender, setSelectedGender] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<string>("");
 
   const createUserMutation = useMutation({
-    mutationFn: async (userData: { name: string; email: string; password: string; gender: string; dateOfBirth: string }) => {
+    mutationFn: async (userData: { name: string; email: string; phoneNumber: string; password: string; gender: string; dateOfBirth: string }) => {
       const response = await apiRequest("POST", "/api/users", userData);
       return response.json();
     },
@@ -48,7 +49,7 @@ export default function Signup() {
   });
 
   const handleSubmit = () => {
-    if (!name || !email || !password || !confirmPassword || !selectedGender || !dateOfBirth) {
+    if (!name || !email || !phoneNumber || !password || !confirmPassword || !selectedGender || !dateOfBirth) {
       toast({
         title: t("onboarding.missingInfo"),
         description: t("onboarding.fillAllFields"),
@@ -75,10 +76,20 @@ export default function Signup() {
       return;
     }
 
-    createUserMutation.mutate({ name, email, password, gender: selectedGender, dateOfBirth });
+    // Basic phone number validation
+    if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber.replace(/\s+/g, ''))) {
+      toast({
+        title: "رقم هاتف غير صالح",
+        description: "الرجاء إدخال رقم هاتف صحيح (مثال: +966501234567)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createUserMutation.mutate({ name, email, phoneNumber, password, gender: selectedGender, dateOfBirth });
   };
 
-  const isFormValid = name && email && password && confirmPassword && selectedGender && dateOfBirth;
+  const isFormValid = name && email && phoneNumber && password && confirmPassword && selectedGender && dateOfBirth;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex flex-col" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
@@ -132,6 +143,21 @@ export default function Signup() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12 text-black"
                   placeholder={t("onboarding.emailPlaceholder")}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phoneNumber" className="text-sm font-medium mb-2 block text-gray-700">
+                  رقم الهاتف (واتساب)
+                </Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="h-12 text-black"
+                  placeholder="مثال: +966501234567"
+                  dir="ltr"
                 />
               </div>
 

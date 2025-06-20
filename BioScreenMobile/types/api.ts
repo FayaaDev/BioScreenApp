@@ -2,6 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  phoneNumber?: string;
   isAdmin: boolean;
   dateOfBirth?: string;
   gender?: string;

@@ -40,6 +40,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
     dateOfBirth: '',
     gender: '',
   });
@@ -77,10 +78,11 @@ export default function Profile() {
 
   useEffect(() => {
     if (userData && typeof userData === 'object' && 'user' in userData) {
-      const user = userData.user as { name?: string; email?: string; dateOfBirth: string; gender: string };
+      const user = userData.user as { name?: string; email?: string; phoneNumber?: string; dateOfBirth: string; gender: string };
       setFormData({
         name: user.name || '',
         email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
       });
@@ -88,7 +90,7 @@ export default function Profile() {
   }, [userData]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { name: string; email: string; dateOfBirth: string; gender: string }) => {
+    mutationFn: async (data: { name: string; email: string; phoneNumber: string; dateOfBirth: string; gender: string }) => {
       return apiRequest('PATCH', `/api/users/${userId}`, data);
     },
     onSuccess: () => {
@@ -107,10 +109,11 @@ export default function Profile() {
 
   const handleCancel = () => {
     if (userData && typeof userData === 'object' && 'user' in userData) {
-      const user = userData.user as { name?: string; email?: string; dateOfBirth: string; gender: string };
+      const user = userData.user as { name?: string; email?: string; phoneNumber?: string; dateOfBirth: string; gender: string };
       setFormData({
         name: user.name || '',
         email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
       });
@@ -209,6 +212,18 @@ export default function Profile() {
               editable={isEditing}
               keyboardType="email-address"
               autoCapitalize="none"
+            />
+          </View>
+          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
+            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>رقم الهاتف (واتساب)</Text>
+            <TextInput
+              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
+              value={formData.phoneNumber}
+              onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
+              editable={isEditing}
+              keyboardType="phone-pad"
+              placeholder="مثال: +966501234567"
+              placeholderTextColor="#999"
             />
           </View>
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>

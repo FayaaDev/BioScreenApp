@@ -18,6 +18,8 @@ The BioScreen application has been updated to use Twilio's WhatsApp API for send
    - Schedules reminders 7 days before due date
    - Daily checks for overdue screenings at 9 AM
    - Automatic retry mechanism for failed messages
+   - **NEW**: Automatic scheduling when screenings are completed and new ones are created
+   - **NEW**: Automatic scheduling for new users with phone numbers and due screenings
 
 3. **Message Templates**
    - Screening reminders with due date and screening name
@@ -29,6 +31,17 @@ The BioScreen application has been updated to use Twilio's WhatsApp API for send
    - All notifications managed on the server
    - No dependency on device notifications
    - Persistent across app restarts and device changes
+
+5. **Automatic Welcome Messages**
+   - **NEW**: Welcome messages sent automatically when users register with phone numbers
+   - **NEW**: Welcome messages sent when users add/update phone numbers
+   - **NEW**: Welcome messages sent for family members with phone numbers
+   - **NEW**: Automatic reminder scheduling for existing due screenings when phone numbers are added
+
+6. **Enhanced User Registration & Profile Management**
+   - **NEW**: Phone number field integrated into user and family member profiles
+   - **NEW**: Automatic WhatsApp notification setup during registration
+   - **NEW**: Smart reminder scheduling when profiles are updated
 
 ## Setup Instructions
 
@@ -64,6 +77,12 @@ The system automatically adds phone number fields to users and family members:
 - `users.phone_number` - For user WhatsApp notifications
 - `family_members.phone_number` - For family member notifications
 
+**NEW**: The system now automatically:
+- Sends welcome messages when phone numbers are provided during registration
+- Sends welcome messages when phone numbers are added or updated in profiles
+- Schedules WhatsApp reminders for all existing due screenings when phone numbers are added
+- Schedules reminders automatically when screenings are completed and new ones are created
+
 ### 3. Server Configuration
 
 The server automatically initializes:
@@ -78,6 +97,7 @@ The server automatically initializes:
 - `POST /api/notifications/schedule-screening` - Schedule user screening reminder
 - `POST /api/notifications/schedule-family-screening` - Schedule family member screening reminder
 - `POST /api/notifications/send-welcome` - Send welcome message
+- `POST /api/notifications/schedule-all-reminders` - **NEW**: Schedule reminders for all due screenings of a user or family member
 - `GET /api/notifications/status` - Check notification system status
 
 ### Request Examples
@@ -97,6 +117,19 @@ The server automatically initializes:
 {
   "phoneNumber": "+966501234567",
   "personName": "Ahmed Ali"
+}
+```
+
+**Schedule All Reminders:**
+```json
+{
+  "userId": 1
+}
+```
+or
+```json
+{
+  "familyMemberId": 5
 }
 ```
 
@@ -173,6 +206,14 @@ Use the `WhatsAppNotificationTest` component in the mobile app to:
 - Check notification system status
 - Send test welcome messages
 - Schedule test screening reminders
+
+### 4. Automatic Features Testing
+**NEW**: Test the automatic WhatsApp integration by:
+- Creating a new user with a phone number - should receive welcome message
+- Adding a phone number to an existing user - should receive welcome message and reminders for due screenings
+- Adding a family member with a phone number - should receive welcome message
+- Completing a screening - should automatically schedule reminder for next screening
+- Updating phone numbers - should receive welcome message and schedule reminders for existing due screenings
 
 ## Monitoring and Logs
 

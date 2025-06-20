@@ -29,6 +29,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phoneNumber: "",
     dateOfBirth: "",
     gender: ""
   });
@@ -53,6 +54,7 @@ export default function Profile() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
         dateOfBirth: user.dateOfBirth,
         gender: user.gender
       });
@@ -60,7 +62,7 @@ export default function Profile() {
   }, [userData]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { name: string; email: string; dateOfBirth: string; gender: string }) => {
+    mutationFn: async (data: { name: string; email: string; phoneNumber: string; dateOfBirth: string; gender: string }) => {
       const response = await apiRequest("PATCH", `/api/users/${userId}`, data);
       return response.json();
     },
@@ -91,6 +93,7 @@ export default function Profile() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
         dateOfBirth: user.dateOfBirth,
         gender: user.gender
       });
@@ -232,6 +235,25 @@ export default function Profile() {
                 />
               ) : (
                 <p className="mt-1 text-black">{formData.email}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
+                رقم الهاتف (واتساب)
+              </Label>
+              {isEditing ? (
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                  className="mt-1"
+                  placeholder="مثال: +966501234567"
+                  dir="ltr"
+                />
+              ) : (
+                <p className="mt-1 text-black">{formData.phoneNumber || 'غير محدد'}</p>
               )}
             </div>
 
