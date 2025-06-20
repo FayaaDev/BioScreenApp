@@ -55,10 +55,10 @@ class NotificationScheduler {
     this.isRunning = true;
     console.log('📅 WhatsApp notification scheduler started');
 
-    // Check for pending notifications every 5 minutes
+    // Check for pending notifications every 1 minute
     this.checkInterval = setInterval(async () => {
       await this.processPendingNotifications();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 1 * 60 * 1000); // 1 minute
   }
 
   private async scheduleDailyOverdueCheck(): Promise<void> {
