@@ -27,7 +27,6 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import i18n from '../../lib/i18n';
 import { useNotifications } from '../../context/NotificationContext';
-import WhatsAppNotificationTest from '../../components/WhatsAppNotificationTest';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -468,15 +467,6 @@ export default function Profile() {
         </View>
       </Modal>
 
-      {/* WhatsApp Notification Test - Development Only */}
-      {process.env.NODE_ENV === 'development' && (
-        <View style={styles.card}>
-          <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: 16 }]}>
-            🧪 WhatsApp Test (Development)
-          </Text>
-          <WhatsAppNotificationTest />
-        </View>
-      )}
     </ScrollView>
   );
 }
