@@ -2,6 +2,7 @@ import { db } from './db';
 import { users, familyMembers, userScreenings, familyMemberScreenings, screenings } from '@shared/schema';
 import { eq, and, lte, gte } from 'drizzle-orm';
 import WhatsAppService from './whatsappService';
+import { storage } from './storage';
 
 export interface NotificationJob {
   id: string;
@@ -86,11 +87,11 @@ class NotificationScheduler {
     reminderDays: number = 7
   ): Promise<string> {
     try {
-      // Get user and screening details
-      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-      const screening = await db.select().from(screenings).where(eq(screenings.id, screeningId)).limit(1);
+      // Get user and screening details using storage layer
+      const user = await storage.getUser(userId);
+      const screening = await storage.getScreening(screeningId);
 
-      if (!user[0] || !screening[0] || !user[0].phoneNumber) {
+      if (!user || !screening || !user.phoneNumber) {
         throw new Error('User, screening, or phone number not found');
       }
 
@@ -105,9 +106,9 @@ class NotificationScheduler {
         type: 'screening_reminder',
         userId,
         screeningId,
-        phoneNumber: user[0].phoneNumber,
-        personName: user[0].name,
-        screeningName: screening[0].name,
+        phoneNumber: user.phoneNumber,
+        personName: user.name,
+        screeningName: screening.name,
         dueDate: dueDate.toISOString().split('T')[0],
         scheduledFor: reminderDate,
         status: 'pending',
@@ -120,7 +121,7 @@ class NotificationScheduler {
       // Store in memory for now (in production, use a proper job queue like Bull)
       this.storeJob(job);
 
-      console.log(`📅 Scheduled screening reminder for ${user[0].name} - ${screening[0].name} on ${reminderDate.toISOString()}`);
+      console.log(`📅 Scheduled screening reminder for ${user.name} - ${screening.name} on ${reminderDate.toISOString()}`);
       return jobId;
     } catch (error) {
       console.error('Error scheduling screening reminder:', error);
@@ -135,11 +136,11 @@ class NotificationScheduler {
     reminderDays: number = 7
   ): Promise<string> {
     try {
-      // Get family member and screening details
-      const familyMember = await db.select().from(familyMembers).where(eq(familyMembers.id, familyMemberId)).limit(1);
-      const screening = await db.select().from(screenings).where(eq(screenings.id, screeningId)).limit(1);
+      // Get family member and screening details using storage layer
+      const familyMember = await storage.getFamilyMember(familyMemberId);
+      const screening = await storage.getScreening(screeningId);
 
-      if (!familyMember[0] || !screening[0] || !familyMember[0].phoneNumber) {
+      if (!familyMember || !screening || !familyMember.phoneNumber) {
         throw new Error('Family member, screening, or phone number not found');
       }
 
@@ -153,9 +154,9 @@ class NotificationScheduler {
         type: 'screening_reminder',
         familyMemberId,
         screeningId,
-        phoneNumber: familyMember[0].phoneNumber,
-        personName: familyMember[0].name,
-        screeningName: screening[0].name,
+        phoneNumber: familyMember.phoneNumber,
+        personName: familyMember.name,
+        screeningName: screening.name,
         dueDate: dueDate.toISOString().split('T')[0],
         scheduledFor: reminderDate,
         status: 'pending',
@@ -167,7 +168,7 @@ class NotificationScheduler {
 
       this.storeJob(job);
 
-      console.log(`📅 Scheduled family screening reminder for ${familyMember[0].name} - ${screening[0].name} on ${reminderDate.toISOString()}`);
+      console.log(`📅 Scheduled family screening reminder for ${familyMember.name} - ${screening.name} on ${reminderDate.toISOString()}`);
       return jobId;
     } catch (error) {
       console.error('Error scheduling family screening reminder:', error);
