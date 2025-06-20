@@ -36,7 +36,7 @@
 		{
 			"label": "Mobile App - Local Backend",
 			"type": "shell",
-			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=http://localhost:5000 npx expo start",
+			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=http://192.168.0.205:5000 npx expo start",
 			"group": "build",
 			"isBackground": true,
 			"presentation": {
