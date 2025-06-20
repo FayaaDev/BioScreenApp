@@ -689,6 +689,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             console.log(`⚠️ Failed to send welcome message to family member: ${familyMemberData.name} (${familyMemberData.phoneNumber})`);
           }
+
+          // Schedule WhatsApp reminders for existing due screenings
+          const familyScreenings = await storage.getFamilyMemberScreenings(familyMember.id);
+          const notificationScheduler = NotificationScheduler.getInstance();
+          
+          for (const familyScreening of familyScreenings) {
+            if (familyScreening.status === "due") {
+              try {
+                const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+                  familyMember.id,
+                  familyScreening.screeningId,
+                  new Date(familyScreening.nextDue),
+                  7 // 7 days before due date
+                );
+                console.log(`✅ Scheduled WhatsApp reminder for new family member ${familyMemberData.name} - Screening ID ${familyScreening.screeningId} (Job ID: ${jobId})`);
+              } catch (error) {
+                console.error(`Error scheduling WhatsApp reminder for family screening ${familyScreening.id}:`, error);
+              }
+            }
+          }
         } catch (error) {
           console.error('Error sending welcome message during family member creation:', error);
         }
