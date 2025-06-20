@@ -9,6 +9,8 @@ import { z } from "zod";
 import { db, adminUsers } from './db';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
+import WhatsAppService from './whatsappService';
+import NotificationScheduler from './notificationScheduler';
 
 // Extend session type
 declare module 'express-session' {
@@ -53,6 +55,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Initialize storage
   await storage.initializeDefaultScreenings();
+
+  // Initialize WhatsApp service
+  const whatsappService = WhatsAppService.getInstance();
+  const twilioConfig = {
+    apiUrl: process.env.TWILIO_API_URL || 'https://api.twilio.com',
+    accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+    authToken: process.env.TWILIO_AUTH_TOKEN || '',
+    whatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER || ''
+  };
+  
+  if (twilioConfig.accountSid && twilioConfig.authToken && twilioConfig.whatsappNumber) {
+    whatsappService.initialize(twilioConfig);
+    console.log('✅ Twilio WhatsApp service initialized');
+  } else {
+    console.log('⚠️ Twilio WhatsApp service not initialized - missing credentials');
+  }
+
+  // Initialize notification scheduler
+  const notificationScheduler = NotificationScheduler.getInstance();
+  await notificationScheduler.initialize();
+  console.log('✅ Notification scheduler initialized');
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
@@ -1203,6 +1226,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Internal server error" });
       }
+    }
+  });
+
+  // WhatsApp Notification Routes
+  app.post("/api/notifications/schedule-screening", async (req, res) => {
+    try {
+      const { userId, screeningId, dueDate, reminderDays = 7 } = req.body;
+      
+      if (!userId || !screeningId || !dueDate) {
+        return res.status(400).json({ error: 'userId, screeningId, and dueDate are required' });
+      }
+
+      const notificationScheduler = NotificationScheduler.getInstance();
+      const jobId = await notificationScheduler.scheduleScreeningReminder(
+        userId,
+        screeningId,
+        new Date(dueDate),
+        reminderDays
+      );
+
+      res.json({ 
+        success: true, 
+        jobId,
+        message: 'Screening reminder scheduled successfully' 
+      });
+    } catch (error) {
+      console.error('Error scheduling screening reminder:', error);
+      res.status(500).json({ error: 'Failed to schedule screening reminder' });
+    }
+  });
+
+  app.post("/api/notifications/schedule-family-screening", async (req, res) => {
+    try {
+      const { familyMemberId, screeningId, dueDate, reminderDays = 7 } = req.body;
+      
+      if (!familyMemberId || !screeningId || !dueDate) {
+        return res.status(400).json({ error: 'familyMemberId, screeningId, and dueDate are required' });
+      }
+
+      const notificationScheduler = NotificationScheduler.getInstance();
+      const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+        familyMemberId,
+        screeningId,
+        new Date(dueDate),
+        reminderDays
+      );
+
+      res.json({ 
+        success: true, 
+        jobId,
+        message: 'Family screening reminder scheduled successfully' 
+      });
+    } catch (error) {
+      console.error('Error scheduling family screening reminder:', error);
+      res.status(500).json({ error: 'Failed to schedule family screening reminder' });
+    }
+  });
+
+  app.post("/api/notifications/send-welcome", async (req, res) => {
+    try {
+      const { phoneNumber, personName } = req.body;
+      
+      if (!phoneNumber || !personName) {
+        return res.status(400).json({ error: 'phoneNumber and personName are required' });
+      }
+
+      const whatsappService = WhatsAppService.getInstance();
+      const success = await whatsappService.sendWelcomeMessage(phoneNumber, personName);
+
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: 'Welcome message sent successfully' 
+        });
+      } else {
+        res.status(500).json({ error: 'Failed to send welcome message' });
+      }
+    } catch (error) {
+      console.error('Error sending welcome message:', error);
+      res.status(500).json({ error: 'Failed to send welcome message' });
+    }
+  });
+
+  app.get("/api/notifications/status", async (req, res) => {
+    try {
+      const whatsappService = WhatsAppService.getInstance();
+      const notificationScheduler = NotificationScheduler.getInstance();
+      
+      res.json({
+        whatsappService: {
+          initialized: !!process.env.TWILIO_ACCOUNT_SID,
+          hasToken: !!process.env.TWILIO_ACCOUNT_SID
+        },
+        scheduler: {
+          running: true // The scheduler is always running once initialized
+        }
+      });
+    } catch (error) {
+      console.error('Error getting notification status:', error);
+      res.status(500).json({ error: 'Failed to get notification status' });
     }
   });
 

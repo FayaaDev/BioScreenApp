@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull().default("temp_password"),
+  phoneNumber: text("phone_number"), // WhatsApp phone number
   gender: varchar("gender", { length: 10 }).notNull(),
   dateOfBirth: text("date_of_birth").notNull(),
   isAdmin: boolean("is_admin").notNull().default(false),
@@ -54,6 +55,7 @@ export const familyMembers = pgTable("family_members", {
   userId: integer("user_id").notNull(), // The user who added this family member
   name: text("name").notNull(),
   relationship: text("relationship").notNull(), // 'father', 'mother', 'other'
+  phoneNumber: text("phone_number"), // WhatsApp phone number
   gender: varchar("gender", { length: 10 }).notNull(),
   dateOfBirth: text("date_of_birth").notNull(),
   createdAt: text("created_at").notNull(),
