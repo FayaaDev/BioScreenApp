@@ -37,14 +37,18 @@ const WhatsAppNotificationTest: React.FC = () => {
   const testWelcomeMessage = async () => {
     setLoading(true);
     try {
-      const success = await sendWelcomeMessage('+966501234567', 'Test User');
+      console.log('Testing welcome message for: +966562806025');
+      // Use your actual phone number here - replace with your WhatsApp number
+      const success = await sendWelcomeMessage('+966562806025', 'Test User');
+      console.log('Welcome message result:', success);
       if (success) {
         Alert.alert('Success', 'Welcome message sent successfully via Twilio!');
       } else {
         Alert.alert('Error', 'Failed to send welcome message');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to send welcome message');
+      console.error('Welcome message error:', error);
+      Alert.alert('Error', `Failed to send welcome message: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -54,7 +58,7 @@ const WhatsAppNotificationTest: React.FC = () => {
     setLoading(true);
     try {
       const reminderDate = new Date();
-      reminderDate.setDate(reminderDate.getDate() + 7); // 7 days from now
+      reminderDate.setMinutes(reminderDate.getMinutes() + 1); // 1 minute from now
       
       const jobId = await scheduleScreeningReminder('Blood Test', reminderDate);
       if (jobId) {
@@ -71,7 +75,7 @@ const WhatsAppNotificationTest: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Twilio WhatsApp Notification Test</Text>
+      <Text style={styles.title}>Twilio WhatsApp Test</Text>
       
       <View style={styles.statusContainer}>
         <Text style={styles.statusLabel}>Initialized:</Text>
@@ -110,9 +114,9 @@ const WhatsAppNotificationTest: React.FC = () => {
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={styles.button} 
+        style={[styles.button, loading && styles.buttonDisabled]} 
         onPress={testWelcomeMessage}
-        disabled={loading || !hasPermission}
+        disabled={loading}
       >
         <Text style={styles.buttonText}>
           {loading ? 'Sending...' : 'Send Welcome Message'}
@@ -120,9 +124,9 @@ const WhatsAppNotificationTest: React.FC = () => {
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={styles.button} 
+        style={[styles.button, loading && styles.buttonDisabled]} 
         onPress={testScreeningReminder}
-        disabled={loading || !hasPermission}
+        disabled={loading}
       >
         <Text style={styles.buttonText}>
           {loading ? 'Scheduling...' : 'Schedule Screening Reminder'}
@@ -135,7 +139,7 @@ const WhatsAppNotificationTest: React.FC = () => {
           • Welcome messages are sent immediately via Twilio WhatsApp API
         </Text>
         <Text style={styles.infoText}>
-          • Screening reminders are scheduled on the server
+          • Screening reminders are scheduled on the server (1 minute for testing)
         </Text>
         <Text style={styles.infoText}>
           • Server checks for overdue screenings daily at 9 AM
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -205,6 +209,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignItems: 'center',
   },
+  buttonDisabled: {
+    backgroundColor: '#CCCCCC',
+  },
   buttonText: {
     color: 'white',
     fontSize: 16,
@@ -236,6 +243,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginTop: 20,
+    marginBottom: 40,
     borderLeftWidth: 4,
     borderLeftColor: '#FFC107',
   },

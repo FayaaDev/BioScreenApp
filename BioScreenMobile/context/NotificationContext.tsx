@@ -97,10 +97,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         return null;
       }
 
-      // This would typically call the server API to schedule a WhatsApp reminder
-      // For now, we'll just log it
-      console.log('📅 WhatsApp screening reminder would be scheduled for:', screeningType, 'on', date);
-      return `screening_${Date.now()}`;
+      // Call the server API to schedule a WhatsApp reminder
+      console.log('📅 Scheduling WhatsApp screening reminder for:', screeningType, 'on', date);
+      
+      const response = await apiRequest<{ success: boolean; jobId: string }>('POST', '/api/notifications/schedule-screening', {
+        userId: 'test-user', // For testing purposes
+        screeningId: screeningType.toLowerCase().replace(/\s+/g, '-'),
+        dueDate: date.toISOString(),
+        reminderDays: 0 // Send immediately when due (since we set date to 1 minute from now)
+      });
+
+      console.log('📅 Screening reminder scheduled with jobId:', response.jobId);
+      return response.jobId;
     } catch (error) {
       console.error('Error scheduling WhatsApp screening reminder:', error);
       return null;
@@ -167,11 +175,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         return false;
       }
 
+      console.log('📱 Sending welcome message via API:', { phoneNumber, personName });
       const response = await apiRequest<{ success: boolean }>('POST', '/api/notifications/send-welcome', {
         phoneNumber,
         personName
       });
 
+      console.log('📱 Welcome message response:', response);
       return response.success;
     } catch (error) {
       console.error('Error sending welcome message:', error);
