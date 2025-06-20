@@ -99,9 +99,24 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  
+  // Force production mode if we're running the built server
+  const isBuiltServer = import.meta.dirname.includes('/dist');
+  const isProduction = process.env.NODE_ENV === "production" || isBuiltServer;
+  
+  console.log(`Environment check:`, {
+    NODE_ENV: process.env.NODE_ENV,
+    expressEnv: app.get("env"),
+    isBuiltServer,
+    isProduction,
+    dirname: import.meta.dirname
+  });
+  
+  if (!isProduction && app.get("env") === "development") {
+    console.log("Setting up Vite dev server");
     await setupVite(app, server);
   } else {
+    console.log("Setting up static file serving for production");
     serveStatic(app);
   }
 
