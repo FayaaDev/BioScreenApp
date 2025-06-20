@@ -691,23 +691,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Schedule WhatsApp reminders for existing due screenings
-          const familyScreenings = await storage.getFamilyMemberScreenings(familyMember.id);
-          const notificationScheduler = NotificationScheduler.getInstance();
-          
-          for (const familyScreening of familyScreenings) {
-            if (familyScreening.status === "due") {
-              try {
-                const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
-                  familyMember.id,
-                  familyScreening.screeningId,
-                  new Date(familyScreening.nextDue),
-                  7 // 7 days before due date
-                );
-                console.log(`✅ Scheduled WhatsApp reminder for new family member ${familyMemberData.name} - Screening ID ${familyScreening.screeningId} (Job ID: ${jobId})`);
-              } catch (error) {
-                console.error(`Error scheduling WhatsApp reminder for family screening ${familyScreening.id}:`, error);
+          // First, we need to generate the screenings by calling the screening calculation logic
+          try {
+            // Get all screenings to calculate which ones apply to this family member
+            const allScreenings = await storage.getScreenings();
+            
+            // Calculate age and applicable screenings (similar to /api/family/:id/screenings logic)
+            const memberAge = new Date().getFullYear() - new Date(familyMember.dateOfBirth).getFullYear();
+            
+            const applicableScreenings = allScreenings.filter(screening => {
+              const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === familyMember.gender;
+              
+              // Skip SMK screenings for non-smokers
+              if (screening.specialCode === "SMK" && !familyMember.isSmoker) {
+                return false;
+              }
+
+              // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
+              if (screening.specialCode === "BMI_DM" && familyMember.height && familyMember.weight) {
+                const memberBMI = (parseFloat(familyMember.weight) / Math.pow(parseFloat(familyMember.height) / 100, 2));
+                if (memberBMI <= 24.9) {
+                  return false;
+                }
+              }
+
+              // Skip screenings beyond end age
+              if (screening.endAge !== null && memberAge > screening.endAge) {
+                return false;
+              }
+              
+              return genderMatches;
+            });
+
+            const notificationScheduler = NotificationScheduler.getInstance();
+            
+            // Check each applicable screening for "due" status
+            for (const screening of applicableScreenings) {
+              const birthDate = new Date(familyMember.dateOfBirth);
+              const birthYear = birthDate.getFullYear();
+              const currentYear = new Date().getFullYear();
+              const targetYear = birthYear + screening.startAge;
+              
+              let status: "due" | "overdue" | "later";
+              
+              if (currentYear < targetYear) {
+                status = "later";
+              } else if (currentYear === targetYear || currentYear === targetYear + 1) {
+                status = "due";
+              } else {
+                status = "overdue";
+              }
+              
+              // Schedule reminder if status is "due"
+              if (status === "due") {
+                try {
+                  const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
+                  const jobId = await notificationScheduler.scheduleFamilyMemberScreeningReminder(
+                    familyMember.id,
+                    screening.id,
+                    nextDue,
+                    7 // 7 days before due date
+                  );
+                  console.log(`✅ Scheduled WhatsApp reminder for new family member ${familyMemberData.name} - Screening: ${screening.name} (Job ID: ${jobId})`);
+                } catch (error) {
+                  console.error(`Error scheduling WhatsApp reminder for screening ${screening.id}:`, error);
+                }
               }
             }
+          } catch (error) {
+            console.error('Error calculating and scheduling screening reminders:', error);
           }
         } catch (error) {
           console.error('Error sending welcome message during family member creation:', error);
