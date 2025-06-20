@@ -28,8 +28,20 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from public directory
-app.use(express.static('public'));
+// Serve static files from public directory with explicit MIME types
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    console.log('Serving static file:', path);
+    if (path.endsWith('.js')) {
+      res.set('Content-Type', 'application/javascript; charset=utf-8');
+      console.log('Set Content-Type to application/javascript for:', path);
+    } else if (path.endsWith('.mjs')) {
+      res.set('Content-Type', 'application/javascript; charset=utf-8');
+    } else if (path.endsWith('.css')) {
+      res.set('Content-Type', 'text/css; charset=utf-8');
+    }
+  }
+}));
 
 // Configure session middleware
 app.use(session({

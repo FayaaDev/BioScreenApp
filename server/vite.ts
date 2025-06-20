@@ -88,21 +88,26 @@ export function serveStatic(app: Express) {
     );
   }
 
+  console.log('Setting up static file serving from:', distPath);
+
   // Configure static file serving with proper MIME types
   app.use(express.static(distPath, {
-    setHeaders: (res, path) => {
-      if (path.endsWith('.js')) {
-        res.set('Content-Type', 'application/javascript');
-      } else if (path.endsWith('.mjs')) {
-        res.set('Content-Type', 'application/javascript');
-      } else if (path.endsWith('.css')) {
-        res.set('Content-Type', 'text/css');
+    setHeaders: (res, filePath) => {
+      console.log('Serving static file:', filePath);
+      if (filePath.endsWith('.js')) {
+        res.set('Content-Type', 'application/javascript; charset=utf-8');
+        console.log('Set Content-Type to application/javascript for:', filePath);
+      } else if (filePath.endsWith('.mjs')) {
+        res.set('Content-Type', 'application/javascript; charset=utf-8');
+      } else if (filePath.endsWith('.css')) {
+        res.set('Content-Type', 'text/css; charset=utf-8');
       }
     }
   }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
+    console.log('Serving fallback index.html for:', _req.originalUrl);
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
