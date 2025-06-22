@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User as UserType } from '../types/api';
 import { IconSymbol } from '../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { PhoneNumberInput, validatePhoneNumber } from '../components/PhoneNumberInput';
 
 interface SignupFormData {
   name: string;
@@ -70,7 +71,7 @@ export default function Onboarding() {
   const [formData, setFormData] = useState<SignupFormData>({
     name: '',
     email: '',
-    phoneNumber: '',
+    phoneNumber: '+966',
     password: '',
     confirmPassword: '',
     gender: '',
@@ -131,8 +132,11 @@ export default function Onboarding() {
 
     if (!formData.phoneNumber) {
       newErrors.phoneNumber = 'الرجاء إدخال رقم الهاتف';
-    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s+/g, ''))) {
-      newErrors.phoneNumber = 'الرجاء إدخال رقم هاتف صحيح (مثال: +966501234567)';
+    } else {
+      const phoneError = validatePhoneNumber(formData.phoneNumber);
+      if (phoneError) {
+        newErrors.phoneNumber = phoneError;
+      }
     }
 
     if (!formData.password) {
@@ -347,31 +351,18 @@ export default function Onboarding() {
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>رقم الهاتف (واتساب)</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
-                  errors.phoneNumber && styles.inputError,
-                ]}
-                value={formData.phoneNumber}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, phoneNumber: text });
-                  if (errors.phoneNumber) {
-                    setErrors({ ...errors, phoneNumber: undefined });
-                  }
-                }}
-                placeholder="مثال: +966501234567"
-                placeholderTextColor="#999"
-                keyboardType="phone-pad"
-                textContentType="telephoneNumber"
-                editable={!createUserMutation.isPending}
-              />
-              {errors.phoneNumber && (
-                <Text style={styles.errorText}>{errors.phoneNumber}</Text>
-              )}
-            </View>
+            <PhoneNumberInput
+              value={formData.phoneNumber}
+              onChangeText={(text) => {
+                setFormData({ ...formData, phoneNumber: text });
+                if (errors.phoneNumber) {
+                  setErrors({ ...errors, phoneNumber: undefined });
+                }
+              }}
+              error={errors.phoneNumber}
+              editable={!createUserMutation.isPending}
+              required={true}
+            />
 
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>كلمة المرور</Text>

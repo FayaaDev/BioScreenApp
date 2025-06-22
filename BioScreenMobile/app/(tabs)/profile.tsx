@@ -27,6 +27,7 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import i18n from '../../lib/i18n';
 import { useNotifications } from '../../context/NotificationContext';
+import { PhoneNumberInput, validatePhoneNumber } from '../../components/PhoneNumberInput';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phoneNumber: '',
+    phoneNumber: '+966',
     dateOfBirth: '',
     gender: '',
   });
@@ -81,7 +82,7 @@ export default function Profile() {
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        phoneNumber: user.phoneNumber || '',
+        phoneNumber: user.phoneNumber || '+966',
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
       });
@@ -103,6 +104,17 @@ export default function Profile() {
   });
 
   const handleSave = () => {
+    // Validate phone number before saving
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+    if (phoneError) {
+      showToast({ 
+        title: 'خطأ في رقم الهاتف', 
+        description: phoneError, 
+        type: 'error' 
+      });
+      return;
+    }
+    
     updateProfileMutation.mutate(formData);
   };
 
@@ -112,7 +124,7 @@ export default function Profile() {
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        phoneNumber: user.phoneNumber || '',
+        phoneNumber: user.phoneNumber || '+966',
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
       });
@@ -213,18 +225,14 @@ export default function Profile() {
               autoCapitalize="none"
             />
           </View>
-          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>رقم الهاتف (واتساب)</Text>
-            <TextInput
-              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
-              value={formData.phoneNumber}
-              onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-              editable={isEditing}
-              keyboardType="phone-pad"
-              placeholder="مثال: +966501234567"
-              placeholderTextColor="#999"
-            />
-          </View>
+          
+          <PhoneNumberInput
+            value={formData.phoneNumber}
+            onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
+            editable={isEditing}
+            required={true}
+          />
+          
           <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
             <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
             {isEditing ? (

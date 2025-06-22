@@ -19,6 +19,7 @@ import { apiRequest } from '../lib/api';
 import { useToast } from '../hooks/useToast';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { PhoneNumberInput, validatePhoneNumber } from './PhoneNumberInput';
 
 interface FamilyMember {
   id: number;
@@ -55,7 +56,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   const [formData, setFormData] = useState({
     name: '',
     relationship: '',
-    phoneNumber: '',
+    phoneNumber: '+966',
     gender: '',
     dateOfBirth: '',
     // Medical survey fields
@@ -136,7 +137,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     setFormData({
       name: '',
       relationship: '',
-      phoneNumber: '',
+      phoneNumber: '+966',
       gender: '',
       dateOfBirth: '',
       isDiabetic: false,
@@ -168,6 +169,12 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
 
     if (!formData.relationship.trim()) {
       newErrors.relationship = 'الرجاء إدخال القرابة';
+    }
+
+    // Phone number validation - mandatory
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+    if (phoneError) {
+      newErrors.phoneNumber = phoneError;
     }
 
     if (!formData.gender) {
@@ -238,7 +245,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     setFormData({
       name: member.name,
       relationship: member.relationship,
-      phoneNumber: member.phoneNumber ?? '',
+      phoneNumber: member.phoneNumber ?? '+966',
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
       isDiabetic: member.isDiabetic ?? false,
@@ -412,14 +419,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             {submitAttempted && validationErrors.relationship && (
               <Text style={styles.errorText}>{validationErrors.relationship}</Text>
             )}
-            <TextInput
-              style={[
-                styles.input,
-                { textAlign: 'right', writingDirection: 'rtl' },
-                submitAttempted && validationErrors.phoneNumber && styles.inputError,
-              ]}
-              placeholder="رقم الهاتف (واتساب) - اختياري"
-              placeholderTextColor="#999"
+            
+            <PhoneNumberInput
               value={formData.phoneNumber}
               onChangeText={(text) => {
                 setFormData({ ...formData, phoneNumber: text });
@@ -427,11 +428,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   setValidationErrors(prev => ({ ...prev, phoneNumber: '' }));
                 }
               }}
-              keyboardType="phone-pad"
+              error={submitAttempted ? validationErrors.phoneNumber : undefined}
+              required={true}
             />
-            {submitAttempted && validationErrors.phoneNumber && (
-              <Text style={styles.errorText}>{validationErrors.phoneNumber}</Text>
-            )}
+            
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
               <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>الجنس</Text>
               <View style={{ flexDirection: 'row-reverse', gap: 8, justifyContent: 'center' }}>
