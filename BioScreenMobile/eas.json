@@ -19,8 +19,7 @@
         "autoIncrement": "buildNumber",
         "cache": {
           "key": "ios-prod-v1"
-        },
-        "prebuildCommand": "rm -rf ios/Pods ios/Podfile.lock && cd ios && pod install --repo-update"
+        }
       },
       "android": {
         "autoIncrement": "versionCode",
