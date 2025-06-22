@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "703b74a4-973e-471d-b83e-da77b85021fa"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.fayaa.restexpress",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

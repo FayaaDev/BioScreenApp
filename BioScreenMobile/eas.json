@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.4.0"
+    "version": ">= 12.4.0",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
@@ -15,19 +16,24 @@
     },
     "production": {
       "ios": {
-        "autoIncrement": "buildNumber"
+        "autoIncrement": "buildNumber",
+        "cache": {
+          "key": "ios-prod-v1"
+        },
+        "prebuildCommand": "rm -rf ios/Pods ios/Podfile.lock && cd ios && pod install --repo-update"
       },
       "android": {
-        "autoIncrement": "versionCode"
+        "autoIncrement": "versionCode",
+        "buildType": "apk"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "your-app-store-connect-app-id",
-        "appleTeamId": "your-team-id"
+        "appleId": "drfayaa@gmail.com",
+        "ascAppId": "6747631071",
+        "appleTeamId": "4MMGRMAFPR"
       },
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",

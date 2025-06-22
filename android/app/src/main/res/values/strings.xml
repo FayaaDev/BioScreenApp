@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">صحتي - Sehaty</string>
-    <string name="title_activity_main">صحتي - Sehaty</string>
-    <string name="package_name">com.sehaty.app</string>
-    <string name="custom_url_scheme">com.sehaty.app</string>
-</resources>

@@ -6,10 +6,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'bakker',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/icon.png',
+  icon: './assets/images/icon.png',
   userInterfaceStyle: 'light',
   splash: {
-    image: './assets/splash.png',
+    image: './assets/images/splash.png',
     resizeMode: 'contain',
     backgroundColor: '#ffffff'
   },
@@ -18,22 +18,28 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.bakker.app'
+    bundleIdentifier: 'com.bakker.app',
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+      NSUserNotificationsUsageDescription: 'This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.',
+      UIBackgroundModes: ['remote-notification'],
+      CFBundleDisplayName: 'Bakker'
+    }
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
+      foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff'
     },
     package: 'com.bakker.app'
   },
   web: {
-    favicon: './assets/favicon.png'
+    favicon: './assets/images/favicon.png'
   },
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://192.64.87.218:5000',
     eas: {
-      projectId: process.env.EXPO_PROJECT_ID || 'your-project-id'
+      projectId: process.env.EXPO_PROJECT_ID || 'deba6310-3743-444c-af2f-31305565708d'
     }
   },
   plugins: [
