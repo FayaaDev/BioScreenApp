@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bakker",
     "slug": "bakker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bakker",
@@ -12,7 +12,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bakker.app",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.",
