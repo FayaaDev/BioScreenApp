@@ -17,13 +17,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     '**/*'
   ],
   ios: {
-    supportsTablet: true,
+    supportsTablet: false,
     bundleIdentifier: 'com.bakker.app',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSUserNotificationsUsageDescription: 'This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.',
       UIBackgroundModes: ['remote-notification'],
-      CFBundleDisplayName: 'Bakker'
+      CFBundleDisplayName: 'Bakker',
+      UIRequiredDeviceCapabilities: ['telephony']
     }
   },
   android: {

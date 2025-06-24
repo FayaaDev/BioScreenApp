@@ -623,44 +623,156 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             </View>
 
             <View style={styles.medicalSurveyContainer}>
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => setFormData({ ...formData, isDiabetic: !formData.isDiabetic })}
-                >
-                  {formData.isDiabetic && <MaterialIcons name="check" size={20} color="#008553" />}
-                </TouchableOpacity>
-                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بالسكري؟</Text>
+              <View style={styles.questionContainer}>
+                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بالسكري؟</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      formData.isDiabetic && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isDiabetic: true })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        formData.isDiabetic && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      نعم
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      !formData.isDiabetic && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isDiabetic: false })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        !formData.isDiabetic && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      لا
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => setFormData({ ...formData, isHypertensive: !formData.isHypertensive })}
-                >
-                  {formData.isHypertensive && <MaterialIcons name="check" size={20} color="#008553" />}
-                </TouchableOpacity>
-                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
+              <View style={styles.questionContainer}>
+                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      formData.isHypertensive && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isHypertensive: true })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        formData.isHypertensive && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      نعم
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      !formData.isHypertensive && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isHypertensive: false })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        !formData.isHypertensive && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      لا
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => setFormData({ ...formData, isCholesterol: !formData.isCholesterol })}
-                >
-                  {formData.isCholesterol && <MaterialIcons name="check" size={20} color="#008553" />}
-                </TouchableOpacity>
-                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
+              <View style={styles.questionContainer}>
+                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      formData.isCholesterol && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isCholesterol: true })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        formData.isCholesterol && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      نعم
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      !formData.isCholesterol && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isCholesterol: false })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        !formData.isCholesterol && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      لا
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => setFormData({ ...formData, isSmoker: !formData.isSmoker })}
-                >
-                  {formData.isSmoker && <MaterialIcons name="check" size={20} color="#008553" />}
-                </TouchableOpacity>
-                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مدخن؟</Text>
+              <View style={styles.questionContainer}>
+                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مدخن؟</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      formData.isSmoker && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isSmoker: true })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        formData.isSmoker && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      نعم
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      !formData.isSmoker && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isSmoker: false })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        !formData.isSmoker && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      لا
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {formData.isSmoker && (
@@ -671,7 +783,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
                       submitAttempted && validationErrors.smokingAmount && styles.inputError,
                     ]}
-                    placeholder="كم عدد السجائر في اليوم؟"
+                    placeholder=" كم عدد علب السجائر التي تدخنها يوميا؟"
                     placeholderTextColor="#999"
                     value={formData.smokingDetails.amount}
                     onChangeText={(text) => {
@@ -727,25 +839,81 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               )}
 
               {formData.gender === 'female' && (
-                <View style={styles.checkboxContainer}>
-                  <TouchableOpacity
-                    style={styles.checkbox}
-                    onPress={() => setFormData({ ...formData, isPregnant: !formData.isPregnant })}
-                  >
-                    {formData.isPregnant && <MaterialIcons name="check" size={20} color="#008553" />}
-                  </TouchableOpacity>
-                  <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هي حامل؟</Text>
+                <View style={styles.questionContainer}>
+                  <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هي حامل؟</Text>
+                  <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                    <TouchableOpacity
+                      style={[
+                        styles.yesNoButton,
+                        formData.isPregnant && styles.yesNoButtonSelected,
+                      ]}
+                      onPress={() => setFormData({ ...formData, isPregnant: true })}
+                    >
+                      <Text
+                        style={[
+                          styles.yesNoButtonText,
+                          formData.isPregnant && styles.yesNoButtonTextSelected,
+                        ]}
+                      >
+                        نعم
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.yesNoButton,
+                        !formData.isPregnant && styles.yesNoButtonSelected,
+                      ]}
+                      onPress={() => setFormData({ ...formData, isPregnant: false })}
+                    >
+                      <Text
+                        style={[
+                          styles.yesNoButtonText,
+                          !formData.isPregnant && styles.yesNoButtonTextSelected,
+                        ]}
+                      >
+                        لا
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
 
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
-                  style={styles.checkbox}
-                  onPress={() => setFormData({ ...formData, isSexuallyActive: !formData.isSexuallyActive })}
-                >
-                  {formData.isSexuallyActive && <MaterialIcons name="check" size={20} color="#008553" />}
-                </TouchableOpacity>
-                <Text style={[styles.checkboxLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي نشط جنسياً؟</Text>
+              <View style={styles.questionContainer}>
+                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي نشط جنسياً؟</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      formData.isSexuallyActive && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isSexuallyActive: true })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        formData.isSexuallyActive && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      نعم
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoButton,
+                      !formData.isSexuallyActive && styles.yesNoButtonSelected,
+                    ]}
+                    onPress={() => setFormData({ ...formData, isSexuallyActive: false })}
+                  >
+                    <Text
+                      style={[
+                        styles.yesNoButtonText,
+                        !formData.isSexuallyActive && styles.yesNoButtonTextSelected,
+                      ]}
+                    >
+                      لا
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {formData.isSexuallyActive && (
@@ -996,6 +1164,40 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   genderButtonTextSelected: {
+    color: '#fff',
+  },
+  questionContainer: {
+    gap: 8,
+    width: '100%',
+  },
+  questionLabel: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  yesNoContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  yesNoButton: {
+    flex: 1,
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#008553',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  yesNoButtonSelected: {
+    backgroundColor: '#008553',
+  },
+  yesNoButtonText: {
+    fontSize: 16,
+    color: '#008553',
+  },
+  yesNoButtonTextSelected: {
     color: '#fff',
   },
   sectionTitle: {

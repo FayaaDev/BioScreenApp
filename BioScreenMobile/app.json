@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "description": "Bakker helps you stay on top of your health with personalized medical screening reminders and appointment notifications.",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.bakker.app",
       "buildNumber": "2",
       "icon": "./assets/images/icon.png",
@@ -20,7 +20,10 @@
           "remote-notification"
         ],
         "CFBundleDisplayName": "Bakker",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIRequiredDeviceCapabilities": [
+          "telephony"
+        ]
       }
     },
     "android": {
