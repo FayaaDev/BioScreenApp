@@ -16,23 +16,23 @@ const getApiBaseUrl = () => {
      window.location.protocol === 'ionic:' ||
      (window as any).Capacitor);
   
-  // If running on native mobile platforms, use the Interserver IP
+  // If running on native mobile platforms, use the domain
   if (isMobile) {
-    return 'http://192.64.87.218:5000';
+    return 'https://bakkerapp.com';
   }
   
   // For web browsers, check if we're in development or production
   if (typeof window !== 'undefined') {
     // Check if we're on localhost (development)
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://192.64.87.218:5000'; // Point to Interserver for testing
+      return 'http://localhost:5000'; // Local development
     }
     // Use relative URLs for production web deployment
     return '';
   }
   
   // Fallback for server-side rendering
-  return 'http://192.64.87.218:5000';
+  return 'https://bakkerapp.com';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

@@ -14,6 +14,8 @@ app.use(cors({
     'http://127.0.0.1:5173',
     'http://192.64.87.218:5173',
     'http://192.64.87.218:5000',
+    'https://bakkerapp.com',
+    'http://bakkerapp.com',
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',

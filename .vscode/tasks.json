@@ -50,7 +50,7 @@
 		{
 			"label": "Mobile App - Interserver Backend",
 			"type": "shell",
-			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=http://192.64.87.218:5000 npx expo start",
+			"command": "cd BioScreenMobile && EXPO_PUBLIC_API_URL=https://bakkerapp.com npx expo start",
 			"group": "build",
 			"isBackground": true,
 			"presentation": {
@@ -80,7 +80,7 @@
 			"label": "Test Interserver Connection",
 			"type": "shell",
 			"command": "curl",
-			"args": ["-f", "http://192.64.87.218:5000/api/health"],
+			"args": ["-f", "https://bakkerapp.com/api/health"],
 			"group": "test",
 			"presentation": {
 				"echo": true,

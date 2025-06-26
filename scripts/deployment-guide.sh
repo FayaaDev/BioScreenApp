@@ -32,7 +32,7 @@ echo "   pm2 restart bioscreen  # or restart your server process"
 echo ""
 
 echo "🔍 Step 4: Verify Deployment"
-echo "   - Test: curl http://192.64.87.218:5000/api/health"
+echo "   - Test: curl https://bakkerapp.com/api/health"
 echo "   - Or use VS Code task: 'Test Interserver Connection'"
 echo ""
 
@@ -43,13 +43,13 @@ echo ""
 
 echo "🎮 To test your changes on mobile against Interserver:"
 echo "   - Run VS Code task: 'Mobile App - Interserver Backend'"
-echo "   - This points mobile app to: http://192.64.87.218:5000"
+echo "   - This points mobile app to: https://bakkerapp.com"
 echo ""
 
 echo "Current Status Check:"
 echo "-------------------"
 echo "Testing connection to Interserver..."
-curl -f http://192.64.87.218:5000/api/health 2>/dev/null
+curl -f https://bakkerapp.com/api/health 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "✅ Interserver is responding"
     echo "But this doesn't mean your latest changes are deployed!"

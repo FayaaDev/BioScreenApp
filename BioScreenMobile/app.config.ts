@@ -24,7 +24,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSUserNotificationsUsageDescription: 'This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.',
       UIBackgroundModes: ['remote-notification'],
       CFBundleDisplayName: 'Bakker',
-      UIRequiredDeviceCapabilities: ['telephony']
+      UIRequiredDeviceCapabilities: ['telephony'],
+      NSAppTransportSecurity: {
+        NSExceptionDomains: {
+          'bakkerapp.com': {
+            NSExceptionAllowsInsecureHTTPLoads: false,
+            NSExceptionRequiresForwardSecrecy: false
+          },
+          'localhost': {
+            NSExceptionAllowsInsecureHTTPLoads: true,
+            NSExceptionMinimumTLSVersion: '1.0'
+          }
+        }
+      }
     }
   },
   android: {
@@ -38,7 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/images/favicon.png'
   },
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://192.64.87.218:5000',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://bakkerapp.com',
     eas: {
       projectId: process.env.EXPO_PROJECT_ID || 'deba6310-3743-444c-af2f-31305565708d'
     }

@@ -8,11 +8,19 @@ const getApiBaseUrl = () => {
   const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
   
   if (envApiUrl) {
+    console.log('Using API URL from environment:', envApiUrl);
     return envApiUrl;
   }
   
-  // Fallback to Interserver deployment
-  return 'http://192.64.87.218:5000';
+  // Check if we're in development mode
+  if (__DEV__) {
+    console.log('Development mode: using local fallback');
+    return 'http://localhost:5000'; // Use localhost for development
+  }
+  
+  // Production fallback - use your domain with HTTPS
+  console.log('Production mode: using production fallback');
+  return 'https://bakkerapp.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -21,16 +29,37 @@ const API_BASE_URL = getApiBaseUrl();
 export const testConnectivity = async (): Promise<boolean> => {
   try {
     console.log('Testing connectivity to:', API_BASE_URL);
+    
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     const response = await fetch(`${API_BASE_URL}/api/health`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
+    
     console.log('Connectivity test response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
+    if (response.ok) {
+      const data = await response.text();
+      console.log('Server response:', data);
+    }
+    
     return response.ok;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Connectivity test failed:', error);
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      cause: error?.cause,
+    });
     return false;
   }
 };
