@@ -12,7 +12,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bakker.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.",
@@ -23,7 +23,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "UIRequiredDeviceCapabilities": [
           "telephony"
-        ]
+        ],
+        "UIViewSemanticContentAttribute": "ForceRightToLeft"
       }
     },
     "android": {

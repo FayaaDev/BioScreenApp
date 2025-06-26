@@ -25,6 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       UIBackgroundModes: ['remote-notification'],
       CFBundleDisplayName: 'Bakker',
       UIRequiredDeviceCapabilities: ['telephony'],
+      UIViewSemanticContentAttribute: 'ForceRightToLeft',
       NSAppTransportSecurity: {
         NSExceptionDomains: {
           'bakkerapp.com': {
