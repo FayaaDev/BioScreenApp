@@ -18,11 +18,9 @@ import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter } from 'expo-router';
 import { FamilyManagement } from '../../components/FamilyManagement';
-import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { IconSymbol } from '../../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import i18n from '../../lib/i18n';
 import { PhoneNumberInput, validatePhoneNumber } from '../../components/PhoneNumberInput';
@@ -155,9 +153,9 @@ export default function Profile() {
           <TouchableOpacity onPress={() => setIsEditing(true)}>
             <MaterialIcons name="edit" size={28} color="#2c9167" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
+          {/* <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
             <MaterialIcons name="language" size={28} color="#2c9167" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
         <View style={[styles.form, isRTL && { alignItems: 'flex-end' }]}>

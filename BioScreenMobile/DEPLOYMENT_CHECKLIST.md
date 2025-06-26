@@ -110,7 +110,7 @@ Your app collects health-related data, so you'll need a privacy policy that cove
 ## 📋 **Final Pre-Submission Checklist**
 
 - [ ] Test app thoroughly on physical devices
-- [ ] Verify all notifications work correctly
+- [ ] Verify app functions correctly without notifications
 - [ ] Check app performance and battery usage
 - [ ] Ensure compliance with Apple's Health App Guidelines
 - [ ] Test on different iOS versions

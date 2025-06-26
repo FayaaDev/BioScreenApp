@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleDisplayName: 'Bakker',
-      UIRequiredDeviceCapabilities: ['telephony'],
+      UIDeviceFamily: [1], // iPhone only (1 = iPhone, 2 = iPad, [1,2] = Universal)
       NSAppTransportSecurity: {
         NSExceptionDomains: {
           'bakkerapp.com': {

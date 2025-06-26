@@ -9,7 +9,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
-import '../lib/i18n';
+import '../lib/i18n'; // Restore i18n import
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 
 // Create a client
@@ -24,45 +24,39 @@ export default function RootLayout() {
     NotoSansArabic: require('../assets/fonts/NotoSansArabic-Regular.ttf'),
   });
 
-  // Initialize RTL based on language
+  // Initialize RTL in a safer way
   useEffect(() => {
     const handleLanguageChange = () => {
-      // Force Arabic and RTL
-      const isRTL = true;
-      console.log('App layout - current language: ar');
-      console.log('Setting RTL to:', isRTL);
+      // Simple RTL setup without forcing
+      console.log('App layout - setting up RTL for Arabic');
       
-      I18nManager.allowRTL(true);
-      I18nManager.forceRTL(true);
+      // Only set RTL if not already set to avoid conflicts
+      if (!I18nManager.isRTL) {
+        I18nManager.allowRTL(true);
+      }
     };
 
-    // Handle initial setup
-    if (i18n.isInitialized) {
+    // Wait for both fonts and i18n to be ready
+    if (loaded && i18n && i18n.isInitialized) {
       handleLanguageChange();
       setIsReady(true);
     }
+  }, [loaded, i18n]);
 
-    // Listen for language changes
-    i18n.on('languageChanged', handleLanguageChange);
-    i18n.on('initialized', () => {
-      handleLanguageChange();
-      setIsReady(true);
-    });
-
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange);
-      i18n.off('initialized', handleLanguageChange);
-    };
-  }, [i18n]);
-
+  // Set up Arabic font with error handling
   useEffect(() => {
-    if (i18n.language === 'ar') {
-      const defaultFont = (Text as any).defaultProps || {};
-      defaultFont.style = defaultFont.style || {};
-      defaultFont.style.fontFamily = 'NotoSansArabic';
-      (Text as any).defaultProps = defaultFont;
+    try {
+      if (i18n && i18n.language === 'ar') {
+        const defaultFont = (Text as any).defaultProps || {};
+        defaultFont.style = defaultFont.style || {};
+        defaultFont.style.fontFamily = 'NotoSansArabic';
+        (Text as any).defaultProps = defaultFont;
+        console.log('Arabic font applied successfully');
+      }
+    } catch (error) {
+      console.warn('Failed to apply Arabic font:', error);
     }
-  }, [i18n.language]);
+  }, [i18n?.language]);
 
   if (!loaded || !isReady) {
     return null;

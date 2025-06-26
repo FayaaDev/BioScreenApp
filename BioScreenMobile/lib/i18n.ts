@@ -1,22 +1,16 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { I18nManager } from 'react-native';
+// import { cleanupAsyncStorage } from './asyncStorageCleanup';
 
 // Import translations
 import enTranslations from '../i18n/locales/en.json';
 import arTranslations from '../i18n/locales/ar.json';
 
-// Initialize i18n with async configuration
-const initI18n = async () => {
+// Initialize i18n with simpler synchronous configuration
+const initI18n = () => {
   try {
-    // Force Arabic as default language
-    const defaultLanguage = 'ar';
-    
-    // Clear any existing language preference and set to Arabic
-    await AsyncStorage.setItem('healthscreen_language', 'ar');
-
-    await i18n
+    i18n
       .use(initReactI18next)
       .init({
         resources: {
@@ -37,16 +31,13 @@ const initI18n = async () => {
         }
       });
 
-    // Force change to Arabic to ensure it's set correctly
-    await i18n.changeLanguage('ar');
-
-    // Set RTL to true for Arabic
-    const isRTL = true;
-    console.log('Setting RTL to:', isRTL);
+    // Set RTL to true for Arabic without async operations
+    console.log('Setting RTL to: true');
     
-    // Always enable RTL for Arabic
-    I18nManager.allowRTL(true);
-    I18nManager.forceRTL(true);
+    // Only set RTL if not already set to avoid conflicts
+    if (!I18nManager.isRTL) {
+      I18nManager.allowRTL(true);
+    }
 
     console.log('Current language:', i18n.language);
   } catch (error) {
