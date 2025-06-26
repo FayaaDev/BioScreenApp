@@ -199,9 +199,9 @@ export default function Profile() {
           <TouchableOpacity onPress={() => setIsEditing(true)}>
             <MaterialIcons name="edit" size={28} color="#2c9167" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
+          {/* <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
             <MaterialIcons name="language" size={28} color="#2c9167" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
         <View style={[styles.form, isRTL && { alignItems: 'flex-end' }]}>
