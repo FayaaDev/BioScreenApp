@@ -13,12 +13,12 @@ import '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 import { NotificationProvider } from '../context/NotificationContext';
 
-// Force RTL only once
-if (!I18nManager.isRTL) {
-  I18nManager.forceRTL(true);
-  I18nManager.allowRTL(true);
-  // Reload required for effect to take place
-}
+// // Force RTL only once
+// if (!I18nManager.isRTL) {
+//   I18nManager.forceRTL(true);
+//   I18nManager.allowRTL(true);
+//   // Reload required for effect to take place
+// }
 
 // Create a client
 const queryClient = new QueryClient();
@@ -40,8 +40,14 @@ export default function RootLayout() {
       console.log('App layout - current language: ar');
       console.log('Setting RTL to:', isRTL);
       
-      I18nManager.allowRTL(true);
-      I18nManager.forceRTL(true);
+      // Force RTL immediately on app start
+      if (!I18nManager.isRTL) {
+        I18nManager.forceRTL(true);
+        I18nManager.allowRTL(true);
+      } else {
+        I18nManager.allowRTL(true);
+        I18nManager.forceRTL(true);
+      }
     };
 
     // Handle initial setup
