@@ -21,8 +21,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'com.bakker.app',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
-      NSUserNotificationsUsageDescription: 'This app uses notifications to remind you about important health screenings and medical appointments to help you maintain your health.',
-      UIBackgroundModes: ['remote-notification'],
       CFBundleDisplayName: 'Bakker',
       UIRequiredDeviceCapabilities: ['telephony'],
       NSAppTransportSecurity: {

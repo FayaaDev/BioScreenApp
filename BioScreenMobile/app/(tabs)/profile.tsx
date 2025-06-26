@@ -11,7 +11,6 @@ import {
   Modal,
   Alert,
   Platform,
-  Switch,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,7 +25,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import i18n from '../../lib/i18n';
-import { useNotifications } from '../../context/NotificationContext';
 import { PhoneNumberInput, validatePhoneNumber } from '../../components/PhoneNumberInput';
 
 export default function Profile() {
@@ -34,7 +32,6 @@ export default function Profile() {
   const router = useRouter();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const { hasPermission, cancelAllNotifications } = useNotifications();
   const [userId, setUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -49,26 +46,13 @@ export default function Profile() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('healthscreen_user_id').then((id) => {
       if (id) setUserId(id);
       else router.replace('/onboarding');
     });
-    
-    // Load notification preference
-    loadNotificationPreference();
   }, []);
-
-  const loadNotificationPreference = async () => {
-    try {
-      const preference = await AsyncStorage.getItem('notifications_enabled');
-      setNotificationsEnabled(preference === 'true');
-    } catch (error) {
-      console.error('Error loading notification preference:', error);
-    }
-  };
 
   const { data: userData, isLoading, error } = useQuery({
     queryKey: ['/api/users', userId],
@@ -143,34 +127,6 @@ export default function Profile() {
     await AsyncStorage.removeItem('healthscreen_user_id');
     showToast({ title: 'تم تسجيل الخروج', type: 'success' });
     router.replace('/login');
-  };
-
-  const handleNotificationToggle = async (enabled: boolean) => {
-    try {
-      setNotificationsEnabled(enabled);
-      await AsyncStorage.setItem('notifications_enabled', enabled.toString());
-      
-      if (!enabled) {
-        // If disabling notifications, cancel all scheduled ones
-        await cancelAllNotifications();
-        showToast({ 
-          title: enabled ? 'تم تفعيل التنبيهات' : 'تم إيقاف التنبيهات وإلغاء جميع التذكيرات', 
-          type: 'success' 
-        });
-      } else {
-        showToast({ 
-          title: 'تم تفعيل التنبيهات', 
-          type: 'success' 
-        });
-      }
-    } catch (error) {
-      console.error('Error updating notification preference:', error);
-      setNotificationsEnabled(!enabled); // Revert on error
-      showToast({ 
-        title: 'حدث خطأ في تحديث إعدادات التنبيهات', 
-        type: 'error' 
-      });
-    }
   };
 
   const handleSwitchPerson = (id: string) => {
@@ -377,39 +333,6 @@ export default function Profile() {
 
       {/* Reset Profile and Sign Out */}
       <View style={styles.card}>
-        {/* Notification Settings */}
-        <View style={styles.notificationSection}>
-          <View style={styles.notificationHeader}>
-            <View style={styles.notificationTitleRow}>
-              <Text style={styles.notificationTitle}>
-                التنبيهات الصحية
-              </Text>
-              <MaterialIcons 
-                name="notifications" 
-                size={24} 
-                color="#008553" 
-                style={{ marginLeft: 8 }} 
-              />
-            </View>
-            <Text style={styles.notificationSubtitle}>
-              {hasPermission 
-                ? (notificationsEnabled ? 'ستتلقى تذكير بالفحوصات ' : 'تم إيقاف التنبيهات')
-                : 'يرجى التفعيل من إعدادات الجهاز'
-              }
-            </Text>
-          </View>
-          <View style={styles.notificationToggleContainer}>
-            <Switch
-              value={notificationsEnabled && hasPermission}
-              onValueChange={handleNotificationToggle}
-              disabled={!hasPermission}
-              trackColor={{ false: '#E5E7EB', true: '#008553' }}
-              thumbColor={notificationsEnabled && hasPermission ? '#fff' : '#f4f3f4'}
-              ios_backgroundColor="#E5E7EB"
-            />
-          </View>
-        </View>
-        
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutButtonText}>تسجيل الخروج</Text>
         </TouchableOpacity>
@@ -589,45 +512,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  notificationSection: {
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 16,
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: '#f8fffe',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5F3E9',
-  },
-  notificationHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  notificationTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  notificationTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#008553',
-    textAlign: 'center',
-  },
-  notificationSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  notificationToggleContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   signOutButton: {
     backgroundColor: '#ef4444',

@@ -37,13 +37,18 @@ class NotificationService {
     if (this.isInitialized) return true;
 
     try {
-      // Request permissions
+      // Request permissions with error handling
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
       if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+        try {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        } catch (permissionError) {
+          console.error('Error requesting notification permissions:', permissionError);
+          return false;
+        }
       }
 
       if (finalStatus !== 'granted') {
@@ -87,7 +92,7 @@ class NotificationService {
   }
 
   async scheduleLocalNotification(notificationData: NotificationData): Promise<string | null> {
-    try {
+    return this.safeNotificationCall(async () => {
       await this.initialize();
 
       const trigger = new Date(notificationData.scheduledDate);
@@ -139,10 +144,7 @@ class NotificationService {
       }
 
       return identifier;
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      return null;
-    }
+    }, null, `scheduleLocalNotification(${notificationData.title})`);
   }
 
   async scheduleRepeatingNotification(
@@ -294,6 +296,27 @@ class NotificationService {
     }
 
     return identifiers;
+  }
+
+  // Safe wrapper for notification operations to prevent crashes
+  private async safeNotificationCall<T>(
+    operation: () => Promise<T>,
+    fallback: T,
+    operationName: string
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      console.error(`Safe notification call failed for ${operationName}:`, error);
+      // Log additional context for debugging
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      return fallback;
+    }
   }
 
   // Utility methods

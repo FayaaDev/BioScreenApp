@@ -10,7 +10,29 @@ import { db, adminUsers } from './db';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import WhatsAppService from './whatsappService';
-import NotificationScheduler from './notificationScheduler';
+// Notifications disabled for next update
+// import NotificationScheduler from './notificationScheduler';
+
+// Dummy NotificationScheduler for backwards compatibility
+class NotificationScheduler {
+  static getInstance() {
+    return new NotificationScheduler();
+  }
+  
+  async initialize() {
+    console.log('📵 Notifications disabled - scheduler not initialized');
+  }
+  
+  async scheduleScreeningReminder(...args: any[]) {
+    console.log('📵 Notifications disabled - screening reminder not scheduled');
+    return 'disabled';
+  }
+  
+  async scheduleFamilyMemberScreeningReminder(...args: any[]) {
+    console.log('📵 Notifications disabled - family member reminder not scheduled');
+    return 'disabled';
+  }
+}
 
 // Extend session type
 declare module 'express-session' {
