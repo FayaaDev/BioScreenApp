@@ -12,6 +12,13 @@ import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n'; // Restore i18n import
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 
+// // Force RTL only once
+// if (!I18nManager.isRTL) {
+//   I18nManager.forceRTL(true);
+//   I18nManager.allowRTL(true);
+//   // Reload required for effect to take place
+// }
+
 // Create a client
 const queryClient = new QueryClient();
 
@@ -27,13 +34,13 @@ export default function RootLayout() {
   // Initialize RTL in a safer way
   useEffect(() => {
     const handleLanguageChange = () => {
-      // Simple RTL setup without forcing
+      // Simple RTL setup with a safe force to ensure layout consistency
       console.log('App layout - setting up RTL for Arabic');
-      
-      // Only set RTL if not already set to avoid conflicts
+
       if (!I18nManager.isRTL) {
-        I18nManager.allowRTL(true);
+        I18nManager.forceRTL(true);
       }
+      I18nManager.allowRTL(true);
     };
 
     // Wait for both fonts and i18n to be ready

@@ -12,12 +12,16 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bakker.app",
-      "buildNumber": "3",
+      "buildNumber": "19",
       "icon": "./assets/images/icon.png",
       "infoPlist": {
         "CFBundleDisplayName": "Bakker",
         "ITSAppUsesNonExemptEncryption": false,
-        "UIDeviceFamily": [1]
+        "UIDeviceFamily": [1],
+        "UIRequiredDeviceCapabilities": [
+          "telephony"
+        ],
+        "UIViewSemanticContentAttribute": "ForceRightToLeft"
       }
     },
     "android": {
