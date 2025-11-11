@@ -60,6 +60,7 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "expo-module-scripts": "^4.1.7",
+    "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "typescript": "~5.9.2"
   },
   "private": true
