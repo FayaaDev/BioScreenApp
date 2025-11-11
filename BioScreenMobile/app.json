@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "bakker",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "description": "Bakker helps you stay on top of your health with personalized medical screening reminders and appointment notifications.",
     "ios": {
       "supportsTablet": false,
