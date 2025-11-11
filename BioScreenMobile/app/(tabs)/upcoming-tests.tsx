@@ -25,6 +25,8 @@ import { useContext } from 'react';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useColorScheme } from '../../hooks/useColorScheme';
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type UserDataResponse = {
@@ -357,6 +359,7 @@ export default function UpcomingTests() {
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
 
   // Get initial tab from route params
@@ -574,7 +577,10 @@ export default function UpcomingTests() {
         />
       }
     >
-      <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
+      <LinearGradient
+        colors={colorScheme === 'dark' ? ['#1A365D', '#2D5A87'] : ['#4ADE80', '#2C9167']}
+        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
+      >
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `مرحباً، ${currentPersonName}` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
         {/* Family selector */}
@@ -595,7 +601,7 @@ export default function UpcomingTests() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </View>
+      </LinearGradient>
 
       {/* Tabs */}
       <View style={styles.tabsRow}>
@@ -654,12 +660,10 @@ const styles = StyleSheet.create({
     color: '#22c55e',
   },
   header: {
-    paddingTop: 24,
-    paddingBottom: 3,
     paddingHorizontal: 16,
-    backgroundColor: '#2c9167',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
+    overflow: 'hidden',
   },
   headerTitle: {
     color: '#fff',

@@ -21,6 +21,8 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useColorScheme } from '../../hooks/useColorScheme';
 
 // Types
 type Screening = {
@@ -114,6 +116,7 @@ export default function CompletedTests() {
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = React.useCallback(async () => {
@@ -246,7 +249,10 @@ export default function CompletedTests() {
         />
       }
     >
-      <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}> 
+      <LinearGradient
+        colors={colorScheme === 'dark' ? ['#1A365D', '#2D5A87'] : ['#4ADE80', '#2C9167']}
+        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
+      >
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
         {/* Family selector */}
@@ -267,7 +273,7 @@ export default function CompletedTests() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </View>
+      </LinearGradient>
 
       {/* Completed Screenings List */}
       <View style={styles.screeningsList}>
@@ -305,12 +311,10 @@ const styles = StyleSheet.create({
     color: '#2c9167',
   },
   header: {
-    paddingTop: 24,
-    paddingBottom: 3,
     paddingHorizontal: 16,
-    backgroundColor: '#2c9167',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
+    overflow: 'hidden',
   },
   headerTitle: {
     color: '#fff',
