@@ -240,7 +240,7 @@ export default function Profile() {
 
             <div>
               <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
-                رقم الهاتف (واتساب)
+                رقم الجوال (WhatsApp)
               </Label>
               {isEditing ? (
                 <Input

@@ -223,9 +223,9 @@ export default function Onboarding() {
       >
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>مرحباً بك في تذكير الفحوصات الصحية</Text>
+            <Text style={styles.title}>مرحباً بك في بكّر</Text>
             <Text style={styles.subtitle}>
-              احصل على تذكيرات فحوصات طبية شخصية تناسب عمرك وجنسك
+              بكّر بالفحص واكتشف جميع الفحوصات المناسبة لك
             </Text>
           </View>
 

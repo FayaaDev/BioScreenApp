@@ -15,7 +15,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   value,
   onChangeText,
   error,
-  label = 'رقم الهاتف (واتساب)',
+  label = 'رقم الجوال (WhatsApp)',
   placeholder = 'xxxxxxxxx',
   isRTL = true,
   required = true,
@@ -121,7 +121,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
         <Text style={styles.errorText}>{error}</Text>
       )}
       <Text style={styles.helpText}>
-        أدخل 9 أرقام للهاتف المحمول السعودي
+        
       </Text>
     </View>
   );

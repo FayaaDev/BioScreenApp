@@ -148,7 +148,7 @@ export default function Signup() {
 
               <div>
                 <Label htmlFor="phoneNumber" className="text-sm font-medium mb-2 block text-gray-700">
-                  رقم الهاتف (واتساب)
+                  رقم الجوال (WhatsApp)
                 </Label>
                 <Input
                   id="phoneNumber"

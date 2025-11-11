@@ -91,9 +91,12 @@ export const apiRequest = async <T>(
 
     console.log('Request headers:', headers);
 
-    // Add timeout to the request
+    // Add timeout to the request - increased to 60 seconds for slow connections
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => {
+      console.warn(`Request timeout triggered for ${endpoint} after 60 seconds`);
+      controller.abort();
+    }, 60000); // 60 second timeout
 
     const response = await fetch(url, {
       method,
@@ -120,6 +123,14 @@ export const apiRequest = async <T>(
     console.error('API request failed:', error);
     console.error('Error type:', typeof error);
     console.error('Error constructor:', error?.constructor?.name);
+    console.error('Error name:', (error as any)?.name);
+    console.error('Error message:', (error as any)?.message);
+    
+    // Handle AbortError specifically
+    if ((error as any)?.name === 'AbortError') {
+      console.error('Request was aborted (timeout)');
+      throw new Error(`Request timeout: The server at ${API_BASE_URL} took too long to respond. Please check your connection.`);
+    }
     
     if (error instanceof TypeError) {
       if (error.message.includes('Network request failed')) {
