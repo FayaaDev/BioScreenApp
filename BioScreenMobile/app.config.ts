@@ -57,6 +57,28 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     }
   },
   plugins: [
-    'expo-router'
-  ]
+    'expo-router',
+    'expo-dev-client',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/images/splash.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#ffffff'
+      }
+    ],
+    'expo-secure-store',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/images/icon.png',
+        color: '#ffffff',
+        defaultChannel: 'default'
+      }
+    ]
+  ],
+  experiments: {
+    typedRoutes: true
+  }
 }); 
