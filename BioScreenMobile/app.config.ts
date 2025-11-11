@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bakker',
   slug: 'bakker',
-  version: '1.0.1',
+  version: '1.0.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'light',
@@ -19,6 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.bakker.app',
+    buildNumber: '19',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleDisplayName: 'Bakker',
