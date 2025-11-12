@@ -96,7 +96,16 @@ export default function Onboarding() {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: Omit<SignupFormData, 'confirmPassword'>) => {
-      const response = await apiRequest<UserType>('POST', '/api/users', userData);
+      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
+      const normalizedEmail = userData.email
+        .trim()
+        .toLowerCase()
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
+      
+      const response = await apiRequest<UserType>('POST', '/api/users', {
+        ...userData,
+        email: normalizedEmail,
+      });
       return response;
     },
     onSuccess: (user) => {
@@ -343,6 +352,8 @@ export default function Onboarding() {
                 placeholderTextColor="#999"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
                 textContentType="emailAddress"
                 editable={!createUserMutation.isPending}
               />

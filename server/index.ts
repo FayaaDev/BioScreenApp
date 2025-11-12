@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -45,13 +46,25 @@ app.use(express.static('public', {
   }
 }));
 
-// Configure session middleware
+// Configure PostgreSQL session store
+const PgSession = connectPgSimple(session);
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set for session storage");
+}
+
+// Configure session middleware with PostgreSQL store
 app.use(session({
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'user_sessions', // Optional: custom table name
+    createTableIfMissing: true, // Automatically create session table if it doesn't exist
+  }),
   secret: process.env.SESSION_SECRET || 'health-screening-secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }

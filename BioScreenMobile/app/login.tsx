@@ -61,7 +61,16 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginFormData) => {
-      return apiRequest<LoginResponse>('POST', '/api/users/login', credentials);
+      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
+      const normalizedEmail = credentials.email
+        .trim()
+        .toLowerCase()
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
+      
+      return apiRequest<LoginResponse>('POST', '/api/users/login', {
+        ...credentials,
+        email: normalizedEmail,
+      });
     },
     onSuccess: async (data) => {
       try {
@@ -148,6 +157,8 @@ export default function Login() {
                 placeholderTextColor="#999"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
                 textContentType="emailAddress"
                 editable={!loginMutation.isPending}
               />

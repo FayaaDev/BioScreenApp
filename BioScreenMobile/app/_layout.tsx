@@ -11,13 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n'; // Restore i18n import
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
+import { initializeRTL, ensureRTLAndReloadIfNeeded } from '../lib/rtlSetup';
 
-// // Force RTL only once
-// if (!I18nManager.isRTL) {
-//   I18nManager.forceRTL(true);
-//   I18nManager.allowRTL(true);
-//   // Reload required for effect to take place
-// }
+// Initialize RTL synchronously before any component renders
+initializeRTL();
 
 // Create a client
 const queryClient = new QueryClient();
@@ -31,23 +28,18 @@ export default function RootLayout() {
     NotoSansArabic: require('../assets/fonts/NotoSansArabic-Regular.ttf'),
   });
 
-  // Initialize RTL in a safer way
+  // Ensure RTL is properly set and reload if needed (for production builds)
   useEffect(() => {
-    const handleLanguageChange = () => {
-      // Simple RTL setup with a safe force to ensure layout consistency
-      console.log('App layout - setting up RTL for Arabic');
-
-      if (!I18nManager.isRTL) {
-        I18nManager.forceRTL(true);
+    const setupRTL = async () => {
+      // Wait for both fonts and i18n to be ready
+      if (loaded && i18n && i18n.isInitialized) {
+        // In production builds, ensure RTL is active and reload if needed
+        await ensureRTLAndReloadIfNeeded();
+        setIsReady(true);
       }
-      I18nManager.allowRTL(true);
     };
 
-    // Wait for both fonts and i18n to be ready
-    if (loaded && i18n && i18n.isInitialized) {
-      handleLanguageChange();
-      setIsReady(true);
-    }
+    setupRTL();
   }, [loaded, i18n]);
 
   // Set up Arabic font with error handling
