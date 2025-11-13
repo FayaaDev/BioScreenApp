@@ -90,13 +90,13 @@
     "validationEmail": "يرجى إدخال بريد إلكتروني صحيح"
   },
   "home": {
-    "greeting": "مرحباً!",
+    "greeting": "مرحبا بك في زِمامـ",
     "greetingWithName": "مرحباً، {{name}}!",
     "morningGreeting": "صباح الخير، {{name}}!",
     "afternoonGreeting": "مساء الخير، {{name}}!",
     "eveningGreeting": "مساء الخير، {{name}}!",
     "greetingDefault": "مرحباً بك!",
-    "manageHealth": "إدارة صحتك",
+    "manageHealth": "أمسك بزمام صحتك\nلتتمتع بعمر أطول وصحة أفضل",
     "screeningsFor": "فحوصات",
     "testStatus": "حالة الفحوصات",
     "overdue": "متأخر",

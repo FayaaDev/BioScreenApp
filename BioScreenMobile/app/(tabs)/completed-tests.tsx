@@ -251,12 +251,17 @@ export default function CompletedTests() {
     >
       <LinearGradient
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
+        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
         <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
         {/* Family selector */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.familySelector} contentContainerStyle={{ gap: 8 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.familySelector}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row-reverse', alignItems: 'center' }}
+        >
           <TouchableOpacity
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
@@ -318,6 +323,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     overflow: 'hidden',
+    minHeight: 160,
   },
   headerTitle: {
     color: '#fff',

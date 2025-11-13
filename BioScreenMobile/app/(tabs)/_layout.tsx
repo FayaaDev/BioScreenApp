@@ -43,9 +43,11 @@ export default function TabLayout() {
           ios: {
             position: 'absolute',
             backgroundColor: '#171918',
+            borderTopColor: '#171918',
           },
           default: {
             backgroundColor: '#171918',
+            borderTopColor: '#171918',
           },
         }),
       }}>

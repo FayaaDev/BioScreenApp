@@ -263,7 +263,7 @@ export default function HomeScreen() {
       {/* Header with Gradient */}
       <LinearGradient
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={[styles.headerGradient, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
+        style={[styles.headerGradient, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
         <View style={styles.headerContent}>
           <View>
@@ -282,7 +282,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         {/* Family Selector */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, marginBottom: 8 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 8 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.familySelector}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row-reverse', alignItems: 'center' }}
+        >
           <TouchableOpacity
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
@@ -545,6 +550,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     overflow: 'hidden',
+    minHeight: 160,
   },
   headerContent: {
     flexDirection: 'row-reverse',
@@ -703,7 +709,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#045468',
-    marginRight: 8,
   },
   familyButtonSelected: {
     backgroundColor: '#045468',
@@ -718,5 +723,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontFamily: 'ReadexPro-Bold',
+  },
+  familySelector: {
+    marginTop: 8,
+    marginBottom: 8,
   },
 });
