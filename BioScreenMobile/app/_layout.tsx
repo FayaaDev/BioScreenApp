@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
-import { I18nManager, Text } from 'react-native';
+import { I18nManager, Text, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -24,9 +24,10 @@ export default function RootLayout() {
   const { i18n } = useTranslation();
   const [isReady, setIsReady] = useState(false);
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    NotoSansArabic: require('../assets/fonts/NotoSansArabic-Regular.ttf'),
-    // ReadexPro: require('../assets/fonts/ReadexPro-Regular.ttf'), // TODO: Add Readex Pro font files
+    ReadexPro: require('../assets/fonts/ReadexPro-Regular.ttf'),
+    'ReadexPro-Bold': require('../assets/fonts/ReadexPro-Bold.ttf'),
+    'ReadexPro-Medium': require('../assets/fonts/ReadexPro-Medium.ttf'),
+    'ReadexPro-SemiBold': require('../assets/fonts/ReadexPro-SemiBold.ttf'),
   });
 
   // Ensure RTL is properly set and reload if needed (for production builds)
@@ -43,20 +44,26 @@ export default function RootLayout() {
     setupRTL();
   }, [loaded, i18n]);
 
-  // Set up Arabic font with error handling
+  // Set up Readex Pro font with error handling
   useEffect(() => {
     try {
-      if (i18n && i18n.language === 'ar') {
-        const defaultFont = (Text as any).defaultProps || {};
-        defaultFont.style = defaultFont.style || {};
-        defaultFont.style.fontFamily = 'NotoSansArabic';
-        (Text as any).defaultProps = defaultFont;
-        console.log('Arabic font applied successfully');
-      }
+      // Set default font for Text components
+      const defaultFont = (Text as any).defaultProps || {};
+      defaultFont.style = defaultFont.style || {};
+      defaultFont.style.fontFamily = 'ReadexPro';
+      (Text as any).defaultProps = defaultFont;
+      
+      // Set default font for TextInput components
+      const defaultInputFont = (TextInput as any).defaultProps || {};
+      defaultInputFont.style = defaultInputFont.style || {};
+      defaultInputFont.style.fontFamily = 'ReadexPro';
+      (TextInput as any).defaultProps = defaultInputFont;
+      
+      console.log('Readex Pro font applied successfully');
     } catch (error) {
-      console.warn('Failed to apply Arabic font:', error);
+      console.warn('Failed to apply Readex Pro font:', error);
     }
-  }, [i18n?.language]);
+  }, []);
 
   if (!loaded || !isReady) {
     return null;

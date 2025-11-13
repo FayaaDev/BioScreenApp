@@ -210,7 +210,7 @@ export default function Profile() {
                   }}
                   style={styles.datePickerButton}
                 >
-                  <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
+                  <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right', fontFamily: 'ReadexPro' }}>
                     {formData.dateOfBirth
                       ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
                           year: 'numeric',
@@ -287,7 +287,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#4CCCE6'}
+                    color={formData.gender === 'male' ? '#fff' : '#045468'}
                   />
                   <Text
                     style={[
@@ -309,7 +309,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#4CCCE6'}
+                    color={formData.gender === 'female' ? '#fff' : '#045468'}
                   />
                   <Text
                     style={[
@@ -355,21 +355,21 @@ export default function Profile() {
       <Modal visible={showLanguageModal} animationType="slide" transparent onRequestClose={() => setShowLanguageModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 280 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center' }}>تغيير اللغة</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>تغيير اللغة</Text>
             <TouchableOpacity
               style={{ backgroundColor: i18n.language === 'ar' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
               onPress={() => { i18n.changeLanguage('ar'); setShowLanguageModal(false); }}
             >
-              <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>العربية</Text>
+              <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>العربية</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ backgroundColor: i18n.language === 'en' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 4, alignItems: 'center' }}
               onPress={() => { i18n.changeLanguage('en'); setShowLanguageModal(false); }}
             >
-              <Text style={{ color: i18n.language === 'en' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>English</Text>
+              <Text style={{ color: i18n.language === 'en' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>English</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 8, alignItems: 'center' }} onPress={() => setShowLanguageModal(false)}>
-              <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>إغلاق</Text>
+              <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إغلاق</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -429,6 +429,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#4CCCE6',
+    fontFamily: 'ReadexPro',
   },
   card: {
     backgroundColor: '#2E3130',
@@ -442,18 +443,21 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#4CCCE6',
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 30,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   form: {
     gap: 16,
@@ -463,8 +467,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ECEDEE',
     fontWeight: '500',
+    fontFamily: 'ReadexPro-Medium',
   },
   input: {
     height: 48,
@@ -475,6 +480,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#2E3130',
     color: '#ECEDEE',
+    fontFamily: 'ReadexPro',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -486,24 +492,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
   },
   saveButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 29,
   },
   cancelButton: {
     flex: 1,
     backgroundColor: '#ef4444',
     borderRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
   },
   cancelButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 29,
   },
   langButton: {
     backgroundColor: '#202221',
@@ -516,36 +526,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#fbbf24',
     borderRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
     marginBottom: 8,
   },
   resetButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 29,
   },
   signOutButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
     marginBottom: 8,
   },
   signOutButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 29,
   },
   agreementButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
   },
   agreementButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
+    lineHeight: 29,
   },
   modalContainer: {
     flex: 1,
@@ -560,20 +576,22 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   modalText: {
     fontSize: 16,
     color: '#ECEDEE',
     textAlign: 'right',
     marginBottom: 16,
-    lineHeight: 24,
+    lineHeight: 29,
     writingDirection: 'rtl',
     paddingHorizontal: 16,
+    fontFamily: 'ReadexPro',
   },
   closeModalButton: {
     backgroundColor: '#4CCCE6',
@@ -587,6 +605,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   languageContainer: {
     flexDirection: 'row',
@@ -598,11 +617,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#ECEDEE',
+    fontFamily: 'ReadexPro-Medium',
   },
   languageValue: {
     fontSize: 12,
     color: '#94a3b8',
     marginTop: 2,
+    fontFamily: 'ReadexPro',
   },
   genderContainer: {
     flexDirection: 'row',
@@ -620,13 +641,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   genderButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   genderButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ECEDEE',
+    color: '#045468',
     marginTop: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   genderButtonTextSelected: {
     color: '#fff',
@@ -637,6 +659,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginVertical: 4,
     alignSelf: 'flex-end',
+    fontFamily: 'ReadexPro',
   },
   datePickerButton: {
     paddingVertical: 12,
@@ -676,6 +699,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   cancelDateButton: {
     backgroundColor: '#ef4444',
@@ -687,5 +711,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
 });

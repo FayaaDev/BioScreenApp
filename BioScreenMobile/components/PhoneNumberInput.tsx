@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#ECEDEE',
     marginBottom: 8,
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
   },
   required: {
     color: '#ef4444',
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#94a3b8',
     fontWeight: '600',
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
   },
   separator: {
     width: 1,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: '#ECEDEE',
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
   },
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#2E3130',
     color: '#ECEDEE',
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
   },
   inputError: {
     borderColor: '#ef4444',
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
     textAlign: 'right',
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
   },
   helpText: {
     color: '#6b7280',
     fontSize: 12,
     marginTop: 4,
     textAlign: 'right',
-    fontFamily: 'Cairo',
+    fontFamily: 'ReadexPro',
   },
 });
 

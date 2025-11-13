@@ -388,10 +388,10 @@ export default function HomeScreen() {
                   { backgroundColor: colors.card, transform: [{ scaleX: -1 }] }
                 ]}
               >
-                <ThemedText style={[styles.educationalTitle, { color: colors.text, fontFamily: 'NotoSansArabic-Bold' }]}>
+                <ThemedText style={[styles.educationalTitle, { color: colors.text, fontFamily: 'ReadexPro-Bold' }]}>
                   {content.title}
                 </ThemedText>
-                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary, fontFamily: 'NotoSansArabic-Regular' }]} numberOfLines={4}>
+                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary, fontFamily: 'ReadexPro' }]} numberOfLines={4}>
                   {content.content}
                 </ThemedText>
               </View>
@@ -473,18 +473,18 @@ export default function HomeScreen() {
       <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center' }}>تواصل معنا</Text>
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>الاسم</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>تواصل معنا</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>الاسم</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
               placeholder="أدخل اسمك"
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>البريد الإلكتروني</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>البريد الإلكتروني</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
               placeholder="أدخل بريدك الإلكتروني"
@@ -492,17 +492,17 @@ export default function HomeScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>الموضوع</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>الموضوع</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
               placeholder="أدخل موضوع الرسالة"
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>المحتوى</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>المحتوى</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
               placeholder="اكتب رسالتك هنا"
@@ -514,13 +514,13 @@ export default function HomeScreen() {
                 style={{ backgroundColor: '#4CCCE6', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
                 onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>إرسال</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إرسال</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ backgroundColor: '#202221', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
                 onPress={() => setShowContactModal(false)}
               >
-                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>إلغاء</Text>
+                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إلغاء</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -553,24 +553,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
   },
   subtitle: {
     fontSize: 16,
     opacity: 0.9,
     textAlign: 'right',
+    fontFamily: 'ReadexPro',
   },
   profileButton: {
     padding: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
   },
   
   // Stats Section
@@ -593,7 +596,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    backgroundColor: '#2E3130',
+    backgroundColor: '#004558',
     borderWidth: 1,
     borderColor: '#555',
   },
@@ -601,15 +604,16 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   statNumberDue: {
     color: '#3b82f6', // Blue for حالاً (due)
   },
   statNumberOverdue: {
-    color: '#ef4444', // Red for متأخر (overdue)
+    color: '#A35829', // Red for متأخر (overdue)
   },
   statNumberLater: {
-    color: '#f97316', // Orange for لاحقاً (later)
+    color: '#fff', // White for لاحقاً (later)
   },
   statNumberCompleted: {
     color: '#4CCCE6', // Green for مكتملة (completed)
@@ -619,6 +623,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
     color: '#ECEDEE',
+    fontFamily: 'ReadexPro-Medium',
   },
 
   // Educational Section
@@ -643,12 +648,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
   },
   educationalContent: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
     textAlign: 'right',
+    fontFamily: 'ReadexPro',
   },
 
   // Quick Actions Section
@@ -679,11 +686,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 4,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   actionSubtitle: {
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 16,
+    fontFamily: 'ReadexPro',
   },
   bottomPadding: {
     height: 20,
@@ -694,19 +703,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     marginRight: 8,
   },
   familyButtonSelected: {
-    backgroundColor: '#4CCCE6',
-    borderColor: '#4CCCE6',
+    backgroundColor: '#045468',
+    borderColor: '#045468',
   },
   familyButtonText: {
-    color: '#4CCCE6',
+    color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   familyButtonSelectedText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
 });

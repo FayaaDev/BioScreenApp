@@ -73,7 +73,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
           {screening.screening?.description ? (
             <Tooltip
               isVisible={showTip}
-              content={<Text style={{ maxWidth: 200 }}>{screening.screening.description}</Text>}
+              content={<Text style={{ maxWidth: 200, fontFamily: 'ReadexPro' }}>{screening.screening.description}</Text>}
               placement="top"
               onClose={() => setShowTip(false)}
               showChildInTooltip={false}
@@ -280,14 +280,16 @@ export default function CompletedTests() {
         {completedScreenings.length === 0 ? (
           <Text style={styles.emptyText}>لا توجد فحوصات مكتملة</Text>
         ) : (
-          completedScreenings.map((screening, index) => (
-            <ScreeningCard
-              key={screening.id !== 0 ? screening.id : `${screening.screening?.name || screening.name}-${index}`}
-              screening={screening}
-              isRTL={isRTL}
-              userBirthDate={currentPerson.dateOfBirth}
-            />
-          ))
+          <View style={{ gap: 7 }}>
+            {completedScreenings.map((screening, index) => (
+              <ScreeningCard
+                key={screening.id !== 0 ? screening.id : `${screening.screening?.name || screening.name}-${index}`}
+                screening={screening}
+                isRTL={isRTL}
+                userBirthDate={currentPerson.dateOfBirth}
+              />
+            ))}
+          </View>
         )}
       </View>
     </ScrollView>
@@ -308,7 +310,8 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#4CCCE6',
+    color: '#045468',
+    fontFamily: 'ReadexPro',
   },
   header: {
     paddingHorizontal: 16,
@@ -318,17 +321,19 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    textAlign: 'right',
-  },
-  headerSubtitle: {
-    color: '#e0ffe0',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 2,
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
+  },
+  headerSubtitle: {
+    color: '#e0ffe0',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 2,
+    textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
   },
   familySelector: {
     marginTop: 8,
@@ -340,19 +345,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
   },
   familyButtonSelected: {
-    backgroundColor: '#4CCCE6',
-    borderColor: '#4CCCE6',
+    backgroundColor: '#045468',
+    borderColor: '#045468',
   },
   familyButtonText: {
-    color: '#4CCCE6',
+    color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   familyButtonSelectedText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   screeningsList: {
     flex: 1,
@@ -363,6 +370,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
+    fontFamily: 'ReadexPro',
   },
   screeningCard: {
     backgroundColor: '#2E3130',
@@ -379,12 +387,14 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4CCCE6',
+    color: '#fff',
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#4CCCE6',
+    color: '#fff',
+    fontFamily: 'ReadexPro',
   },
   actionButton: {
     backgroundColor: '#ef4444',
@@ -396,5 +406,6 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
 }); 

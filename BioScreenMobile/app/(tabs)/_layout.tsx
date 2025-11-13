@@ -42,8 +42,11 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
+            backgroundColor: '#171918',
           },
-          default: {},
+          default: {
+            backgroundColor: '#171918',
+          },
         }),
       }}>
       <Tabs.Screen

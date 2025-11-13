@@ -997,17 +997,19 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   emptyText: {
     textAlign: 'center',
     color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
+    fontFamily: 'ReadexPro',
   },
   memberRow: {
     flexDirection: 'row',
@@ -1024,17 +1026,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
   },
   memberDetails: {
     fontSize: 14,
     color: '#94a3b8',
+    fontFamily: 'ReadexPro',
   },
   memberActions: {
     flexDirection: 'row',
     gap: 8,
   },
   editButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -1042,9 +1046,10 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#444947',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -1053,9 +1058,10 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   addButton: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -1065,6 +1071,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   modalContainer: {
     flex: 1,
@@ -1080,11 +1087,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   input: {
     height: 48,
@@ -1097,6 +1105,7 @@ const styles = StyleSheet.create({
     color: '#ECEDEE',
     width: 250,
     marginBottom: 8,
+    fontFamily: 'ReadexPro',
   },
   label: {
     fontSize: 16,
@@ -1105,6 +1114,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     alignSelf: 'flex-end',
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Medium',
   },
   optionButton: {
     backgroundColor: '#202221',
@@ -1115,18 +1125,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   optionButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   optionButtonText: {
-    color: '#4CCCE6',
+    color: '#045468',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   optionButtonTextSelected: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   saveButton: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -1136,6 +1148,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   cancelButton: {
     backgroundColor: '#ef4444',
@@ -1148,6 +1161,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   genderButton: {
     backgroundColor: '#f0f0f0',
@@ -1158,14 +1172,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   genderButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   genderButtonText: {
-    color: '#4CCCE6',
+    color: '#045468',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   genderButtonTextSelected: {
     color: '#fff',
+    fontFamily: 'ReadexPro-Bold',
   },
   questionContainer: {
     gap: 8,
@@ -1173,9 +1189,10 @@ const styles = StyleSheet.create({
   },
   questionLabel: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ECEDEE',
     fontWeight: '500',
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Medium',
   },
   yesNoContainer: {
     flexDirection: 'row',
@@ -1185,28 +1202,31 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   yesNoButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   yesNoButtonText: {
     fontSize: 16,
-    color: '#4CCCE6',
+    color: '#045468',
+    fontFamily: 'ReadexPro-Bold',
   },
   yesNoButtonTextSelected: {
     color: '#fff',
+    fontFamily: 'ReadexPro-Bold',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#4CCCE6',
     textAlign: 'center',
     alignSelf: 'center',
+    fontFamily: 'ReadexPro-Bold',
   },
   medicalSurveyContainer: {
     gap: 16,
@@ -1221,14 +1241,15 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxLabel: {
     fontSize: 16,
-    color: '#333',
+    color: '#ECEDEE',
+    fontFamily: 'ReadexPro',
   },
   smokingDetailsContainer: {
     gap: 8,
@@ -1246,21 +1267,23 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   partnerCountButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   partnerCountButtonText: {
     fontSize: 14,
-    color: '#4CCCE6',
+    color: '#045468',
+    fontFamily: 'ReadexPro-Bold',
   },
   partnerCountButtonTextSelected: {
     color: '#fff',
+    fontFamily: 'ReadexPro-Bold',
   },
   inputContainer: {
     width: '100%',
@@ -1275,18 +1298,21 @@ const styles = StyleSheet.create({
   bmiLabel: {
     color: '#009966',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   bmiValue: {
     color: '#009966',
     fontWeight: 'bold',
     fontSize: 28,
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   bmiCategoryText: {
     color: '#666',
     fontSize: 16,
+    fontFamily: 'ReadexPro',
   },
   section: {
     marginTop: 24,
@@ -1296,6 +1322,7 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     marginTop: 4,
+    fontFamily: 'ReadexPro',
   },
   packYearsBox: {
     backgroundColor: '#fffbe6',
@@ -1307,14 +1334,16 @@ const styles = StyleSheet.create({
   packYearsLabel: {
     color: '#bfa100',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   packYearsValue: {
     color: '#bfa100',
     fontWeight: 'bold',
     fontSize: 28,
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   inputError: {
     borderColor: '#ef4444',
@@ -1327,6 +1356,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'right',
     alignSelf: 'flex-end',
+    fontFamily: 'ReadexPro',
   },
   warningText: {
     color: '#f59e0b',
@@ -1334,6 +1364,7 @@ const styles = StyleSheet.create({
     marginTop: -4,
     marginBottom: 8,
     fontWeight: '500',
+    fontFamily: 'ReadexPro-Medium',
   },
   datePickerButton: {
     paddingVertical: 12,
@@ -1364,7 +1395,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   confirmButton: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,
@@ -1373,6 +1404,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
   cancelDateButton: {
     backgroundColor: '#ef4444',
@@ -1384,5 +1416,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'ReadexPro-Bold',
   },
 }); 

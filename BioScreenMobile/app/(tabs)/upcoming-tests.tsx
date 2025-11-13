@@ -65,10 +65,10 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   let priorityColor = '';
   if (priority === 'strongly_recommended') {
     priorityLabel = 'موصى به بشدة';
-    priorityColor = '#C2BD86'; // red-500
+    priorityColor = '#6B7280'; // grey
   } else if (priority === 'recommended') {
     priorityLabel = 'موصى به';
-    priorityColor = '#D9D5A8'; // red-300
+    priorityColor = '#9CA3AF'; // lighter grey
   }
   // Translate and color the status label for each status
   let statusLabel = screening.status;
@@ -105,7 +105,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               paddingVertical: 3,
               alignSelf: 'flex-start',
             }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
             </View>
           )}
           {/* Buttons on the left */}
@@ -144,12 +144,12 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               </View>
             </View>
             {/* Next appointment date for recreated tests */}
-            <Text style={{ color: '#f59e42', fontSize: 14, marginBottom: 2, textAlign: 'right', fontWeight: 'bold' }}>
+            <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: 'right', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>
               {nextAppointmentText}
             </Text>
             {/* Repetition frequency */}
             {typeof screening.screening?.frequencyYears === 'number' && (
-              <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
+              <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, fontFamily: 'ReadexPro' }}>
                 {getFrequencyText(screening.screening.frequencyYears)}
               </Text>
             )}
@@ -244,7 +244,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
           paddingVertical: 3,
           alignSelf: 'flex-start',
         }}>
-          <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{priorityLabel}</Text>
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
         </View>
       )}
       {/* Buttons on the left */}
@@ -284,19 +284,19 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
         </View>
         {/* Repetition date below status */}
         {(screening.status === 'completed' || screening.status === 'due' || (screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due')) && typeof screening.screening?.frequencyYears === 'number' && (
-          <Text style={{ color: '#9b945d', fontSize: 13, marginTop: 2, marginBottom: 2 }}>
+          <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, fontFamily: 'ReadexPro' }}>
             {getFrequencyText(screening.screening.frequencyYears)}
           </Text>
         )}
         {/* Next due message (only for original later, not recreated) */}
         {screening.status === 'later' && typeof screening.screening?.startAge === 'number' && userBirthDate && (
-          <Text style={{ color: '#22223b', fontSize: 14, marginBottom: 2, textAlign: 'right' }}>
+          <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: 'right', fontFamily: 'ReadexPro' }}>
             {t('screening.takeAtAge', { age: screening.screening.startAge })}
           </Text>
         )}
         {/* Overdue years label */}
         {screening.status === 'overdue' && overdueYears !== null && overdueYears > 0 && (
-          <Text style={{ color: '#22223b', fontSize: 14, marginBottom: 2, textAlign: 'right' }}>
+          <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: 'right', fontFamily: 'ReadexPro' }}>
             {`متأخر ${overdueYears} ${overdueYears === 1 ? 'سنة' : overdueYears < 11 ? 'سنوات' : 'سنة'}`}
           </Text>
         )}
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#22c55e',
+    color: '#045468',
   },
   header: {
     paddingHorizontal: 16,
@@ -667,17 +667,19 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    textAlign: 'right',
-  },
-  headerSubtitle: {
-    color: '#e0ffe0',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 2,
     textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
+  },
+  headerSubtitle: {
+    color: '#e0ffe0',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 2,
+    textAlign: 'right',
+    fontFamily: 'ReadexPro-Bold',
   },
   familySelector: {
     marginTop: 8,
@@ -689,19 +691,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#22c55e',
+    borderColor: '#045468',
   },
   familyButtonSelected: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
+    backgroundColor: '#045468',
+    borderColor: '#045468',
   },
   familyButtonText: {
-    color: '#22c55e',
+    color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   familyButtonSelectedText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   tabsRow: {
     flexDirection: 'row',
@@ -721,8 +725,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#2E3130',
   },
   tabButtonText: {
-    color: '#22c55e',
+    color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
   screeningsList: {
     flex: 1,
@@ -733,6 +738,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
+    fontFamily: 'ReadexPro',
   },
   screeningCard: {
     backgroundColor: '#2E3130',
@@ -749,15 +755,17 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#22c55e',
+    color: '#fff',
     marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#22c55e',
+    color: '#fff',
+    fontFamily: 'ReadexPro',
   },
   actionButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: '#045468',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -766,5 +774,6 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
   },
 }); 
