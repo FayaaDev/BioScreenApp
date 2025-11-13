@@ -446,7 +446,7 @@ export default function Onboarding() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#4CCCE6'}
+                    color={formData.gender === 'male' ? '#fff' : '#045468'}
                   />
                   <Text
                     style={[
@@ -474,7 +474,7 @@ export default function Onboarding() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#4CCCE6'}
+                    color={formData.gender === 'female' ? '#fff' : '#045468'}
                   />
                   <Text
                     style={[
@@ -942,13 +942,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
     color: '#4CCCE6',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
+    fontFamily: 'ReadexPro',
     color: '#94a3b8',
     textAlign: 'center',
   },
@@ -960,7 +961,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'ReadexPro-SemiBold',
     color: '#ECEDEE',
   },
   input: {
@@ -970,6 +971,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: 'ReadexPro',
     backgroundColor: '#202221',
     color: '#ECEDEE',
   },
@@ -979,6 +981,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ef4444',
     fontSize: 14,
+    fontFamily: 'ReadexPro',
   },
   genderContainer: {
     flexDirection: 'row',
@@ -988,20 +991,21 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#202221',
+    backgroundColor: '#fff',
   },
   genderButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   genderButtonText: {
     fontSize: 16,
-    color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
+    color: '#045468',
   },
   genderButtonTextSelected: {
     color: '#fff',
@@ -1012,8 +1016,8 @@ const styles = StyleSheet.create({
   },
   questionLabel: {
     fontSize: 16,
+    fontFamily: 'ReadexPro-Medium',
     color: '#ECEDEE',
-    fontWeight: '500',
     marginBottom: 4,
   },
   yesNoContainer: {
@@ -1024,18 +1028,19 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#202221',
+    backgroundColor: '#fff',
   },
   yesNoButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   yesNoButtonText: {
     fontSize: 16,
-    color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
+    color: '#045468',
   },
   yesNoButtonTextSelected: {
     color: '#fff',
@@ -1089,7 +1094,7 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'ReadexPro-SemiBold',
   },
   cancelDateButton: {
     backgroundColor: '#202221',
@@ -1101,11 +1106,11 @@ const styles = StyleSheet.create({
   cancelDateButtonText: {
     color: '#4CCCE6',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'ReadexPro-SemiBold',
   },
   submitButton: {
     height: 48,
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1117,7 +1122,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'ReadexPro-SemiBold',
   },
   loginButton: {
     height: 48,
@@ -1127,6 +1132,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#4CCCE6',
     fontSize: 16,
+    fontFamily: 'ReadexPro',
   },
   sectionHeader: {
     marginTop: 24,
@@ -1138,7 +1144,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
     color: '#4CCCE6',
     textAlign: 'center',
     alignSelf: 'center',
@@ -1162,6 +1168,7 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
+    fontFamily: 'ReadexPro',
     color: '#333',
   },
   smokingDetailsContainer: {
@@ -1180,18 +1187,19 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#4CCCE6',
+    borderColor: '#045468',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   partnerCountButtonSelected: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
   },
   partnerCountButtonText: {
     fontSize: 14,
-    color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
+    color: '#045468',
   },
   partnerCountButtonTextSelected: {
     color: '#fff',
@@ -1201,13 +1209,16 @@ const styles = StyleSheet.create({
   },
   bmiLabel: {
     color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
   },
   bmiValue: {
     color: '#4CCCE6',
+    fontFamily: 'ReadexPro-Bold',
     marginVertical: 4,
   },
   bmiCategory: {
     fontSize: 14,
+    fontFamily: 'ReadexPro',
     color: '#666',
     textAlign: 'right',
     width: '100%',
@@ -1221,14 +1232,14 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   metricLabel: {
-    fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
     fontSize: 18,
     marginBottom: 4,
     textAlign: 'right',
     width: '100%',
   },
   metricValue: {
-    fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
     fontSize: 28,
     marginBottom: 4,
     textAlign: 'right',
@@ -1239,8 +1250,10 @@ const styles = StyleSheet.create({
   },
   packYearsLabel: {
     color: '#bfa100',
+    fontFamily: 'ReadexPro-Bold',
   },
   packYearsValue: {
     color: '#bfa100',
+    fontFamily: 'ReadexPro-Bold',
   },
 }); 

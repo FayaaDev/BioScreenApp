@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'ReadexPro-Bold',
     color: '#4CCCE6',
     textAlign: 'center',
   },
@@ -268,8 +268,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    fontFamily: 'ReadexPro-SemiBold',
     color: '#ECEDEE',
-    fontWeight: '500',
   },
   input: {
     height: 48,
@@ -278,6 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
+    fontFamily: 'ReadexPro',
     backgroundColor: '#202221',
     color: '#ECEDEE',
   },
@@ -287,10 +288,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ef4444',
     fontSize: 14,
+    fontFamily: 'ReadexPro',
     marginTop: 4,
   },
   loginButton: {
-    backgroundColor: '#4CCCE6',
+    backgroundColor: '#045468',
     height: 48,
     borderRadius: 8,
     justifyContent: 'center',
@@ -303,14 +305,15 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'ReadexPro-SemiBold',
   },
   signupButton: {
     marginTop: 16,
     alignItems: 'center',
   },
   signupButtonText: {
-    color: '#374151',
+    color: '#ECEDEE',
     fontSize: 16,
+    fontFamily: 'ReadexPro',
   },
 }); 

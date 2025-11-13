@@ -216,6 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
 
       console.log(`[Login] Attempting login for email: ${normalizedEmail}`);
+      console.log(`[Login] Password provided: ${password ? '***' + password.slice(-3) : 'none'}`);
 
       // Find user by normalized email
       const user = await storage.getUserByEmail(normalizedEmail);
@@ -224,9 +225,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
+      console.log(`[Login] User found with ID: ${user.id}, name: ${user.name}`);
+      console.log(`[Login] Stored password hash starts with: ${user.password.substring(0, 10)}...`);
+      console.log(`[Login] Password hash length: ${user.password.length}`);
+
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
+      console.log(`[Login] Password validation result: ${isValidPassword}`);
+      
       if (!isValidPassword) {
+        console.log(`[Login] Password mismatch for user: ${normalizedEmail}`);
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
@@ -261,6 +269,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Logged out successfully" });
     });
+  });
+
+  // DEBUG ENDPOINT - Remove in production!
+  app.post("/api/debug/verify-password", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+      }
+
+      const normalizedEmail = email.trim().toLowerCase().replace(/[\u200E\u200F\u202A-\u202E]/g, '');
+      const user = await storage.getUserByEmail(normalizedEmail);
+      
+      if (!user) {
+        return res.json({ 
+          found: false,
+          email: normalizedEmail 
+        });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      
+      res.json({
+        found: true,
+        userId: user.id,
+        userName: user.name,
+        email: user.email,
+        passwordMatch: isValidPassword,
+        hashPrefix: user.password.substring(0, 10),
+        hashLength: user.password.length,
+        providedPasswordLength: password.length
+      });
+    } catch (error) {
+      console.error('Debug password verification error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   app.get("/api/auth/me", authenticateAdmin, async (req: Request, res: Response) => {
