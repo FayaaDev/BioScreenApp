@@ -209,9 +209,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Email and password are required' });
       }
 
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
+      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
+      const normalizedEmail = email
+        .trim()
+        .toLowerCase()
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
+
+      console.log(`[Login] Attempting login for email: ${normalizedEmail}`);
+
+      // Find user by normalized email
+      const user = await storage.getUserByEmail(normalizedEmail);
       if (!user) {
+        console.log(`[Login] User not found for email: ${normalizedEmail}`);
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
@@ -292,9 +301,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create user profile
   app.post("/api/users", async (req, res) => {
     try {
+      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
+      const normalizedEmail = req.body.email
+        ? req.body.email.trim().toLowerCase().replace(/[\u200E\u200F\u202A-\u202E]/g, '')
+        : req.body.email;
+      
       // Map nested fields to flat fields
       const mappedBody = {
         ...req.body,
+        email: normalizedEmail,
         smokingAmount: req.body.smokingDetails?.amount,
         smokingDuration: req.body.smokingDetails?.duration,
         sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
@@ -461,7 +476,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const updates = insertUserSchema.partial().parse(req.body);
+      
+      // Normalize email if provided
+      const normalizedUpdates = { ...req.body };
+      if (normalizedUpdates.email) {
+        normalizedUpdates.email = normalizedUpdates.email
+          .trim()
+          .toLowerCase()
+          .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
+      }
+      
+      const updates = insertUserSchema.partial().parse(normalizedUpdates);
       const user = await storage.updateUser(userId, updates);
       
       if (!user) {

@@ -73,7 +73,16 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { name: string; email: string; phoneNumber: string; dateOfBirth: string; gender: string }) => {
-      return apiRequest('PATCH', `/api/users/${userId}`, data);
+      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
+      const normalizedEmail = data.email
+        .trim()
+        .toLowerCase()
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
+      
+      return apiRequest('PATCH', `/api/users/${userId}`, {
+        ...data,
+        email: normalizedEmail,
+      });
     },
     onSuccess: () => {
       setIsEditing(false);
@@ -177,6 +186,9 @@ export default function Profile() {
               editable={isEditing}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
             />
           </View>
           

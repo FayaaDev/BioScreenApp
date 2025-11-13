@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, View } from 'react-native';
+import { initializeRTL } from '../lib/rtlSetup';
+
+// Initialize RTL BEFORE any UI renders - critical for production builds
+initializeRTL();
 
 export default function Index() {
   useEffect(() => {

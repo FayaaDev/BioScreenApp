@@ -31,15 +31,8 @@ const initI18n = () => {
         }
       });
 
-    // Set RTL to true for Arabic without async operations
-    console.log('Setting RTL to: true');
-    
-    // Only set RTL if not already set to avoid conflicts
-    if (!I18nManager.isRTL) {
-      I18nManager.allowRTL(true);
-    }
-
-    console.log('Current language:', i18n.language);
+    // RTL is now handled by rtlSetup.ts - don't set it here to avoid conflicts
+    console.log('i18n initialized with language:', i18n.language);
   } catch (error) {
     console.error('Error initializing i18n:', error);
   }
