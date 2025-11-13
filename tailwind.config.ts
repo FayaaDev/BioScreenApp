@@ -11,6 +11,23 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        // Zimam Brand Colors
+        zimam: {
+          primary: "#4CCCE6",
+          primaryAlpha: "#52E1FEE5",
+          50: "#4CCCE6",
+          100: "#23AFD0",
+          200: "#00A2C7",
+          300: "#11809C",
+          400: "#12677E",
+          500: "#045468",
+          600: "#003848",
+          700: "#004558",
+        },
+        zimamdark: {
+          primary: "#202221",
+          secondary: "#272A29",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

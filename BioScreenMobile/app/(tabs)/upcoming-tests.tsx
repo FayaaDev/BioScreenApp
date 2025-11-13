@@ -131,7 +131,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
                   backgroundColor="rgba(0,0,0,0.2)"
                 >
                   <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                    <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
+                    <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
                   </TouchableOpacity>
                 </Tooltip>
               ) : null}
@@ -270,7 +270,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -549,7 +549,7 @@ export default function UpcomingTests() {
   if (!userId || isLoading || isLoadingSelectedPerson) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#008553" />
+        <ActivityIndicator size="large" color="#4CCCE6" />
         <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
       </View>
     );
@@ -563,22 +563,22 @@ export default function UpcomingTests() {
 
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: '#f8fffe' }} 
+      style={{ flex: 1, backgroundColor: '#202221' }} 
       contentContainerStyle={{ paddingBottom: 32 }} 
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#2c9167']} // Android
-          tintColor="#2c9167" // iOS
+          colors={['#4CCCE6']} // Android
+          tintColor="#4CCCE6" // iOS
           title="جاري التحديث..." // iOS
-          titleColor="#2c9167" // iOS
+          titleColor="#4CCCE6" // iOS
         />
       }
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#1A365D', '#2D5A87'] : ['#4ADE80', '#2C9167']}
+        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
       >
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `مرحباً، ${currentPersonName}` : `فحوصات ${currentPersonName}`}</Text>
@@ -646,13 +646,13 @@ export default function UpcomingTests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
   },
   loadingText: {
     marginTop: 12,
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   familyButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 16,
@@ -706,11 +706,11 @@ const styles = StyleSheet.create({
   tabsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
     paddingHorizontal: 8,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#555',
   },
   tabButton: {
     flex: 1,
@@ -718,7 +718,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     marginHorizontal: 2,
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
   },
   tabButtonText: {
     color: '#22c55e',
@@ -730,12 +730,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    color: '#888',
+    color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
   },
   screeningCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',

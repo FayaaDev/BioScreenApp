@@ -1,21 +1,21 @@
 {
   "expo": {
-    "name": "Bakker",
-    "slug": "bakker",
+    "name": "زمام",
+    "slug": "zimam",
     "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "bakker",
+    "scheme": "zimam",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "description": "Bakker helps you stay on top of your health with personalized medical screening reminders and appointment notifications.",
+    "description": "زمام - أمسك بزمام صحتك لتتمتع بعمر أطول وصحة أفضل. توصيات صحية وقائية مبنية على البراهين.",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bakker.app",
+      "bundleIdentifier": "com.zimam.app",
       "buildNumber": "19",
       "icon": "./assets/images/icon.png",
       "infoPlist": {
-        "CFBundleDisplayName": "Bakker",
+        "CFBundleDisplayName": "زمام",
         "ITSAppUsesNonExemptEncryption": false,
         "UIDeviceFamily": [1],
         "UIRequiredDeviceCapabilities": [
@@ -28,10 +28,10 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#4CCCE6"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.bakker.app",
+      "package": "com.zimam.app",
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
@@ -51,7 +51,7 @@
           "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#4CCCE6"
         }
       ],
       "expo-secure-store",
@@ -59,7 +59,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#ffffff",
+          "color": "#4CCCE6",
           "defaultChannel": "default"
         }
       ]

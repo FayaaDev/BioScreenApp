@@ -134,7 +134,7 @@ export default function Profile() {
   if (!userId || isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2c9167" />
+        <ActivityIndicator size="large" color="#4CCCE6" />
         <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
       </View>
     );
@@ -151,10 +151,10 @@ export default function Profile() {
       <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, zIndex: 2, gap: 12 }}>
           <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <MaterialIcons name="edit" size={28} color="#2c9167" />
+            <MaterialIcons name="edit" size={28} color="#4CCCE6" />
           </TouchableOpacity>
           {/* <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
-            <MaterialIcons name="language" size={28} color="#2c9167" />
+            <MaterialIcons name="language" size={28} color="#4CCCE6" />
           </TouchableOpacity> */}
         </View>
         <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
@@ -275,7 +275,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#2c9167'}
+                    color={formData.gender === 'male' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -297,7 +297,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#2c9167'}
+                    color={formData.gender === 'female' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -342,22 +342,22 @@ export default function Profile() {
       {/* Language Selection Modal */}
       <Modal visible={showLanguageModal} animationType="slide" transparent onRequestClose={() => setShowLanguageModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, minWidth: 280 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#008553', marginBottom: 16, textAlign: 'center' }}>تغيير اللغة</Text>
+          <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 280 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center' }}>تغيير اللغة</Text>
             <TouchableOpacity
-              style={{ backgroundColor: i18n.language === 'ar' ? '#008553' : '#f0f0f0', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
+              style={{ backgroundColor: i18n.language === 'ar' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
               onPress={() => { i18n.changeLanguage('ar'); setShowLanguageModal(false); }}
             >
-              <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#008553', fontWeight: 'bold', fontSize: 16 }}>العربية</Text>
+              <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>العربية</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={{ backgroundColor: i18n.language === 'en' ? '#008553' : '#f0f0f0', borderRadius: 8, paddingVertical: 12, marginBottom: 4, alignItems: 'center' }}
+              style={{ backgroundColor: i18n.language === 'en' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 4, alignItems: 'center' }}
               onPress={() => { i18n.changeLanguage('en'); setShowLanguageModal(false); }}
             >
-              <Text style={{ color: i18n.language === 'en' ? '#fff' : '#008553', fontWeight: 'bold', fontSize: 16 }}>English</Text>
+              <Text style={{ color: i18n.language === 'en' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>English</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 8, alignItems: 'center' }} onPress={() => setShowLanguageModal(false)}>
-              <Text style={{ color: '#008553', fontWeight: 'bold', fontSize: 16 }}>إغلاق</Text>
+              <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>إغلاق</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -403,7 +403,7 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
     padding: 16,
     paddingTop: 48,
   },
@@ -411,15 +411,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -432,14 +432,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     marginBottom: 16,
     textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -457,11 +457,12 @@ const styles = StyleSheet.create({
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#555',
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
+    color: '#ECEDEE',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   langButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#202221',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -549,13 +550,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2c9167',
+    color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalText: {
     fontSize: 16,
-    color: '#333',
+    color: '#ECEDEE',
     textAlign: 'right',
     marginBottom: 16,
     lineHeight: 24,
@@ -563,7 +564,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   closeModalButton: {
-    backgroundColor: '#2c9167',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -584,11 +585,11 @@ const styles = StyleSheet.create({
   languageLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: '#ECEDEE',
   },
   languageValue: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#94a3b8',
     marginTop: 2,
   },
   genderContainer: {
@@ -598,7 +599,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   genderButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#202221',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -607,12 +608,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   genderButtonSelected: {
-    backgroundColor: '#2c9167',
+    backgroundColor: '#4CCCE6',
   },
   genderButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#374151',
+    color: '#ECEDEE',
     marginTop: 4,
   },
   genderButtonTextSelected: {
@@ -620,7 +621,7 @@ const styles = StyleSheet.create({
   },
   profileValueText: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ECEDEE',
     textAlign: 'right',
     marginVertical: 4,
     alignSelf: 'flex-end',
@@ -629,14 +630,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#202221',
     alignSelf: 'flex-end',
     marginTop: 4,
     marginBottom: 4,
     width: '100%',
   },
   datePickerModal: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   confirmButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,

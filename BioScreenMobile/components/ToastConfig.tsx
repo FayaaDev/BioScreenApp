@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   successContainer: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   errorContainer: {
     backgroundColor: '#ef4444',

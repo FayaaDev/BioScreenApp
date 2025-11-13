@@ -3,20 +3,39 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorLight = '#4CCCE6';
+const tintColorDark = '#52E1FEE5';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#ECEDEE',
+    background: '#202221',
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorLight,
-    primary: '#2c9167',
-    card: '#f8fafc',
-    textSecondary: '#64748b',
+    primary: '#4CCCE6',
+    primaryAlpha: '#52E1FEE5',
+    primaryShades: {
+      main: '#4CCCE6',
+      shade1: '#23AFD0',
+      shade2: '#00A2C7',
+      shade3: '#11809C',
+      shade4: '#12677E',
+      shade5: '#045468',
+      shade6: '#003848',
+      shade7: '#004558',
+    },
+    secondary: '#202221',
+    secondaryShades: {
+      main: '#202221',
+      shade1: '#272A29',
+    },
+    card: '#2E3130',
+    textSecondary: '#94a3b8',
+    // Gradient colors for headers
+    gradientStart: '#003848',
+    gradientEnd: '#4CCCE6',
   },
   dark: {
     text: '#ECEDEE',
@@ -25,8 +44,27 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-    primary: '#2c9167',
+    primary: '#4CCCE6',
+    primaryAlpha: '#52E1FEE5',
+    primaryShades: {
+      main: '#4CCCE6',
+      shade1: '#23AFD0',
+      shade2: '#00A2C7',
+      shade3: '#11809C',
+      shade4: '#12677E',
+      shade5: '#045468',
+      shade6: '#003848',
+      shade7: '#004558',
+    },
+    secondary: '#202221',
+    secondaryShades: {
+      main: '#202221',
+      shade1: '#272A29',
+    },
     card: '#1e293b',
     textSecondary: '#94a3b8',
+    // Gradient colors for headers in dark mode
+    gradientStart: '#202221',
+    gradientEnd: '#272A29',
   },
 };

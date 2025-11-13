@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
-    backgroundColor: '#2c9167', // Updated brand color
+    backgroundColor: '#4CCCE6', // Updated brand color
     marginRight: 8,
   },
   scheduleButtonText: {
@@ -236,11 +236,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#fff',
+    borderColor: '#555',
+    backgroundColor: '#2E3130',
   },
   completeButtonText: {
-    color: '#2c9167', // Updated brand color
+    color: '#4CCCE6', // Updated brand color
     fontSize: 12,
   },
 }); 

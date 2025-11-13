@@ -435,7 +435,7 @@ export default function Onboarding() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#008553'}
+                    color={formData.gender === 'male' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -463,7 +463,7 @@ export default function Onboarding() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#008553'}
+                    color={formData.gender === 'female' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -904,7 +904,7 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
     paddingTop: 32,
   },
   scrollContent: {
@@ -913,7 +913,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 20,
     shadowColor: '#000',
@@ -932,13 +932,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#94a3b8',
     textAlign: 'center',
   },
   form: {
@@ -950,16 +950,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#ECEDEE',
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#555',
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
+    color: '#ECEDEE',
   },
   inputError: {
     borderColor: '#ef4444',
@@ -976,20 +977,20 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
   },
   genderButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   genderButtonText: {
     fontSize: 16,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   genderButtonTextSelected: {
     color: '#fff',
@@ -1000,7 +1001,7 @@ const styles = StyleSheet.create({
   },
   questionLabel: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ECEDEE',
     fontWeight: '500',
     marginBottom: 4,
   },
@@ -1012,18 +1013,18 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
   },
   yesNoButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   yesNoButtonText: {
     fontSize: 16,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   yesNoButtonTextSelected: {
     color: '#fff',
@@ -1031,11 +1032,11 @@ const styles = StyleSheet.create({
   datePickerButton: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#555',
     borderRadius: 8,
     paddingHorizontal: 16,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
   },
   datePickerOverlay: {
     position: 'absolute',
@@ -1049,7 +1050,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   datePickerModalBox: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 18,
     padding: 24,
     width: '85%',
@@ -1067,7 +1068,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   confirmButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -1080,20 +1081,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cancelDateButton: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#202221',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
   },
   cancelDateButtonText: {
-    color: '#008553',
+    color: '#4CCCE6',
     fontSize: 16,
     fontWeight: '600',
   },
   submitButton: {
     height: 48,
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1113,7 +1114,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loginButtonText: {
-    color: '#008553',
+    color: '#4CCCE6',
     fontSize: 16,
   },
   sectionHeader: {
@@ -1127,7 +1128,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -1143,7 +1144,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1168,18 +1169,18 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   partnerCountButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   partnerCountButtonText: {
     fontSize: 14,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   partnerCountButtonTextSelected: {
     color: '#fff',
@@ -1188,10 +1189,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
   },
   bmiLabel: {
-    color: '#008553',
+    color: '#4CCCE6',
   },
   bmiValue: {
-    color: '#008553',
+    color: '#4CCCE6',
     marginVertical: 4,
   },
   bmiCategory: {

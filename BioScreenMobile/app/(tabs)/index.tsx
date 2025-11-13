@@ -251,16 +251,16 @@ export default function HomeScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#2c9167']} // Android
-          tintColor="#2c9167" // iOS
+          colors={['#4CCCE6']} // Android
+          tintColor="#4CCCE6" // iOS
           title="جاري التحديث..." // iOS
-          titleColor="#2c9167" // iOS
+          titleColor="#4CCCE6" // iOS
         />
       }
     >
       {/* Header with Gradient */}
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#1a365d', '#2d5a87'] : ['#4ade80', '#2c9167']}
+        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={styles.headerGradient}
       >
         <View style={styles.headerContent}>
@@ -472,51 +472,55 @@ export default function HomeScreen() {
 
       <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#008553', marginBottom: 16, textAlign: 'center' }}>تواصل معنا</Text>
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>الاسم</Text>
+          <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center' }}>تواصل معنا</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>الاسم</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
               placeholder="أدخل اسمك"
+              placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>البريد الإلكتروني</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>البريد الإلكتروني</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
               placeholder="أدخل بريدك الإلكتروني"
+              placeholderTextColor="#94a3b8"
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>الموضوع</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>الموضوع</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
               placeholder="أدخل موضوع الرسالة"
+              placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right' }}>المحتوى</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE' }}>المحتوى</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
               placeholder="اكتب رسالتك هنا"
+              placeholderTextColor="#94a3b8"
               multiline
             />
             <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
               <TouchableOpacity
-                style={{ backgroundColor: '#008553', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
+                style={{ backgroundColor: '#4CCCE6', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
                 onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
               >
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>إرسال</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ backgroundColor: '#f0f0f0', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
+                style={{ backgroundColor: '#202221', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
                 onPress={() => setShowContactModal(false)}
               >
-                <Text style={{ color: '#008553', fontWeight: 'bold', fontSize: 16 }}>إلغاء</Text>
+                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16 }}>إلغاء</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -589,9 +593,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    backgroundColor: 'rgba(240, 240, 240, 0.5)',
+    backgroundColor: '#2E3130',
     borderWidth: 1,
-    borderColor: 'rgba(200, 200, 200, 0.3)',
+    borderColor: '#555',
   },
   statNumber: {
     fontSize: 28,
@@ -608,13 +612,13 @@ const styles = StyleSheet.create({
     color: '#f97316', // Orange for لاحقاً (later)
   },
   statNumberCompleted: {
-    color: '#2c9167', // Green for مكتملة (completed)
+    color: '#4CCCE6', // Green for مكتملة (completed)
   },
   statLabel: {
     fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
-    color: '#666',
+    color: '#ECEDEE',
   },
 
   // Educational Section
@@ -685,20 +689,20 @@ const styles = StyleSheet.create({
     height: 20,
   },
   familyButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#2c9167',
+    borderColor: '#4CCCE6',
     marginRight: 8,
   },
   familyButtonSelected: {
-    backgroundColor: '#2c9167',
-    borderColor: '#2c9167',
+    backgroundColor: '#4CCCE6',
+    borderColor: '#4CCCE6',
   },
   familyButtonText: {
-    color: '#2c9167',
+    color: '#4CCCE6',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {

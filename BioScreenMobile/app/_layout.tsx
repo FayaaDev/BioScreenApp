@@ -29,6 +29,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     NotoSansArabic: require('../assets/fonts/NotoSansArabic-Regular.ttf'),
+    // ReadexPro: require('../assets/fonts/ReadexPro-Regular.ttf'), // TODO: Add Readex Pro font files
   });
 
   // Initialize RTL in a safer way

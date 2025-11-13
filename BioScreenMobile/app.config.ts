@@ -2,8 +2,8 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Bakker',
-  slug: 'bakker',
+  name: 'زمام',
+  slug: 'zimam',
   version: '1.0.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -11,18 +11,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: './assets/images/splash.png',
     resizeMode: 'contain',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#4CCCE6'
   },
   assetBundlePatterns: [
     '**/*'
   ],
   ios: {
     supportsTablet: false,
-    bundleIdentifier: 'com.bakker.app',
+    bundleIdentifier: 'com.zimam.app',
     buildNumber: '19',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
-      CFBundleDisplayName: 'Bakker',
+      CFBundleDisplayName: 'زمام',
       UIDeviceFamily: [1], // iPhone only (1 = iPhone, 2 = iPad, [1,2] = Universal)
       UIRequiredDeviceCapabilities: ['telephony'],
       UIViewSemanticContentAttribute: 'ForceRightToLeft',
@@ -43,9 +43,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
-      backgroundColor: '#ffffff'
+      backgroundColor: '#4CCCE6'
     },
-    package: 'com.bakker.app'
+    package: 'com.zimam.app'
   },
   web: {
     favicon: './assets/images/favicon.png'
@@ -65,7 +65,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         image: './assets/images/splash.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#4CCCE6'
       }
     ],
     'expo-secure-store',
@@ -73,7 +73,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/icon.png',
-        color: '#ffffff',
+        color: '#4CCCE6',
         defaultChannel: 'default'
       }
     ]

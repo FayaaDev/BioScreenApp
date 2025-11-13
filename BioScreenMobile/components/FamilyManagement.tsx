@@ -305,7 +305,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     <View style={styles.card}>
       <Text style={styles.title}>إدارة العائلة</Text>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#008553" />
+        <ActivityIndicator size="large" color="#4CCCE6" />
       ) : (
         <ScrollView style={{ maxHeight: 300 }} contentContainerStyle={{ gap: 12 }}>
           {(!familyMembers || familyMembers.length === 0) ? (
@@ -451,7 +451,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#008553'}
+                    color={formData.gender === 'male' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -478,7 +478,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#008553'}
+                    color={formData.gender === 'female' ? '#fff' : '#4CCCE6'}
                   />
                   <Text
                     style={[
@@ -986,7 +986,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -999,20 +999,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
   },
   emptyText: {
     textAlign: 'center',
-    color: '#888',
+    color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
   },
   memberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
     borderRadius: 8,
     padding: 12,
     gap: 8,
@@ -1023,11 +1023,11 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
   },
   memberDetails: {
     fontSize: 14,
-    color: '#666',
+    color: '#94a3b8',
   },
   memberActions: {
     flexDirection: 'row',
@@ -1055,7 +1055,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -1068,7 +1068,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#202221',
   },
   modalContent: {
     alignItems: 'center',
@@ -1082,31 +1082,32 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     marginBottom: 12,
     textAlign: 'center',
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#555',
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
+    color: '#ECEDEE',
     width: 250,
     marginBottom: 8,
   },
   label: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ECEDEE',
     fontWeight: '500',
     marginBottom: 4,
     alignSelf: 'flex-end',
     textAlign: 'right',
   },
   optionButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#202221',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -1114,10 +1115,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   optionButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   optionButtonText: {
-    color: '#008553',
+    color: '#4CCCE6',
     fontWeight: 'bold',
   },
   optionButtonTextSelected: {
@@ -1125,7 +1126,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   saveButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -1157,10 +1158,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   genderButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   genderButtonText: {
-    color: '#008553',
+    color: '#4CCCE6',
     fontWeight: 'bold',
   },
   genderButtonTextSelected: {
@@ -1184,18 +1185,18 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   yesNoButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   yesNoButtonText: {
     fontSize: 16,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   yesNoButtonTextSelected: {
     color: '#fff',
@@ -1203,7 +1204,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#008553',
+    color: '#4CCCE6',
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -1220,7 +1221,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1245,18 +1246,18 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#008553',
+    borderColor: '#4CCCE6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
   partnerCountButtonSelected: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
   },
   partnerCountButtonText: {
     fontSize: 14,
-    color: '#008553',
+    color: '#4CCCE6',
   },
   partnerCountButtonTextSelected: {
     color: '#fff',
@@ -1363,7 +1364,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   confirmButton: {
-    backgroundColor: '#008553',
+    backgroundColor: '#4CCCE6',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,

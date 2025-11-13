@@ -54,7 +54,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   const statusLabelStyle = [
     styles.screeningStatus,
     {
-      color: '#2c9167',
+      color: '#4CCCE6',
       backgroundColor: '#f0fdf4', // green-50
       borderRadius: 8,
       paddingHorizontal: 8,
@@ -80,7 +80,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
               backgroundColor="rgba(0,0,0,0.2)"
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#2c9167" />
+                <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -221,7 +221,7 @@ export default function CompletedTests() {
   if (!userId || isLoading || isLoadingSelectedPerson) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2c9167" />
+        <ActivityIndicator size="large" color="#4CCCE6" />
         <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
       </View>
     );
@@ -235,22 +235,22 @@ export default function CompletedTests() {
 
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: '#f8fffe' }} 
+      style={{ flex: 1, backgroundColor: '#202221' }} 
       contentContainerStyle={{ paddingBottom: 32 }} 
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#2c9167']} // Android
-          tintColor="#2c9167" // iOS
+          colors={['#4CCCE6']} // Android
+          tintColor="#4CCCE6" // iOS
           title="جاري التحديث..." // iOS
-          titleColor="#2c9167" // iOS
+          titleColor="#4CCCE6" // iOS
         />
       }
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#1A365D', '#2D5A87'] : ['#4ADE80', '#2C9167']}
+        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
       >
         <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
@@ -297,18 +297,18 @@ export default function CompletedTests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fffe',
+    backgroundColor: '#202221',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#2c9167',
+    color: '#4CCCE6',
   },
   header: {
     paddingHorizontal: 16,
@@ -335,19 +335,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   familyButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#2c9167',
+    borderColor: '#4CCCE6',
   },
   familyButtonSelected: {
-    backgroundColor: '#2c9167',
-    borderColor: '#2c9167',
+    backgroundColor: '#4CCCE6',
+    borderColor: '#4CCCE6',
   },
   familyButtonText: {
-    color: '#2c9167',
+    color: '#4CCCE6',
     fontWeight: 'bold',
   },
   familyButtonSelectedText: {
@@ -360,12 +360,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    color: '#888',
+    color: '#94a3b8',
     fontSize: 16,
     marginTop: 32,
   },
   screeningCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2E3130',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -379,12 +379,12 @@ const styles = StyleSheet.create({
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2c9167',
+    color: '#4CCCE6',
     marginBottom: 4,
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#2c9167',
+    color: '#4CCCE6',
   },
   actionButton: {
     backgroundColor: '#ef4444',
