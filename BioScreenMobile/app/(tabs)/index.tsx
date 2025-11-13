@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -75,6 +76,7 @@ const isRTL = I18nManager.isRTL;
 export default function HomeScreen() {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -261,7 +263,7 @@ export default function HomeScreen() {
       {/* Header with Gradient */}
       <LinearGradient
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={styles.headerGradient}
+        style={[styles.headerGradient, { paddingTop: insets.top + 16, paddingBottom: 10 }]}
       >
         <View style={styles.headerContent}>
           <View>
@@ -375,17 +377,13 @@ export default function HomeScreen() {
         </ThemedText>
         
         {educationalContent.length > 0 ? (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={{ transform: [{ scaleX: -1 }] }}
-          >
+          <View style={{ width: '100%' }}>
             {educationalContent.slice(0, 3).map((content) => (
               <View 
                 key={content.id} 
                 style={[
                   styles.educationalCard, 
-                  { backgroundColor: colors.card, transform: [{ scaleX: -1 }] }
+                  { backgroundColor: colors.card, marginBottom: 12 }
                 ]}
               >
                 <ThemedText style={[styles.educationalTitle, { color: colors.text, fontFamily: 'ReadexPro-Bold' }]}>
@@ -396,7 +394,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </View>
             ))}
-          </ScrollView>
+          </View>
         ) : (
           <View style={[styles.educationalCard, { backgroundColor: colors.card }]}>
             <MaterialCommunityIcons name="information" size={32} color={colors.textSecondary} />
@@ -543,9 +541,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   headerGradient: {
-    paddingTop: 60,
-    paddingBottom: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    overflow: 'hidden',
   },
   headerContent: {
     flexDirection: 'row-reverse',
@@ -553,17 +552,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   greeting: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     textAlign: 'right',
     fontFamily: 'ReadexPro-Bold',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 20,
     opacity: 0.9,
     textAlign: 'right',
     fontFamily: 'ReadexPro',
+    marginBottom: 2,
   },
   profileButton: {
     padding: 8,
@@ -633,8 +633,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   educationalCard: {
-    width: width * 0.75,
-    marginLeft: 16,
+    width: '100%',
     padding: 20,
     borderRadius: 16,
     shadowColor: '#000',

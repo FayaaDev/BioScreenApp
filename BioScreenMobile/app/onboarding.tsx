@@ -232,9 +232,9 @@ export default function Onboarding() {
       >
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>مرحباً بك في بكّر</Text>
+            <Text style={styles.title}>مرحباً بك في زِمامـ</Text>
             <Text style={styles.subtitle}>
-              بكّر بالفحص واكتشف جميع الفحوصات المناسبة لك
+              زِمامـ بالفحص واكتشف جميع الفحوصات المناسبة لك
             </Text>
           </View>
 
