@@ -54,19 +54,19 @@
     "screeningsFor": "فحوصات",
     "overdue": "متأخر",
     "completed": "مكتمل",
-    "due": "حالاً",
+    "due": "الآن",
     "later": "لاحقا",
 
     "tabs": {
       "all": "الكل",
       "overdue": "متأخر",
       "done": "مكتمل",
-      "due": "حالاً",
+      "due": "الآن",
       "later": "لاحقا"
     },
     "noScreenings": "لا توجد فحوصات.",
     "noScreeningsForTab": "لا توجد فحوصات {{status}}.",
-    "noDue": "لا توجد فحوصات حالاً.",
+    "noDue": "لا توجد فحوصات الآن.",
     "noOverdue": "لا توجد فحوصات متأخر.",
     "noLater": "لا توجد فحوصات لاحقة.",
     "noCompleted": "لا توجد فحوصات مكتملة.",

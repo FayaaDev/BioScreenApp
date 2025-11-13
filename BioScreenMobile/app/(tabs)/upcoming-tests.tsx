@@ -80,8 +80,8 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       statusLabelStyle = [
         styles.screeningStatus,
         {
-          color: '#f59e42',
-          backgroundColor: '#fff7ed',
+          color: '#FFFFFF',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
           borderRadius: 8,
           paddingHorizontal: 8,
           paddingVertical: 2,
@@ -162,8 +162,8 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#f59e42',
-        backgroundColor: '#fff7ed',
+        color: '#FFFFFF',
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -173,12 +173,12 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
       } as any,
     ];
   } else if (screening.status === 'due') {
-    statusLabel = 'حالاً';
+    statusLabel = 'الآن';
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#2563eb', // blue-600
-        backgroundColor: '#eff6ff', // blue-50
+        color: '#0EB39E',
+        backgroundColor: 'rgba(14, 179, 158, 0.16)',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -192,8 +192,8 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#dc2626', // red-600
-        backgroundColor: '#fef2f2', // red-50
+        color: '#A35829',
+        backgroundColor: 'rgba(163, 88, 41, 0.16)',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -514,7 +514,7 @@ export default function UpcomingTests() {
   // Tabs logic
   const tabOptions = [
     { key: 'all', label: 'الكل', color: undefined },
-    { key: 'due', label: 'حالاً', color: STATUS_COLORS.due },
+    { key: 'due', label: 'الآن', color: STATUS_COLORS.due },
     { key: 'overdue', label: 'متأخر', color: STATUS_COLORS.overdue },
     { key: 'later', label: 'لاحقاً', color: STATUS_COLORS.later },
     //{ key: 'completed', label: 'مكتملة', color: STATUS_COLORS.completed },

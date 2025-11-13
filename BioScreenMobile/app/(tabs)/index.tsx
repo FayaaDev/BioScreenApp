@@ -326,7 +326,7 @@ export default function HomeScreen() {
               {stats?.dueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
-              حالاً
+              الآن
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     fontFamily: 'ReadexPro-Bold',
   },
   statNumberDue: {
-    color: '#3b82f6', // Blue for حالاً (due)
+    color: '#0EB39E', // Accent for الآن (due)
   },
   statNumberOverdue: {
     color: '#A35829', // Red for متأخر (overdue)

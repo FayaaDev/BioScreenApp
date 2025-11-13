@@ -128,22 +128,22 @@ export function groupScreeningsByCategory(screenings: ScreeningWithDetails[]): R
 // Color constants for React Native
 export const STATUS_COLORS = {
   due: {
-    background: '#eff6ff', // blue-50
-    text: '#1e40af',       // blue-800
-    border: '#bfdbfe',     // blue-200
-    icon: '#1e40af'
+    background: '#E3F7F4',
+    text: '#0EB39E',
+    border: '#A1E4DC',
+    icon: '#0EB39E'
   },
   overdue: {
-    background: '#fef2f2', // red-50
-    text: '#991b1b',       // red-800
-    border: '#fecaca',     // red-200
-    icon: '#991b1b'
+    background: '#F4E6DD',
+    text: '#A35829',
+    border: '#E3C8B4',
+    icon: '#A35829'
   },
   later: {
-    background: '#fff7ed', // orange-50
-    text: '#ea580c',       // orange-600
-    border: '#fed7aa',     // orange-200
-    icon: '#ea580c'
+    background: 'rgba(255, 255, 255, 0.08)',
+    text: '#FFFFFF',
+    border: 'rgba(255, 255, 255, 0.16)',
+    icon: '#FFFFFF'
   },
   completed: {
     background: '#f0fdf4', // green-50
