@@ -2,10 +2,8 @@ import { useEffect } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, View } from 'react-native';
-import { initializeRTL } from '../lib/rtlSetup';
 
-// Initialize RTL BEFORE any UI renders - critical for production builds
-initializeRTL();
+// RTL initialization is now handled in _layout.tsx after language is loaded
 
 export default function Index() {
   useEffect(() => {

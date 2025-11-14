@@ -10,11 +10,9 @@ import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n'; // Restore i18n import
+import { loadStoredLanguage } from '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 import { initializeRTL, verifyRTL } from '../lib/rtlSetup';
-
-// Initialize RTL synchronously before any component renders
-initializeRTL();
 
 // Create a client
 const queryClient = new QueryClient();
@@ -30,18 +28,32 @@ export default function RootLayout() {
     'ReadexPro-SemiBold': require('../assets/fonts/ReadexPro-SemiBold.ttf'),
   });
 
-  // Verify RTL is properly configured (non-blocking)
+  // Load language preference and initialize RTL based on language
   useEffect(() => {
-    const setupRTL = () => {
+    const setupLanguageAndRTL = async () => {
       // Wait for both fonts and i18n to be ready
       if (loaded && i18n && i18n.isInitialized) {
-        // Verify RTL is active (native initialization should have handled it)
-        verifyRTL();
-        setIsReady(true);
+        try {
+          // Load stored language preference and apply to i18n
+          await loadStoredLanguage();
+          
+          // Initialize RTL based on current language
+          await initializeRTL(i18n.language as 'ar' | 'en');
+          
+          // Verify RTL is properly configured
+          verifyRTL();
+          
+          setIsReady(true);
+        } catch (error) {
+          console.error('Error setting up language and RTL:', error);
+          // Fallback: initialize RTL with default Arabic
+          await initializeRTL('ar');
+          setIsReady(true);
+        }
       }
     };
 
-    setupRTL();
+    setupLanguageAndRTL();
   }, [loaded, i18n]);
 
   // Set up Readex Pro font with error handling

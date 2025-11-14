@@ -24,9 +24,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import i18n from '../../lib/i18n';
 import { PhoneNumberInput, validatePhoneNumber } from '../../components/PhoneNumberInput';
+import { changeRTLDirection } from '../../lib/rtlSetup';
 
 export default function Profile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -40,10 +41,20 @@ export default function Profile() {
     gender: '',
   });
   const [showAgreement, setShowAgreement] = useState(false);
-  const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
+  const isRTL = i18n.language === 'ar';
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, [i18n]);
 
   useEffect(() => {
     AsyncStorage.getItem('healthscreen_user_id').then((id) => {
@@ -144,7 +155,7 @@ export default function Profile() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#4CCCE6" />
-        <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
+        <Text style={styles.loadingText}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -156,31 +167,37 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 64 }}>
-      <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, left: 16, zIndex: 2, gap: 12 }}>
+    <ScrollView key={refreshKey} style={styles.container} contentContainerStyle={{ paddingBottom: 64 }}>
+      <View style={styles.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 16, right: 16, zIndex: 2, gap: 12 }}>
           <TouchableOpacity onPress={() => setIsEditing(true)}>
             <MaterialIcons name="edit" size={28} color="#4CCCE6" />
           </TouchableOpacity>
-          {/* <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
+          <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
             <MaterialIcons name="language" size={28} color="#4CCCE6" />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
-        <Text style={[styles.title, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>الملف الشخصي</Text>
-        <View style={[styles.form, isRTL && { alignItems: 'flex-end' }]}>
-          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
+        <Text style={styles.title}>
+          {t('profile.title')}
+        </Text>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              {t('profile.name')}
+            </Text>
             <TextInput
-              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
+              style={[styles.input, { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }]}
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
               editable={isEditing}
             />
           </View>
-          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              {t('profile.email')}
+            </Text>
             <TextInput
-              style={[styles.input, isRTL && { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' }]}
+              style={[styles.input, { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }]}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               editable={isEditing}
@@ -199,8 +216,10 @@ export default function Profile() {
             required={true}
           />
           
-          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              {t('profile.dateOfBirth')}
+            </Text>
             {isEditing ? (
               <>
                 <TouchableOpacity
@@ -210,14 +229,14 @@ export default function Profile() {
                   }}
                   style={styles.datePickerButton}
                 >
-                  <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right', fontFamily: 'ReadexPro' }}>
+                  <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'center', fontFamily: 'ReadexPro' }}>
                     {formData.dateOfBirth
-                      ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                      ? new Date(formData.dateOfBirth).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
                         })
-                      : 'اختر تاريخ الميلاد'}
+                      : (isRTL ? 'اختر تاريخ الميلاد' : 'Select date of birth')}
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
@@ -245,7 +264,9 @@ export default function Profile() {
                           setShowDatePicker(false);
                         }}
                       >
-                        <Text style={styles.confirmButtonText}>تأكيد</Text>
+                        <Text style={styles.confirmButtonText}>
+                          {isRTL ? 'تأكيد' : 'Confirm'}
+                        </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.cancelDateButton}
@@ -254,7 +275,9 @@ export default function Profile() {
                           setTempDate(null);
                         }}
                       >
-                        <Text style={styles.cancelDateButtonText}>إلغاء</Text>
+                        <Text style={styles.cancelDateButtonText}>
+                          {t('common.cancel')}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -263,7 +286,7 @@ export default function Profile() {
             ) : (
               <Text style={styles.profileValueText}>
                 {formData.dateOfBirth
-                  ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                  ? new Date(formData.dateOfBirth).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
@@ -272,10 +295,12 @@ export default function Profile() {
               </Text>
             )}
           </View>
-          <View style={[styles.inputContainer, isRTL && { alignItems: 'flex-end', width: '100%' }]}>
-            <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              {t('profile.gender')}
+            </Text>
             {isEditing || true ? (
-              <View style={[styles.genderContainer, isRTL && { flexDirection: 'row-reverse' }]}>
+              <View style={styles.genderContainer}>
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
@@ -295,7 +320,7 @@ export default function Profile() {
                       formData.gender === 'male' && styles.genderButtonTextSelected,
                     ]}
                   >
-                    ذكر
+                    {t('common.male')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -317,7 +342,7 @@ export default function Profile() {
                       formData.gender === 'female' && styles.genderButtonTextSelected,
                     ]}
                   >
-                    أنثى
+                    {t('common.female')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -327,27 +352,31 @@ export default function Profile() {
         {isEditing ? (
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={updateProfileMutation.isPending}>
-              <Text style={styles.saveButtonText}>حفظ</Text>
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>إلغاء</Text>
+              <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         ) : null}
       </View>
 
       {/* Family Management Section */}
-      <View style={[styles.card, isRTL && { alignItems: 'flex-end' }]}>
+      <View style={styles.card}>
         <FamilyManagement userId={userId!} onSwitchPerson={handleSwitchPerson} />
       </View>
 
       {/* Reset Profile and Sign Out */}
       <View style={styles.card}>
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutButtonText}>تسجيل الخروج</Text>
+          <Text style={styles.signOutButtonText}>
+            {i18n.language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.agreementButton} onPress={() => setShowAgreement(true)}>
-          <Text style={styles.agreementButtonText}>اتفاقية المستخدم</Text>
+          <Text style={styles.agreementButtonText}>
+            {i18n.language === 'ar' ? 'اتفاقية المستخدم' : 'User Agreement'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -355,21 +384,41 @@ export default function Profile() {
       <Modal visible={showLanguageModal} animationType="slide" transparent onRequestClose={() => setShowLanguageModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 280 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>تغيير اللغة</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>
+              {i18n.language === 'ar' ? 'تغيير اللغة' : 'Change Language'}
+            </Text>
             <TouchableOpacity
               style={{ backgroundColor: i18n.language === 'ar' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
-              onPress={() => { i18n.changeLanguage('ar'); setShowLanguageModal(false); }}
+              onPress={async () => {
+                if (i18n.language !== 'ar') {
+                  await i18n.changeLanguage('ar');
+                  setShowLanguageModal(false);
+                  await changeRTLDirection(true);
+                } else {
+                  setShowLanguageModal(false);
+                }
+              }}
             >
               <Text style={{ color: i18n.language === 'ar' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>العربية</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ backgroundColor: i18n.language === 'en' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 4, alignItems: 'center' }}
-              onPress={() => { i18n.changeLanguage('en'); setShowLanguageModal(false); }}
+              onPress={async () => {
+                if (i18n.language !== 'en') {
+                  await i18n.changeLanguage('en');
+                  setShowLanguageModal(false);
+                  await changeRTLDirection(false);
+                } else {
+                  setShowLanguageModal(false);
+                }
+              }}
             >
               <Text style={{ color: i18n.language === 'en' ? '#fff' : '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>English</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 8, alignItems: 'center' }} onPress={() => setShowLanguageModal(false)}>
-              <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إغلاق</Text>
+              <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>
+                {i18n.language === 'ar' ? 'إغلاق' : 'Close'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -473,6 +522,7 @@ const styles = StyleSheet.create({
     color: '#ECEDEE',
     fontWeight: '500',
     fontFamily: 'ReadexPro-Medium',
+    textAlign: 'center',
   },
   input: {
     height: 48,
@@ -659,9 +709,8 @@ const styles = StyleSheet.create({
   profileValueText: {
     fontSize: 16,
     color: '#ECEDEE',
-    textAlign: 'right',
+    textAlign: 'center',
     marginVertical: 4,
-    alignSelf: 'flex-end',
     fontFamily: 'ReadexPro',
   },
   datePickerButton: {

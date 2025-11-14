@@ -23,6 +23,7 @@ import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '../../hooks/useColorScheme';
+import { useTranslation } from 'react-i18next';
 
 // Types
 type Screening = {
@@ -112,12 +113,23 @@ export default function CompletedTests() {
   const router = useRouter();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const { t, i18n } = useTranslation();
   const [userId, setUserId] = useState<string | null>(null);
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
-  const [isRTL, setIsRTL] = useState(I18nManager.isRTL);
+  const isRTL = i18n.language === 'ar';
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, [i18n]);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -213,7 +225,7 @@ export default function CompletedTests() {
   }
 
   const currentPersonAge = currentPerson.dateOfBirth ? calculateAge(currentPerson.dateOfBirth) : '';
-  const currentPersonName = currentPerson.name || 'أنت';
+  const currentPersonName = currentPerson.name || t('common.you');
   const currentPersonGender = currentPerson.gender || '';
   const completedScreenings = filterScreeningsByStatus(screenings, 'completed');
 
@@ -222,7 +234,7 @@ export default function CompletedTests() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#4CCCE6" />
-        <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
+        <Text style={styles.loadingText}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -235,6 +247,7 @@ export default function CompletedTests() {
 
   return (
     <ScrollView 
+      key={refreshKey}
       style={{ flex: 1, backgroundColor: '#202221' }} 
       contentContainerStyle={{ paddingBottom: 32 }} 
       showsVerticalScrollIndicator={false}
@@ -253,20 +266,32 @@ export default function CompletedTests() {
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
-        <Text style={styles.headerTitle}>{selectedPersonId === 'user' ? `الفحوصات المكتملة` : `فحوصات ${currentPersonName}`}</Text>
-        <Text style={styles.headerSubtitle}>{`العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          {selectedPersonId === 'user' 
+            ? t('completed.title')
+            : (isRTL ? `فحوصات ${currentPersonName}` : `${currentPersonName}'s Screenings`)
+          }
+        </Text>
+        <Text style={[styles.headerSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          {isRTL 
+            ? `العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`
+            : `Age: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'Male' : 'Female'}`
+          }
+        </Text>
         {/* Family selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.familySelector}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row-reverse', alignItems: 'center' }}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}
         >
           <TouchableOpacity
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>أنت</Text>
+            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>
+              {t('common.you')}
+            </Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
             <TouchableOpacity
@@ -283,7 +308,7 @@ export default function CompletedTests() {
       {/* Completed Screenings List */}
       <View style={styles.screeningsList}>
         {completedScreenings.length === 0 ? (
-          <Text style={styles.emptyText}>لا توجد فحوصات مكتملة</Text>
+          <Text style={styles.emptyText}>{t('completed.noCompleted')}</Text>
         ) : (
           <View style={{ gap: 7 }}>
             {completedScreenings.map((screening, index) => (
