@@ -537,7 +537,7 @@ export default function Admin() {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Shield className="w-10 h-10" style={{color: '#4CCCE6'}} />
               <h1 className="text-3xl font-bold" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
-                زمام
+                زمِامـ
               </h1>
             </div>
             <h2 className="text-xl font-semibold mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
@@ -625,7 +625,7 @@ export default function Admin() {
           <div className="flex items-center justify-center gap-3 mb-3">
             <Shield className="w-8 h-8" style={{color: '#4CCCE6'}} />
             <h1 className="text-3xl font-bold" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
-              زمام
+              زمِامـ
             </h1>
           </div>
           <h2 className="text-xl font-semibold mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>لوحة إدارة الفحوصات الطبية</h2>
