@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -155,7 +156,7 @@ input[type="password"]:-moz-placeholder {
 
   html, body {
     @apply bg-background font-sans antialiased;
-    font-family: 'Sakkal Majalla', 'Amiri', Arial, sans-serif;
+    font-family: 'Readex Pro', 'Sakkal Majalla', 'Amiri', Arial, sans-serif;
     color: #0f172a;
     background-color: #ffffff !important;
     -webkit-font-smoothing: antialiased;
@@ -212,6 +213,37 @@ input[type="password"]:-moz-placeholder {
     border: 1px solid #e2e8f0 !important;
     -webkit-appearance: none !important;
     -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Admin page dark theme overrides */
+  [dir="rtl"] .bg-card,
+  [dir="rtl"] [class*="bg-card"],
+  [dir="rtl"] .rounded-lg.border.bg-card,
+  [dir="rtl"] [data-testid="card"],
+  [dir="rtl"] .card {
+    background-color: rgba(46, 49, 48, 0.8) !important;
+  }
+
+  /* Admin page dialog and select overrides */
+  [dir="rtl"] [role="dialog"],
+  [dir="rtl"] [data-radix-dialog-content],
+  [dir="rtl"] [data-radix-select-content] {
+    background-color: rgba(46, 49, 48, 0.95) !important;
+  }
+
+  /* Admin page input and textarea overrides */
+  [dir="rtl"] input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+  [dir="rtl"] textarea {
+    background-color: rgba(46, 49, 48, 0.8) !important;
+    color: #ECEDEE !important;
+    border-color: #045468 !important;
+  }
+
+  /* Admin page select trigger overrides */
+  [dir="rtl"] [data-radix-select-trigger] {
+    background-color: rgba(46, 49, 48, 0.8) !important;
+    color: #ECEDEE !important;
+    border-color: #045468 !important;
   }
 
   /* Specific button variants */
@@ -410,6 +442,67 @@ select,
 [role="tablist"][style*="background-color: yellow"] {
   background: #fff !important;
   background-color: #fff !important;
+}
+
+/* Admin page tabs override - must come after general rules */
+[dir="rtl"] [role="tablist"],
+[dir="rtl"] [role="tablist"].bg-muted,
+[dir="rtl"] [role="tablist"][class*="bg-muted"],
+[dir="rtl"] .bg-muted[role="tablist"] {
+  background: rgba(46, 49, 48, 0.9) !important;
+  background-color: rgba(46, 49, 48, 0.9) !important;
+  border: 1px solid #045468 !important;
+}
+
+/* Admin page individual tab buttons override */
+[dir="rtl"] [role="tab"],
+[dir="rtl"] [role="tab"][data-state="active"],
+[dir="rtl"] [role="tab"][data-state="inactive"] {
+  background-color: transparent !important;
+  color: #ECEDEE !important;
+  border-color: transparent !important;
+}
+
+[dir="rtl"] [role="tab"][data-state="active"] {
+  background-color: rgba(4, 84, 104, 0.3) !important;
+  border: 2px solid #4CCCE6 !important;
+  border-radius: 8px !important;
+}
+
+/* Admin page select trigger field override */
+[dir="rtl"] button[role="combobox"],
+[dir="rtl"] [data-radix-select-trigger] {
+  background-color: rgba(46, 49, 48, 0.8) !important;
+  color: #ECEDEE !important;
+  border: 1px solid #045468 !important;
+}
+
+/* Admin page select dropdown menus override */
+[dir="rtl"] [role="listbox"],
+[dir="rtl"] [data-radix-select-viewport],
+[dir="rtl"] [data-radix-select-content] {
+  background-color: rgba(46, 49, 48, 0.95) !important;
+  border: 1px solid #045468 !important;
+}
+
+/* Admin page select dropdown items override */
+[dir="rtl"] [role="option"],
+[dir="rtl"] [data-radix-select-item] {
+  background-color: transparent !important;
+  color: #ECEDEE !important;
+}
+
+[dir="rtl"] [role="option"]:hover,
+[dir="rtl"] [role="option"][data-highlighted],
+[dir="rtl"] [data-radix-select-item]:hover,
+[dir="rtl"] [data-radix-select-item][data-highlighted] {
+  background-color: rgba(4, 84, 104, 0.3) !important;
+  color: #ECEDEE !important;
+}
+
+/* Override bg-muted CSS variable for admin page */
+[dir="rtl"] .bg-muted {
+  --muted: 46 49 48 !important;
 }
 
 .tabs-list,

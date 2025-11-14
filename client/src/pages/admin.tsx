@@ -523,27 +523,33 @@ export default function Admin() {
 
   if (isLoadingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>جاري التحميل...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(135deg, #003848 0%, #202221 50%, #4CCCE6 100%)'}}>
+        <p style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>جاري التحميل...</p>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" dir="rtl">
+      <div className="min-h-screen flex items-center justify-center p-4" dir="rtl" style={{background: 'linear-gradient(135deg, #003848 0%, #202221 50%, #4CCCE6 100%)', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
         <div className="max-w-md w-full space-y-8">
-          <div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Shield className="w-6 h-6" style={{color: '#008553'}} />
-              <h2 className="text-2xl font-bold" style={{color: '#008553'}}>
-                تسجيل دخول الإدارة
-              </h2>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Shield className="w-10 h-10" style={{color: '#4CCCE6'}} />
+              <h1 className="text-3xl font-bold" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
+                زمام
+              </h1>
             </div>
-          </div>            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-              <div className="rounded-md shadow-sm space-y-4">
+            <h2 className="text-xl font-semibold mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
+              تسجيل دخول الإدارة
+            </h2>
+            <p className="text-sm" style={{color: '#94a3b8', fontFamily: 'Readex Pro, Arial, sans-serif'}}>لوحة التحكم </p>
+          </div>
+          <div className="p-8 rounded-xl shadow-2xl" style={{backgroundColor: '#2E3130', border: '1px solid #045468'}}>
+            <form className="space-y-6" onSubmit={handleLogin}>
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="username" className="text-right block">اسم المستخدم</Label>
+                  <Label htmlFor="username" className="text-right block mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '16px', fontWeight: '500'}}>اسم المستخدم</Label>
                   <Input
                     id="username"
                     name="username"
@@ -553,10 +559,11 @@ export default function Admin() {
                     onChange={(e) => setUsername(e.target.value)}
                     className="mt-1 text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', borderRadius: '8px', padding: '12px', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-right block">كلمة المرور</Label>
+                  <Label htmlFor="password" className="text-right block mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '16px', fontWeight: '500'}}>كلمة المرور</Label>
                   <Input
                     id="password"
                     name="password"
@@ -566,35 +573,39 @@ export default function Admin() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="mt-1 text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', borderRadius: '8px', padding: '12px', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
               </div>
 
-            <div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loginMutation.isPending}
-                style={{backgroundColor: '#008553'}}
-              >
-                {loginMutation.isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-              </Button>
-            </div>
-          </form>
+              <div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  variant="ghost"
+                  disabled={loginMutation.isPending}
+                  style={{color: '#ECEDEE', borderRadius: '8px', padding: '12px', fontSize: '16px', fontWeight: '600', fontFamily: 'Readex Pro, Arial, sans-serif', border: '1px solid #045468', cursor: 'pointer', opacity: loginMutation.isPending ? '0.7' : '1'}}
+                >
+                  {loginMutation.isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4" dir="rtl">
+    <div className="min-h-screen p-4" dir="rtl" style={{background: 'linear-gradient(135deg, #202221 0%, #003848 50%, #045468 100%)', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6 p-4 rounded-lg" style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', backdropFilter: 'blur(10px)'}}>
           <Button
             variant="ghost"
             onClick={handleLogout}
             className="flex items-center gap-2"
+            style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
           >
             تسجيل الخروج
           </Button>
@@ -602,6 +613,7 @@ export default function Admin() {
             variant="ghost"
             onClick={() => setLocation("/")}
             className="flex items-center gap-2 flex-row-reverse"
+            style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
           >
             <ArrowLeft className="w-4 h-4 rotate-180" />
             العودة للرئيسية
@@ -609,27 +621,27 @@ export default function Admin() {
         </div>
 
         {/* Title */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Shield className="w-6 h-6" style={{color: '#008553'}} />
-            <h1 className="text-2xl font-bold" style={{color: '#008553'}}>
-              لوحة إدارة الفحوصات الطبية
+        <div className="text-center mb-8 p-6 rounded-xl" style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', backdropFilter: 'blur(10px)', border: '1px solid #045468'}}>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <Shield className="w-8 h-8" style={{color: '#4CCCE6'}} />
+            <h1 className="text-3xl font-bold" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
+              زمام
             </h1>
           </div>
-          <p className="text-gray-700">{t("admin.loading")}</p>
-          <p className="text-sm text-gray-700">{t("admin.subtitle")}</p>
+          <h2 className="text-xl font-semibold mb-2" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>لوحة إدارة الفحوصات الطبية</h2>
+          <p className="text-sm" style={{color: '#94a3b8', fontFamily: 'Readex Pro, Arial, sans-serif'}}>إدارة الفحوصات والمحتوى التعليمي</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {statsData.map((stat, index) => (
-            <Card key={index}>
+            <Card key={index} style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
               <CardContent className="p-4 text-center">
                 <div className="text-2xl mb-2">{stat.icon}</div>
-                <div className="text-2xl font-bold" style={{color: '#008553'}}>
+                <div className="text-2xl font-bold" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                   {stat.value}
                 </div>
-                <p className="text-sm" style={{color: '#9b945d'}}>
+                <p className="text-sm" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                   {stat.title}
                 </p>
               </CardContent>
@@ -640,12 +652,12 @@ export default function Admin() {
         {/* Tabs */}
         <div className="mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="screenings" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-2" style={{backgroundColor: 'rgba(46, 49, 48, 0.9)', border: '1px solid #045468'}}>
+              <TabsTrigger value="screenings" className="flex items-center gap-2" style={{fontFamily: 'Readex Pro, Arial, sans-serif', color: '#ECEDEE', backgroundColor: 'transparent'}}>
                 <Shield className="w-4 h-4" />
                 الفحوصات الطبية
               </TabsTrigger>
-              <TabsTrigger value="educationalContent" className="flex items-center gap-2">
+              <TabsTrigger value="educationalContent" className="flex items-center gap-2" style={{fontFamily: 'Readex Pro, Arial, sans-serif', color: '#ECEDEE', backgroundColor: 'transparent'}}>
                 <BookOpen className="w-4 h-4" />
                 المحتوى التعليمي
               </TabsTrigger>
@@ -655,10 +667,11 @@ export default function Admin() {
               {/* Screenings content */}
               <div>
                 <div className="flex justify-between items-center mb-4 flex-row-reverse">
-                  <h3 className="text-lg font-semibold">الفحوصات الحالية</h3>
+                  <h3 className="text-lg font-semibold" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الفحوصات الحالية</h3>
                   <Button 
+                    variant="ghost"
                     onClick={() => setIsAddDialogOpen(true)} 
-                    style={{backgroundColor: '#008553'}}
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                     className="flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
@@ -668,43 +681,45 @@ export default function Admin() {
                 
                 {screeningsLoading ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">جاري تحميل الفحوصات...</p>
+                    <p style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>جاري تحميل الفحوصات...</p>
                   </div>
                 ) : !screenings || screenings.length === 0 ? (
-                  <Card>
+                  <Card style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
                     <CardContent className="p-6 text-center">
-                      <p className="text-gray-500">لا توجد فحوصات طبية.</p>
+                      <p style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>لا توجد فحوصات طبية.</p>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className="grid gap-4">
                     {screenings.map((screening: Screening) => (
-                      <Card key={screening.id} className="p-4">
+                      <Card key={screening.id} className="p-4" style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
                         <div className="flex items-start justify-between">
                           <div className="flex gap-2">
                             <Button 
                               size="sm" 
-                              variant="outline"
+                              variant="ghost"
                               onClick={() => handleEditScreening(screening)}
+                              style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button 
                               size="sm" 
-                              variant="outline" 
+                              variant="ghost" 
                               onClick={() => deleteScreeningMutation.mutate(screening.id)}
                               disabled={deleteScreeningMutation.isPending}
+                              style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                           <div className="flex-1 mr-4">
                             <div className="mb-2 text-right">
-                              <h4 className="font-semibold text-right mb-2">{screening.name}</h4>
+                              <h4 className="font-semibold text-right mb-2" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>{screening.name}</h4>
                               <div className="flex items-center gap-2 justify-end">
                                 <Badge 
                                   variant={screening.isActive ? "default" : "secondary"}
-                                  className={screening.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"}
+                                  style={{backgroundColor: screening.isActive ? '#045468' : '#444947', color: '#fff', border: 'none', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                                 >
                                   {screening.isActive ? "نشط" : "غير نشط"}
                                 </Badge>
@@ -713,19 +728,15 @@ export default function Admin() {
                                     screening.priority === "strongly_recommended" ? "destructive" :
                                     screening.priority === "recommended" ? "default" : "secondary"
                                   }
-                                  className={
-                                    screening.priority === "strongly_recommended" ? "bg-red-100 text-red-800 border-red-200" :
-                                    screening.priority === "recommended" ? "bg-blue-100 text-blue-800 border-blue-200" : 
-                                    "bg-yellow-100 text-yellow-800 border-yellow-200"
-                                  }
+                                  style={{backgroundColor: screening.priority === "strongly_recommended" ? '#ef4444' : screening.priority === "recommended" ? '#4CCCE6' : '#94a3b8', color: '#fff', border: 'none', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                                 >
                                   {screening.priority === "strongly_recommended" ? "موصى به بشدة" :
                                    screening.priority === "recommended" ? "موصى به" : "اختياري"}
                                 </Badge>
                               </div>
                             </div>
-                            <p className="text-gray-600 text-sm mb-2 text-right">{screening.description}</p>
-                            <div className="flex gap-4 text-xs text-gray-500 justify-end">
+                            <p className="text-sm mb-2 text-right" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>{screening.description}</p>
+                            <div className="flex gap-4 text-xs justify-end" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                               <span>التكرار: كل {screening.frequencyYears} سنة</span>
                               <span>العمر: {screening.startAge}{screening.endAge ? `-${screening.endAge}` : '+'}</span>
                               <span>الجنس: {screening.genderApplicable}</span>
@@ -744,10 +755,11 @@ export default function Admin() {
               {/* Educational content */}
               <div>
                 <div className="flex justify-between items-center mb-4 flex-row-reverse">
-                  <h3 className="text-lg font-semibold">المحتوى التعليمي</h3>
+                  <h3 className="text-lg font-semibold" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>المحتوى التعليمي</h3>
                   <Button 
+                    variant="ghost"
                     onClick={() => setIsAddEducationalDialogOpen(true)} 
-                    style={{backgroundColor: '#008553'}}
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                     className="flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
@@ -757,53 +769,55 @@ export default function Admin() {
                 
                 {educationalContentLoading ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">جاري تحميل المحتوى التعليمي...</p>
+                    <p style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>جاري تحميل المحتوى التعليمي...</p>
                   </div>
                 ) : !educationalContent || educationalContent.length === 0 ? (
-                  <Card>
+                  <Card style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
                     <CardContent className="p-6 text-center">
-                      <p className="text-gray-500">لا يوجد محتوى تعليمي.</p>
+                      <p style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>لا يوجد محتوى تعليمي.</p>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className="grid gap-4">
                     {educationalContent.map((content) => (
-                      <Card key={content.id} className="p-4">
+                      <Card key={content.id} className="p-4" style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
                         <div className="flex items-start justify-between">
                           <div className="flex gap-2">
                             <Button 
                               size="sm" 
-                              variant="outline" 
+                              variant="ghost" 
                               onClick={() => {
                                 setEditingEducationalContent(content);
                                 setIsEditEducationalDialogOpen(true);
                               }}
+                              style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button 
                               size="sm" 
-                              variant="outline" 
+                              variant="ghost" 
                               onClick={() => deleteEducationalContentMutation.mutate(content.id)}
                               disabled={deleteEducationalContentMutation.isPending}
+                              style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                           <div className="flex-1 text-right mr-4">
                             <div className="mb-2 text-right">
-                              <h4 className="font-semibold text-right mb-2">{content.title}</h4>
+                              <h4 className="font-semibold text-right mb-2" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>{content.title}</h4>
                               <div className="flex items-center gap-2 justify-end">
                                 <Badge 
                                   variant={content.isActive ? "default" : "secondary"}
-                                  className={content.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"}
+                                  style={{backgroundColor: content.isActive ? '#045468' : '#444947', color: '#fff', border: 'none', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                                 >
                                   {content.isActive ? "نشط" : "غير نشط"}
                                 </Badge>
                               </div>
                             </div>
-                            <p className="text-gray-600 text-sm mb-2 text-right">{content.content}</p>
-                            <div className="flex gap-4 text-xs text-gray-500 justify-end">
+                            <p className="text-sm mb-2 text-right" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>{content.content}</p>
+                            <div className="flex gap-4 text-xs justify-end" style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                               <span>الفئة: {content.category}</span>
                             </div>
                           </div>
@@ -819,15 +833,15 @@ export default function Admin() {
 
         {/* Dialogs */}
         <Dialog open={isAddEducationalDialogOpen} onOpenChange={setIsAddEducationalDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl" style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
             <DialogHeader>
-              <DialogTitle>إضافة محتوى تعليمي جديد</DialogTitle>
+              <DialogTitle style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '20px', fontWeight: '700'}}>إضافة محتوى تعليمي جديد</DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleEducationalSubmit} className="space-y-4 pb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">العنوان *</Label>
+                  <Label htmlFor="title" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العنوان *</Label>
                   <Input
                     id="title"
                     value={newEducationalContent.title}
@@ -836,29 +850,30 @@ export default function Admin() {
                     className="text-right"
                     dir="rtl"
                     required
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="category">الفئة *</Label>
+                  <Label htmlFor="category" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الفئة *</Label>
                   <Select 
                     value={newEducationalContent.category} 
                     onValueChange={(value) => setNewEducationalContent({...newEducationalContent, category: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                       <SelectValue placeholder="اختر الفئة" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="men">صحة الرجل</SelectItem>
-                      <SelectItem value="women"> صحة المرأة</SelectItem>
-                      <SelectItem value="general">فحوصات عامة</SelectItem>
+                    <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                      <SelectItem value="men" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>صحة الرجل</SelectItem>
+                      <SelectItem value="women" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}> صحة المرأة</SelectItem>
+                      <SelectItem value="general" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>فحوصات عامة</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="content">المحتوى *</Label>
+                <Label htmlFor="content" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>المحتوى *</Label>
                 <Textarea
                   id="content"
                   value={newEducationalContent.content}
@@ -868,11 +883,12 @@ export default function Admin() {
                   className="text-right"
                   dir="rtl"
                   required
+                  style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                 />
               </div>
 
               <div className="flex items-center space-x-2 space-x-reverse">
-                <Label htmlFor="isActive">نشط</Label>
+                <Label htmlFor="isActive" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>نشط</Label>
                 <Checkbox 
                   id="isActive"
                   checked={newEducationalContent.isActive}
@@ -884,14 +900,16 @@ export default function Admin() {
                 <Button 
                   type="submit" 
                   disabled={createEducationalContentMutation.isPending}
-                  style={{backgroundColor: '#008553'}}
+                  variant="ghost"
+                  style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                 >
                   {createEducationalContentMutation.isPending ? "جاري الإضافة..." : "إضافة المحتوى التعليمي"}
                 </Button>
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant="ghost" 
                   onClick={() => setIsAddEducationalDialogOpen(false)}
+                  style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                 >
                   إلغاء
                 </Button>
@@ -901,61 +919,63 @@ export default function Admin() {
         </Dialog>
 
         <Dialog open={isEditEducationalDialogOpen} onOpenChange={setIsEditEducationalDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl" style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
             <DialogHeader>
-              <DialogTitle>تعديل المحتوى التعليمي</DialogTitle>
+              <DialogTitle style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '20px', fontWeight: '700'}}>تعديل المحتوى التعليمي</DialogTitle>
             </DialogHeader>
             
             {editingEducationalContent && (
               <form onSubmit={handleUpdateEducational} className="space-y-4 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">العنوان *</Label>
-                    <Input
-                      id="title"
-                      value={editingEducationalContent.title}
-                      onChange={(e) => setEditingEducationalContent({...editingEducationalContent, title: e.target.value})}
-                      placeholder="مثال: أهمية فحص ضغط الدم"
-                      className="text-right"
-                      dir="rtl"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="category">الفئة *</Label>
-                    <Select 
-                      value={editingEducationalContent.category} 
-                      onValueChange={(value) => setEditingEducationalContent({...editingEducationalContent, category: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر الفئة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="men">صحة الرجل</SelectItem>
-                        <SelectItem value="women"> صحة المرأة</SelectItem>
-                        <SelectItem value="general">فحوصات عامة</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 <div>
-                  <Label htmlFor="content">المحتوى *</Label>
-                  <Textarea
-                    id="content"
-                    value={editingEducationalContent.content}
-                    onChange={(e) => setEditingEducationalContent({...editingEducationalContent, content: e.target.value})}
-                    placeholder="محتوى تعليمي مفصل حول الفحص وأهميته..."
-                    rows={3}
+                  <Label htmlFor="title" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العنوان *</Label>
+                  <Input
+                    id="title"
+                    value={editingEducationalContent.title}
+                    onChange={(e) => setEditingEducationalContent({...editingEducationalContent, title: e.target.value})}
+                    placeholder="مثال: أهمية فحص ضغط الدم"
                     className="text-right"
                     dir="rtl"
                     required
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
+                
+                <div>
+                  <Label htmlFor="category" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الفئة *</Label>
+                  <Select 
+                    value={editingEducationalContent.category} 
+                    onValueChange={(value) => setEditingEducationalContent({...editingEducationalContent, category: value})}
+                  >
+                    <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
+                      <SelectValue placeholder="اختر الفئة" />
+                    </SelectTrigger>
+                    <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                      <SelectItem value="men" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>صحة الرجل</SelectItem>
+                      <SelectItem value="women" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}> صحة المرأة</SelectItem>
+                      <SelectItem value="general" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>فحوصات عامة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <Label htmlFor="isActive">نشط</Label>
+              <div>
+                <Label htmlFor="content" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>المحتوى *</Label>
+                <Textarea
+                  id="content"
+                  value={editingEducationalContent.content}
+                  onChange={(e) => setEditingEducationalContent({...editingEducationalContent, content: e.target.value})}
+                  placeholder="محتوى تعليمي مفصل حول الفحص وأهميته..."
+                  rows={3}
+                  className="text-right"
+                  dir="rtl"
+                  required
+                  style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Label htmlFor="isActive" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>نشط</Label>
                   <Checkbox 
                     id="isActive"
                     checked={editingEducationalContent.isActive}
@@ -967,14 +987,16 @@ export default function Admin() {
                   <Button 
                     type="submit" 
                     disabled={updateEducationalContentMutation.isPending}
-                    style={{backgroundColor: '#008553'}}
+                    variant="ghost"
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                   >
                     {updateEducationalContentMutation.isPending ? "جاري التعديل..." : "تحديث المحتوى التعليمي"}
                   </Button>
                   <Button 
                     type="button" 
-                    variant="outline" 
+                    variant="ghost" 
                     onClick={() => setIsEditEducationalDialogOpen(false)}
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                   >
                     إلغاء
                   </Button>
@@ -986,16 +1008,16 @@ export default function Admin() {
 
         {/* Edit Screening Dialog */}
         <Dialog open={isEditScreeningDialogOpen} onOpenChange={setIsEditScreeningDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl" style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
             <DialogHeader>
-              <DialogTitle>تعديل الفحص الطبي</DialogTitle>
+              <DialogTitle style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '20px', fontWeight: '700'}}>تعديل الفحص الطبي</DialogTitle>
             </DialogHeader>
             
             {editingScreening && (
               <form onSubmit={handleUpdateScreening} className="space-y-4 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="edit-name">اسم الفحص *</Label>
+                    <Label htmlFor="edit-name" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>اسم الفحص *</Label>
                     <Input
                       id="edit-name"
                       value={editingScreening.name}
@@ -1004,33 +1026,34 @@ export default function Admin() {
                       className="text-right"
                       dir="rtl"
                       required
+                      style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="edit-category">الفئة *</Label>
+                    <Label htmlFor="edit-category" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الفئة *</Label>
                     <Select 
                       value={editingScreening.category} 
                       onValueChange={(value) => setEditingScreening({...editingScreening, category: value})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                         <SelectValue placeholder="اختر الفئة" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cardiovascular">القلب والأوعية الدموية</SelectItem>
-                        <SelectItem value="cancer screening">فحص السرطان</SelectItem>
-                        <SelectItem value="bone health">صحة العظام</SelectItem>
-                        <SelectItem value="vision/hearing">النظر والسمع</SelectItem>
-                        <SelectItem value="vaccinations">التطعيمات</SelectItem>
-                        <SelectItem value="preventive">وقائي</SelectItem>
-                        <SelectItem value="general">عام</SelectItem>
+                      <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                        <SelectItem value="cardiovascular" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>القلب والأوعية الدموية</SelectItem>
+                        <SelectItem value="cancer screening" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>فحص السرطان</SelectItem>
+                        <SelectItem value="bone health" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>صحة العظام</SelectItem>
+                        <SelectItem value="vision/hearing" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>النظر والسمع</SelectItem>
+                        <SelectItem value="vaccinations" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>التطعيمات</SelectItem>
+                        <SelectItem value="preventive" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>وقائي</SelectItem>
+                        <SelectItem value="general" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>عام</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-description">الوصف *</Label>
+                  <Label htmlFor="edit-description" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الوصف *</Label>
                   <Textarea
                     id="edit-description"
                     value={editingScreening.description}
@@ -1039,29 +1062,30 @@ export default function Admin() {
                     className="min-h-[100px] text-right"
                     dir="rtl"
                     required
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="edit-gender">الجنس المطبق عليه</Label>
+                    <Label htmlFor="edit-gender" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الجنس المطبق عليه</Label>
                     <Select 
                       value={editingScreening.genderApplicable} 
                       onValueChange={(value: "male" | "female" | "both") => setEditingScreening({...editingScreening, genderApplicable: value})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="both">كلاهما</SelectItem>
-                        <SelectItem value="male">ذكور فقط</SelectItem>
-                        <SelectItem value="female">إناث فقط</SelectItem>
+                      <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                        <SelectItem value="both" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>كلاهما</SelectItem>
+                        <SelectItem value="male" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>ذكور فقط</SelectItem>
+                        <SelectItem value="female" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>إناث فقط</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-startAge">العمر المبدئي *</Label>
+                    <Label htmlFor="edit-startAge" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العمر المبدئي *</Label>
                     <Input
                       id="edit-startAge"
                       type="number"
@@ -1072,13 +1096,14 @@ export default function Admin() {
                       className="text-right"
                       dir="rtl"
                       required
+                      style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="edit-endAge">العمر النهائي (اختياري)</Label>
+                    <Label htmlFor="edit-endAge" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العمر النهائي (اختياري)</Label>
                     <Input
                       id="edit-endAge"
                       type="number"
@@ -1088,29 +1113,30 @@ export default function Admin() {
                       max="120"
                       className="text-right"
                       dir="rtl"
+                      style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-priority">الأولوية</Label>
+                    <Label htmlFor="edit-priority" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الأولوية</Label>
                     <Select 
                       value={editingScreening.priority} 
                       onValueChange={(value: "strongly_recommended" | "recommended" | "optional") => setEditingScreening({...editingScreening, priority: value})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="strongly_recommended">موصى به بشدة</SelectItem>
-                        <SelectItem value="recommended">موصى به</SelectItem>
-                        <SelectItem value="optional">اختياري</SelectItem>
+                      <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                        <SelectItem value="strongly_recommended" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>موصى به بشدة</SelectItem>
+                        <SelectItem value="recommended" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>موصى به</SelectItem>
+                        <SelectItem value="optional" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>اختياري</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2 flex-row-reverse">
-                  <Label htmlFor="edit-repeating">هل يتكرر هذا الفحص؟</Label>
+                  <Label htmlFor="edit-repeating" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>هل يتكرر هذا الفحص؟</Label>
                   <Checkbox 
                     id="edit-repeating"
                     checked={editIsRepeating}
@@ -1120,7 +1146,7 @@ export default function Admin() {
 
                 {editIsRepeating && (
                   <div>
-                    <Label htmlFor="edit-frequency">التكرار (بالسنوات)</Label>
+                    <Label htmlFor="edit-frequency" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>التكرار (بالسنوات)</Label>
                     <Input
                       id="edit-frequency"
                       type="number"
@@ -1130,12 +1156,13 @@ export default function Admin() {
                       max="50"
                       className="text-right"
                       dir="rtl"
+                      style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                     />
                   </div>
                 )}
 
                 <div>
-                  <Label htmlFor="edit-icon">أيقونة الفحص (اختياري)</Label>
+                  <Label htmlFor="edit-icon" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>أيقونة الفحص (اختياري)</Label>
                   <Input
                     id="edit-icon"
                     type="file"
@@ -1143,6 +1170,7 @@ export default function Admin() {
                     onChange={(e) => setEditSelectedIcon(e.target.files?.[0] || null)}
                     className="text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                   {editingScreening.iconUrl && !editSelectedIcon && (
                     <div className="mt-2">
@@ -1151,13 +1179,13 @@ export default function Admin() {
                         alt="Current icon" 
                         className="w-16 h-16 object-contain"
                       />
-                      <p className="text-sm text-gray-500 mt-1">الأيقونة الحالية</p>
+                      <p className="text-sm mt-1" style={{color: '#94a3b8', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الأيقونة الحالية</p>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-specialCode">كود خاص (اختياري)</Label>
+                  <Label htmlFor="edit-specialCode" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>كود خاص (اختياري)</Label>
                   <Input
                     id="edit-specialCode"
                     value={editingScreening?.specialCode || ""}
@@ -1165,6 +1193,7 @@ export default function Admin() {
                     placeholder="مثال: SMOKER_ONLY"
                     className="text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
 
@@ -1172,18 +1201,20 @@ export default function Admin() {
                   <Button 
                     type="submit" 
                     disabled={updateScreeningMutation.isPending}
-                    style={{backgroundColor: '#008553'}}
+                    variant="ghost"
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                   >
                     {updateScreeningMutation.isPending ? "جاري التحديث..." : "تحديث الفحص"}
                   </Button>
                   <Button 
                     type="button" 
-                    variant="outline" 
+                    variant="ghost" 
                     onClick={() => {
                       setIsEditScreeningDialogOpen(false);
                       setEditingScreening(null);
                       setEditSelectedIcon(null);
                     }}
+                    style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                   >
                     إلغاء
                   </Button>
@@ -1195,15 +1226,15 @@ export default function Admin() {
 
         {/* Add Screening Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl" style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468', backdropFilter: 'blur(10px)'}}>
             <DialogHeader>
-              <DialogTitle>إضافة فحص طبي جديد</DialogTitle>
+              <DialogTitle style={{color: '#4CCCE6', fontFamily: 'Readex Pro, Arial, sans-serif', fontSize: '20px', fontWeight: '700'}}>إضافة فحص طبي جديد</DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4 pb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name">اسم الفحص *</Label>
+                  <Label htmlFor="name" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>اسم الفحص *</Label>
                   <Input
                     id="name"
                     value={newScreening.name}
@@ -1212,33 +1243,34 @@ export default function Admin() {
                     className="text-right"
                     dir="rtl"
                     required
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="category">الفئة *</Label>
+                  <Label htmlFor="category" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الفئة *</Label>
                   <Select 
                     value={newScreening.category} 
                     onValueChange={(value) => setNewScreening({...newScreening, category: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                       <SelectValue placeholder="اختر الفئة" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cardiovascular">القلب والأوعية الدموية</SelectItem>
-                      <SelectItem value="cancer screening">فحص السرطان</SelectItem>
-                      <SelectItem value="bone health">صحة العظام</SelectItem>
-                      <SelectItem value="vision/hearing">النظر والسمع</SelectItem>
-                      <SelectItem value="vaccinations">التطعيمات</SelectItem>
-                      <SelectItem value="preventive">وقائي</SelectItem>
-                      <SelectItem value="general">عام</SelectItem>
+                    <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                      <SelectItem value="cardiovascular" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>القلب والأوعية الدموية</SelectItem>
+                      <SelectItem value="cancer screening" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>فحص السرطان</SelectItem>
+                      <SelectItem value="bone health" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>صحة العظام</SelectItem>
+                      <SelectItem value="vision/hearing" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>النظر والسمع</SelectItem>
+                      <SelectItem value="vaccinations" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>التطعيمات</SelectItem>
+                      <SelectItem value="preventive" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>وقائي</SelectItem>
+                      <SelectItem value="general" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>عام</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="description">الوصف *</Label>
+                <Label htmlFor="description" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الوصف *</Label>
                 <Textarea
                   id="description"
                   value={newScreening.description}
@@ -1248,29 +1280,30 @@ export default function Admin() {
                   className="text-right"
                   dir="rtl"
                   required
+                  style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="genderApplicable">الجنس المطبق عليه</Label>
+                  <Label htmlFor="genderApplicable" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الجنس المطبق عليه</Label>
                   <Select 
                     value={newScreening.genderApplicable} 
                     onValueChange={(value: "male" | "female" | "both") => setNewScreening({...newScreening, genderApplicable: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="both">الجنسين</SelectItem>
-                      <SelectItem value="male">الرجال فقط</SelectItem>
-                      <SelectItem value="female">النساء فقط</SelectItem>
+                    <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                      <SelectItem value="both" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الجنسين</SelectItem>
+                      <SelectItem value="male" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الرجال فقط</SelectItem>
+                      <SelectItem value="female" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>النساء فقط</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="startAge">العمر المبدئي</Label>
+                  <Label htmlFor="startAge" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العمر المبدئي</Label>
                   <Input
                     id="startAge"
                     type="number"
@@ -1280,11 +1313,12 @@ export default function Admin() {
                     max="100"
                     className="text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="endAge">العمر النهائي (اختياري)</Label>
+                  <Label htmlFor="endAge" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>العمر النهائي (اختياري)</Label>
                   <Input
                     id="endAge"
                     type="number"
@@ -1294,31 +1328,32 @@ export default function Admin() {
                     max="120"
                     className="text-right"
                     dir="rtl"
+                    style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="priority">الأولوية</Label>
+                  <Label htmlFor="priority" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>الأولوية</Label>
                   <Select 
                     value={newScreening.priority} 
                     onValueChange={(value: "strongly_recommended" | "recommended" | "optional") => setNewScreening({...newScreening, priority: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="strongly_recommended">موصى به بشدة</SelectItem>
-                      <SelectItem value="recommended">موصى به</SelectItem>
-                      <SelectItem value="optional">اختياري</SelectItem>
+                    <SelectContent style={{backgroundColor: 'rgba(46, 49, 48, 0.95)', border: '1px solid #045468'}}>
+                      <SelectItem value="strongly_recommended" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>موصى به بشدة</SelectItem>
+                      <SelectItem value="recommended" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>موصى به</SelectItem>
+                      <SelectItem value="optional" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>اختياري</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <div className="flex items-center space-x-2 space-x-reverse mb-2">
-                    <Label htmlFor="isRepeating">فحص متكرر</Label>
+                    <Label htmlFor="isRepeating" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>فحص متكرر</Label>
                     <Checkbox 
                       id="isRepeating"
                       checked={isRepeating}
@@ -1328,7 +1363,7 @@ export default function Admin() {
                   
                   {isRepeating && (
                     <div>
-                      <Label htmlFor="frequencyYears">التكرار (بالسنوات)</Label>
+                      <Label htmlFor="frequencyYears" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>التكرار (بالسنوات)</Label>
                       <Input
                         id="frequencyYears"
                         type="number"
@@ -1338,6 +1373,7 @@ export default function Admin() {
                         max="10"
                         className="text-right"
                         dir="rtl"
+                        style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                       />
                     </div>
                   )}
@@ -1345,7 +1381,7 @@ export default function Admin() {
               </div>
 
               <div>
-                <Label htmlFor="specialCode">كود خاص (اختياري)</Label>
+                <Label htmlFor="specialCode" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>كود خاص (اختياري)</Label>
                 <Input
                   id="specialCode"
                   value={newScreening.specialCode}
@@ -1353,19 +1389,21 @@ export default function Admin() {
                   placeholder="مثال: SMOKER_ONLY"
                   className="text-right"
                   dir="rtl"
+                  style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                 />
               </div>
 
               <div>
-                <Label htmlFor="icon">أيقونة الفحص (اختياري)</Label>
+                <Label htmlFor="icon" style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif'}}>أيقونة الفحص (اختياري)</Label>
                 <Input
                   id="icon"
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
+                  style={{backgroundColor: 'rgba(46, 49, 48, 0.8)', color: '#ECEDEE', border: '1px solid #045468', fontFamily: 'Readex Pro, Arial, sans-serif'}}
                 />
                 {selectedIcon && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm mt-1" style={{color: '#94a3b8', fontFamily: 'Readex Pro, Arial, sans-serif'}}>
                     تم اختيار: {selectedIcon.name}
                   </p>
                 )}
@@ -1375,14 +1413,16 @@ export default function Admin() {
                 <Button 
                   type="submit" 
                   disabled={createScreeningMutation.isPending}
-                  style={{backgroundColor: '#008553'}}
+                  variant="ghost"
+                  style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                 >
                   {createScreeningMutation.isPending ? "جاري الإضافة..." : "إضافة الفحص الطبي"}
                 </Button>
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant="ghost" 
                   onClick={() => setIsAddDialogOpen(false)}
+                  style={{color: '#ECEDEE', fontFamily: 'Readex Pro, Arial, sans-serif', fontWeight: '600'}}
                 >
                   إلغاء
                 </Button>

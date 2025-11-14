@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +14,17 @@ import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
 import { initializeMobileApp } from "@/lib/capacitor";
 import i18n from "./i18n";
+
+// Redirect component for wouter
+function Redirect({ to }: { to: string }) {
+  const [, setLocation] = useLocation();
+  
+  useEffect(() => {
+    setLocation(to);
+  }, [to, setLocation]);
+  
+  return null;
+}
 
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -32,18 +43,23 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path="/onboarding" component={Signup} />
       <Route path="/admin" component={Admin} />
+      
+      {/* Redirect homepage and onboarding to admin */}
+      <Route path="/">
+        {() => <Redirect to="/admin" />}
+      </Route>
+      <Route path="/onboarding">
+        {() => <Redirect to="/admin" />}
+      </Route>
       
       {isAuthenticated ? (
         <>
-          <Route path="/" component={UpcomingTests} />
+          <Route path="/upcoming" component={UpcomingTests} />
           <Route path="/completed" component={CompletedTests} />
           <Route path="/profile" component={Profile} />
         </>
-      ) : (
-        <Route path="/" component={Login} />
-      )}
+      ) : null}
       
       <Route component={NotFound} />
     </Switch>
