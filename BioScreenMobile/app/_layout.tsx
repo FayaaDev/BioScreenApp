@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
 import '../lib/i18n'; // Restore i18n import
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
-import { initializeRTL, ensureRTLAndReloadIfNeeded } from '../lib/rtlSetup';
+import { initializeRTL, verifyRTL } from '../lib/rtlSetup';
 
 // Initialize RTL synchronously before any component renders
 initializeRTL();
@@ -30,13 +30,13 @@ export default function RootLayout() {
     'ReadexPro-SemiBold': require('../assets/fonts/ReadexPro-SemiBold.ttf'),
   });
 
-  // Ensure RTL is properly set and reload if needed (for production builds)
+  // Verify RTL is properly configured (non-blocking)
   useEffect(() => {
-    const setupRTL = async () => {
+    const setupRTL = () => {
       // Wait for both fonts and i18n to be ready
       if (loaded && i18n && i18n.isInitialized) {
-        // In production builds, ensure RTL is active and reload if needed
-        await ensureRTLAndReloadIfNeeded();
+        // Verify RTL is active (native initialization should have handled it)
+        verifyRTL();
         setIsReady(true);
       }
     };

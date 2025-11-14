@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'زمام',
   slug: 'zimam',
-  version: '1.0.2',
+  version: '1.0.3',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'light',
@@ -19,10 +19,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.zimam.app',
-    buildNumber: '19',
+    buildNumber: '1',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleDisplayName: 'زمام',
+      CFBundleDevelopmentRegion: 'ar',
+      CFBundleLocalizations: ['ar'],
       UIDeviceFamily: [1], // iPhone only (1 = iPhone, 2 = iPad, [1,2] = Universal)
       UIRequiredDeviceCapabilities: ['telephony'],
       UIViewSemanticContentAttribute: 'ForceRightToLeft',
@@ -53,7 +55,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://bakkerapp.com',
     eas: {
-      projectId: process.env.EXPO_PROJECT_ID || 'deba6310-3743-444c-af2f-31305565708d'
+      projectId: process.env.EXPO_PROJECT_ID || 'e87ae0b1-ff72-4e3a-b358-19c7b73dfe4c'
     }
   },
   plugins: [
