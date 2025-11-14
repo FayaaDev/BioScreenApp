@@ -20,6 +20,7 @@ import { useToast } from '../hooks/useToast';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { PhoneNumberInput, validatePhoneNumber } from './PhoneNumberInput';
+import { useTranslation } from 'react-i18next';
 
 interface FamilyMember {
   id: number;
@@ -51,6 +52,8 @@ interface FamilyMember {
 export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; onSwitchPerson?: (id: string) => void }) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
   const [formData, setFormData] = useState({
@@ -76,7 +79,6 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       partnerCount: 'single' as 'single' | 'multiple',
     },
   });
-  const [isRTL] = useState(I18nManager.isRTL);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -97,10 +99,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       setIsModalOpen(false);
       setEditingMember(null);
       resetForm();
-      showToast({ title: 'تمت إضافة فرد العائلة', type: 'success' });
+      showToast({ title: t('family.memberAdded'), type: 'success' });
     },
     onError: () => {
-      showToast({ title: 'خطأ', description: 'فشل في إضافة فرد العائلة', type: 'error' });
+      showToast({ title: t('common.error'), description: t('family.addError'), type: 'error' });
     },
   });
 
@@ -113,10 +115,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       setEditingMember(null);
       setIsModalOpen(false);
       resetForm();
-      showToast({ title: 'تم تحديث فرد العائلة', type: 'success' });
+      showToast({ title: t('family.memberUpdated'), type: 'success' });
     },
     onError: () => {
-      showToast({ title: 'خطأ', description: 'فشل في تحديث فرد العائلة', type: 'error' });
+      showToast({ title: t('common.error'), description: t('family.updateError'), type: 'error' });
     },
   });
 
@@ -126,10 +128,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users', userId, 'family'] });
-      showToast({ title: 'تم حذف فرد العائلة', type: 'success' });
+      showToast({ title: t('family.memberDeleted'), type: 'success' });
     },
     onError: () => {
-      showToast({ title: 'خطأ', description: 'فشل في حذف فرد العائلة', type: 'error' });
+      showToast({ title: t('common.error'), description: t('family.deleteError'), type: 'error' });
     },
   });
 
@@ -164,11 +166,11 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'الرجاء إدخال الاسم';
+      newErrors.name = t('family.validation.nameRequired');
     }
 
     if (!formData.relationship.trim()) {
-      newErrors.relationship = 'الرجاء إدخال القرابة';
+      newErrors.relationship = t('family.validation.relationshipRequired');
     }
 
     // Phone number validation - mandatory
@@ -178,11 +180,11 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
     }
 
     if (!formData.gender) {
-      newErrors.gender = 'الرجاء اختيار الجنس';
+      newErrors.gender = t('family.validation.genderRequired');
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = 'الرجاء إدخال تاريخ الميلاد';
+      newErrors.dateOfBirth = t('family.validation.dateOfBirthRequired');
     } else {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
@@ -190,37 +192,37 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
       minDate.setFullYear(today.getFullYear() - 120); // Maximum age of 120 years
 
       if (isNaN(birthDate.getTime())) {
-        newErrors.dateOfBirth = 'تاريخ الميلاد غير صالح';
+        newErrors.dateOfBirth = t('family.validation.dateOfBirthInvalid');
       } else if (birthDate > today) {
-        newErrors.dateOfBirth = 'تاريخ الميلاد لا يمكن أن يكون في المستقبل';
+        newErrors.dateOfBirth = t('family.validation.dateOfBirthFuture');
       } else if (birthDate < minDate) {
-        newErrors.dateOfBirth = 'تاريخ الميلاد غير منطقي';
+        newErrors.dateOfBirth = t('family.validation.dateOfBirthUnrealistic');
       }
     }
 
     if (!formData.height.trim()) {
-      newErrors.height = 'الرجاء إدخال الطول';
+      newErrors.height = t('family.validation.heightRequired');
     } else if (isNaN(parseFloat(formData.height)) || parseFloat(formData.height) <= 0) {
-      newErrors.height = 'الرجاء إدخال طول صحيح';
+      newErrors.height = t('family.validation.heightInvalid');
     }
 
     if (!formData.weight.trim()) {
-      newErrors.weight = 'الرجاء إدخال الوزن';
+      newErrors.weight = t('family.validation.weightRequired');
     } else if (isNaN(parseFloat(formData.weight)) || parseFloat(formData.weight) <= 0) {
-      newErrors.weight = 'الرجاء إدخال وزن صحيح';
+      newErrors.weight = t('family.validation.weightInvalid');
     }
 
     if (formData.isSmoker) {
       if (!formData.smokingDetails?.amount) {
-        newErrors.smokingAmount = 'الرجاء تحديد كمية التدخين';
+        newErrors.smokingAmount = t('family.validation.smokingAmountRequired');
       } else if (isNaN(parseFloat(formData.smokingDetails.amount)) || parseFloat(formData.smokingDetails.amount) <= 0) {
-        newErrors.smokingAmount = 'الرجاء إدخال كمية صحيحة';
+        newErrors.smokingAmount = t('family.validation.smokingAmountInvalid');
       }
 
       if (!formData.smokingDetails?.duration) {
-        newErrors.smokingDuration = 'الرجاء تحديد مدة التدخين';
+        newErrors.smokingDuration = t('family.validation.smokingDurationRequired');
       } else if (isNaN(parseFloat(formData.smokingDetails.duration)) || parseFloat(formData.smokingDetails.duration) <= 0) {
-        newErrors.smokingDuration = 'الرجاء إدخال مدة صحيحة';
+        newErrors.smokingDuration = t('family.validation.smokingDurationInvalid');
       }
     }
 
@@ -263,16 +265,16 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   };
 
   const handleDelete = (id: number) => {
-    Alert.alert('تأكيد الحذف', 'هل أنت متأكد من حذف فرد العائلة هذا؟', [
-      { text: 'إلغاء', style: 'cancel' },
-      { text: 'حذف', style: 'destructive', onPress: () => deleteFamilyMemberMutation.mutate(id) },
+    Alert.alert(t('family.confirmDelete'), t('family.confirmDeleteDesc'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('family.delete'), style: 'destructive', onPress: () => deleteFamilyMemberMutation.mutate(id) },
     ]);
   };
 
   const handleSwitch = async (id: string) => {
     await AsyncStorage.setItem('selectedPersonId', id);
     if (onSwitchPerson) onSwitchPerson(id);
-    showToast({ title: 'تم التبديل', type: 'info' });
+    showToast({ title: t('family.memberUpdated'), type: 'info' });
   };
 
   const calculateBMI = (height: string, weight: string): number | null => {
@@ -286,13 +288,13 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
   };
 
   const getBMICategory = (bmi: number): string => {
-    if (bmi < 18.4) return 'نقص في الوزن';
-    if (18.5 <= bmi && bmi < 24.9) return 'وزنك طبيعي';
-    if (25 <= bmi && bmi < 29.9) return 'مرحلة ماقبل السمنة';
-    if (30 <= bmi && bmi < 34.9) return 'سمنة درجة أولى';
-    if (35 <= bmi && bmi < 39.9) return 'سمنة درجة ثانية';
-    if (bmi > 40) return 'سمنة مفرطة درجة ثالثة';
-    return 'حاول مرة أخرى';
+    if (bmi < 18.4) return t('family.bmiCategory.underweight');
+    if (18.5 <= bmi && bmi < 24.9) return t('family.bmiCategory.normal');
+    if (25 <= bmi && bmi < 29.9) return t('family.bmiCategory.overweight');
+    if (30 <= bmi && bmi < 34.9) return t('family.bmiCategory.obese1');
+    if (35 <= bmi && bmi < 39.9) return t('family.bmiCategory.obese2');
+    if (bmi > 40) return t('family.bmiCategory.obese3');
+    return t('family.bmiCategory.tryAgain');
   };
 
   const calculatePackYears = (smokingDetails: { amount: string; duration: string }): number => {
@@ -303,33 +305,33 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>إدارة العائلة</Text>
+      <Text style={styles.title}>{t('family.title')}</Text>
       {isLoading ? (
         <ActivityIndicator size="large" color="#4CCCE6" />
       ) : (
         <ScrollView style={{ maxHeight: 300 }} contentContainerStyle={{ gap: 12 }}>
           {(!familyMembers || familyMembers.length === 0) ? (
-            <Text style={styles.emptyText}>لا يوجد أفراد عائلة</Text>
+            <Text style={styles.emptyText}>{t('family.noMembers')}</Text>
           ) : (
             familyMembers.map((member) => (
               <View key={member.id} style={styles.memberRow}>
                 <TouchableOpacity style={styles.memberInfo} onPress={() => handleSwitch(member.id.toString())}>
                   <Text style={styles.memberName}>{member.name}</Text>
-                  <Text style={styles.memberDetails}>{member.relationship} • {member.gender === 'male' ? 'ذكر' : 'أنثى'}</Text>
-                  <Text style={styles.memberDetails}>تاريخ الميلاد: {member.dateOfBirth}</Text>
+                  <Text style={styles.memberDetails}>{member.relationship} • {member.gender === 'male' ? t('common.male') : t('common.female')}</Text>
+                  <Text style={styles.memberDetails}>{t('family.dateOfBirthLabel')}: {member.dateOfBirth}</Text>
                   {member.isSmoker && member.smokingDetails && (
                     <View style={styles.packYearsBox}>
-                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
+                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>{t('family.medicalSurvey.packYears')}:</Text>
                       <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(member.smokingDetails)}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
                 <View style={styles.memberActions}>
                   <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(member)}>
-                    <Text style={styles.editButtonText}>تعديل</Text>
+                    <Text style={styles.editButtonText}>{t('family.edit')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(member.id)}>
-                    <Text style={styles.deleteButtonText}>حذف</Text>
+                    <Text style={styles.deleteButtonText}>{t('family.delete')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -342,7 +344,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
         disabled={familyMembers && familyMembers.length >= 5}
         onPress={() => {
           if (familyMembers && familyMembers.length >= 5) {
-            showToast({ title: 'الحد الأقصى', description: 'يمكنك إضافة 5 أفراد فقط لكل حساب', type: 'error' });
+            showToast({ title: t('family.maxLimitReached'), description: t('family.maxFamilyMembers'), type: 'error' });
             return;
           }
           setEditingMember(null);
@@ -350,11 +352,11 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
           setIsModalOpen(true);
         }}
       >
-        <Text style={styles.addButtonText}>إضافة فرد للعائلة</Text>
+        <Text style={styles.addButtonText}>{t('family.addMember')}</Text>
       </TouchableOpacity>
       {familyMembers && familyMembers.length >= 5 && (
         <Text style={{ color: '#ef4444', marginTop: 8, textAlign: 'center', fontWeight: 'bold' }}>
-          لا يمكنك إضافة أكثر من 5 أفراد للعائلة
+          {t('family.cannotAddMore')}
         </Text>
       )}
       {/* Modal for add/edit */}
@@ -370,20 +372,20 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-            <Text style={styles.modalTitle}>{editingMember ? 'تعديل فرد العائلة' : 'إضافة فرد للعائلة'}</Text>
+            <Text style={styles.modalTitle}>{editingMember ? t('family.editMember') : t('family.addMember')}</Text>
             <TextInput
               style={[
                 styles.input,
-                { textAlign: 'right', writingDirection: 'rtl' },
+                { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' },
                 submitAttempted && validationErrors.name && styles.inputError,
               ]}
-              placeholder="الاسم"
+              placeholder={t('family.name')}
               placeholderTextColor="#999"
               value={formData.name}
               maxLength={4}
               onChangeText={(text) => {
                 if (text.length > 4) {
-                  showToast({ title: 'خطأ', description: 'الاسم يجب أن يكون 4 أحرف كحد أقصى', type: 'error' });
+                  showToast({ title: t('common.error'), description: t('family.validation.nameMaxLength'), type: 'error' });
                   return;
                 }
                 setFormData({ ...formData, name: text });
@@ -393,8 +395,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               }}
             />
             {formData.name.length > 0 && (
-              <Text style={[styles.warningText, { alignSelf: 'flex-end', textAlign: 'right' }]}>
-                {formData.name.length}/4 أحرف
+              <Text style={[styles.warningText, { alignSelf: isRTL ? 'flex-end' : 'flex-start', textAlign: isRTL ? 'right' : 'left' }]}>
+                {t('family.validation.nameCounter', { count: formData.name.length })}
               </Text>
             )}
             {submitAttempted && validationErrors.name && (
@@ -403,10 +405,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             <TextInput
               style={[
                 styles.input,
-                { textAlign: 'right', writingDirection: 'rtl' },
+                { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' },
                 submitAttempted && validationErrors.relationship && styles.inputError,
               ]}
-              placeholder="القرابة"
+              placeholder={t('family.relationship')}
               placeholderTextColor="#999"
               value={formData.relationship}
               onChangeText={(text) => {
@@ -433,8 +435,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             />
             
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
-              <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>الجنس</Text>
-              <View style={{ flexDirection: 'row-reverse', gap: 8, justifyContent: 'center' }}>
+              <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>{t('profile.gender')}</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, justifyContent: 'center' }}>
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
@@ -459,7 +461,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       formData.gender === 'male' && styles.genderButtonTextSelected,
                     ]}
                   >
-                    ذكر
+                    {t('common.male')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -486,7 +488,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                       formData.gender === 'female' && styles.genderButtonTextSelected,
                     ]}
                   >
-                    أنثى
+                    {t('common.female')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -495,7 +497,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               )}
             </View>
             <View style={{ alignItems: 'center', width: '100%', marginTop: 16 }}>
-              <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>تاريخ الميلاد</Text>
+              <Text style={[styles.label, { textAlign: 'center', alignSelf: 'center' }]}>{t('family.dateOfBirthLabel')}</Text>
               <TouchableOpacity
                 style={[
                   styles.datePickerButton,
@@ -506,14 +508,14 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   setShowDatePicker(true);
                 }}
               >
-                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
+                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: isRTL ? 'right' : 'left' }}>
                   {formData.dateOfBirth
-                    ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                    ? new Date(formData.dateOfBirth).toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       })
-                    : 'اختر تاريخ الميلاد'}
+                    : t('family.selectDateOfBirth')}
                 </Text>
               </TouchableOpacity>
               {showDatePicker && (
@@ -543,18 +545,18 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         }
                         setShowDatePicker(false);
                       }}
-                    >
-                      <Text style={styles.confirmButtonText}>تأكيد</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.cancelDateButton}
-                      onPress={() => {
-                        setShowDatePicker(false);
-                        setTempDate(null);
-                      }}
-                    >
-                      <Text style={styles.cancelDateButtonText}>إلغاء</Text>
-                    </TouchableOpacity>
+                      >
+                        <Text style={styles.confirmButtonText}>{t('family.confirm')}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelDateButton}
+                        onPress={() => {
+                          setShowDatePicker(false);
+                          setTempDate(null);
+                        }}
+                      >
+                        <Text style={styles.cancelDateButtonText}>{t('common.cancel')}</Text>
+                      </TouchableOpacity>
                   </View>
                 </View>
               )}
@@ -564,17 +566,17 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             </View>
             {/* Medical Survey Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>البيانات الصحية</Text>
+              <Text style={styles.sectionTitle}>{t('family.healthData')}</Text>
               {/* Height */}
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الطول (سم)</Text>
+                <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.height')}</Text>
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
+                    { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr', alignSelf: isRTL ? 'flex-end' : 'flex-start' },
                     submitAttempted && validationErrors.height && styles.inputError,
                   ]}
-                  placeholder="مثال: 170"
+                  placeholder={t('family.heightPlaceholder')}
                   placeholderTextColor="#999"
                   value={formData.height}
                   onChangeText={(text) => {
@@ -591,14 +593,14 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               )}
               {/* Weight */}
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
+                <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.weight')}</Text>
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
+                    { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr', alignSelf: isRTL ? 'flex-end' : 'flex-start' },
                     submitAttempted && validationErrors.weight && styles.inputError,
                   ]}
-                  placeholder="مثال: 70"
+                  placeholder={t('family.weightPlaceholder')}
                   placeholderTextColor="#999"
                   value={formData.weight}
                   onChangeText={(text) => {
@@ -615,17 +617,17 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               )}
               {formData.height && formData.weight && calculateBMI(formData.height, formData.weight) && (
                 <View style={styles.bmiBox}>
-                  <Text style={[styles.bmiLabel, { textAlign: 'right', width: '100%' }]}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text style={[styles.bmiValue, { textAlign: 'right', width: '100%' }]}>{calculateBMI(formData.height, formData.weight)?.toFixed(1)}</Text>
-                  <Text style={[styles.bmiCategoryText, { textAlign: 'right', width: '100%' }]}>{getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}</Text>
+                  <Text style={[styles.bmiLabel, { textAlign: isRTL ? 'right' : 'left', width: '100%' }]}>{t('family.bmi')}:</Text>
+                  <Text style={[styles.bmiValue, { textAlign: isRTL ? 'right' : 'left', width: '100%' }]}>{calculateBMI(formData.height, formData.weight)?.toFixed(1)}</Text>
+                  <Text style={[styles.bmiCategoryText, { textAlign: isRTL ? 'right' : 'left', width: '100%' }]}>{getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}</Text>
                 </View>
               )}
             </View>
 
             <View style={styles.medicalSurveyContainer}>
               <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بالسكري؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.diabetic')}</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <TouchableOpacity
                     style={[
                       styles.yesNoButton,
@@ -639,7 +641,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         formData.isDiabetic && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      نعم
+                      {t('family.medicalSurvey.yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -655,15 +657,15 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         !formData.isDiabetic && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      لا
+                      {t('family.medicalSurvey.no')}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع ضغط الدم؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.hypertensive')}</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <TouchableOpacity
                     style={[
                       styles.yesNoButton,
@@ -677,7 +679,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         formData.isHypertensive && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      نعم
+                      {t('family.medicalSurvey.yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -693,15 +695,15 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         !formData.isHypertensive && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      لا
+                      {t('family.medicalSurvey.no')}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مصاب بارتفاع في الكوليسترول؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.cholesterol')}</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <TouchableOpacity
                     style={[
                       styles.yesNoButton,
@@ -715,7 +717,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         formData.isCholesterol && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      نعم
+                      {t('family.medicalSurvey.yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -731,15 +733,15 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         !formData.isCholesterol && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      لا
+                      {t('family.medicalSurvey.no')}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي مدخن؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.smoker')}</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <TouchableOpacity
                     style={[
                       styles.yesNoButton,
@@ -753,7 +755,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         formData.isSmoker && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      نعم
+                      {t('family.medicalSurvey.yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -769,7 +771,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         !formData.isSmoker && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      لا
+                      {t('family.medicalSurvey.no')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -780,10 +782,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <TextInput
                     style={[
                       styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
+                      { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr', alignSelf: isRTL ? 'flex-end' : 'flex-start' },
                       submitAttempted && validationErrors.smokingAmount && styles.inputError,
                     ]}
-                    placeholder=" كم عدد علب السجائر التي تدخنها يوميا؟"
+                    placeholder={t('family.medicalSurvey.smokingAmount')}
                     placeholderTextColor="#999"
                     value={formData.smokingDetails.amount}
                     onChangeText={(text) => {
@@ -806,10 +808,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   <TextInput
                     style={[
                       styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl', alignSelf: 'flex-end' },
+                      { textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr', alignSelf: isRTL ? 'flex-end' : 'flex-start' },
                       submitAttempted && validationErrors.smokingDuration && styles.inputError,
                     ]}
-                    placeholder="منذ متى يدخن؟ (بالسنوات)"
+                    placeholder={t('family.medicalSurvey.smokingDuration')}
                     placeholderTextColor="#999"
                     value={formData.smokingDetails.duration}
                     onChangeText={(text) => {
@@ -831,8 +833,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                   )}
                   {formData.smokingDetails.amount && formData.smokingDetails.duration && (
                     <View style={styles.packYearsBox}>
-                      <Text style={[styles.packYearsLabel, { textAlign: 'right', width: '100%' }]}>سنوات التدخين (Pack-Years):</Text>
-                      <Text style={[styles.packYearsValue, { textAlign: 'right', width: '100%' }]}>{calculatePackYears(formData.smokingDetails)}</Text>
+                      <Text style={[styles.packYearsLabel, { textAlign: isRTL ? 'right' : 'left', width: '100%' }]}>{t('family.medicalSurvey.packYears')}:</Text>
+                      <Text style={[styles.packYearsValue, { textAlign: isRTL ? 'right' : 'left', width: '100%' }]}>{calculatePackYears(formData.smokingDetails)}</Text>
                     </View>
                   )}
                 </View>
@@ -840,8 +842,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
 
               {formData.gender === 'female' && (
                 <View style={styles.questionContainer}>
-                  <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هي حامل؟</Text>
-                  <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                  <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.pregnant')}</Text>
+                  <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <TouchableOpacity
                       style={[
                         styles.yesNoButton,
@@ -855,7 +857,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                           formData.isPregnant && styles.yesNoButtonTextSelected,
                         ]}
                       >
-                        نعم
+                        {t('family.medicalSurvey.yes')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -871,7 +873,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                           !formData.isPregnant && styles.yesNoButtonTextSelected,
                         ]}
                       >
-                        لا
+                        {t('family.medicalSurvey.no')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -879,8 +881,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
               )}
 
               <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل هو/هي نشط جنسياً؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <Text style={[styles.questionLabel, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.sexuallyActive')}</Text>
+                <View style={[styles.yesNoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <TouchableOpacity
                     style={[
                       styles.yesNoButton,
@@ -894,7 +896,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         formData.isSexuallyActive && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      نعم
+                      {t('family.medicalSurvey.yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -910,7 +912,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                         !formData.isSexuallyActive && styles.yesNoButtonTextSelected,
                       ]}
                     >
-                      لا
+                      {t('family.medicalSurvey.no')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -918,8 +920,8 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
 
               {formData.isSexuallyActive && (
                 <View style={styles.partnerCountContainer}>
-                  <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>عدد الشركاء</Text>
-                  <View style={[styles.partnerCountButtons, { flexDirection: 'row-reverse' }]}>
+                  <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{t('family.medicalSurvey.partnerCount')}</Text>
+                  <View style={[styles.partnerCountButtons, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <TouchableOpacity
                       style={[
                         styles.partnerCountButton,
@@ -939,7 +941,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                           formData.sexualActivityDetails.partnerCount === 'single' && styles.partnerCountButtonTextSelected,
                         ]}
                       >
-                        شريك واحد
+                        {t('family.medicalSurvey.singlePartner')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -961,7 +963,7 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
                           formData.sexualActivityDetails.partnerCount === 'multiple' && styles.partnerCountButtonTextSelected,
                         ]}
                       >
-                        أكثر من شريك
+                        {t('family.medicalSurvey.multiplePartners')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -970,10 +972,10 @@ export function FamilyManagement({ userId, onSwitchPerson }: { userId: string; o
             </View>
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, justifyContent: 'center', alignSelf: 'center' }}>
               <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
-                <Text style={styles.saveButtonText}>{editingMember ? 'حفظ' : 'إضافة'}</Text>
+                <Text style={styles.saveButtonText}>{editingMember ? t('common.save') : t('family.add')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.cancelButton} onPress={() => { setIsModalOpen(false); setEditingMember(null); resetForm(); }}>
-                <Text style={styles.cancelButtonText}>إلغاء</Text>
+                <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
             </View>
             </ScrollView>

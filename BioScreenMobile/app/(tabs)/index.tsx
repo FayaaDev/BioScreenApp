@@ -255,7 +255,7 @@ export default function HomeScreen() {
           onRefresh={onRefresh}
           colors={['#4CCCE6']} // Android
           tintColor="#4CCCE6" // iOS
-          title="جاري التحديث..." // iOS
+          title={t('common.refreshing')} // iOS
           titleColor="#4CCCE6" // iOS
         />
       }
@@ -292,7 +292,7 @@ export default function HomeScreen() {
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>أنت</Text>
+            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>{t('common.you')}</Text>
           </TouchableOpacity>
           {Array.isArray(familyMembersData) && familyMembersData.map((member) => (
             <TouchableOpacity
@@ -326,7 +326,7 @@ export default function HomeScreen() {
               {stats?.dueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
-              الآن
+              {t('home.tabs.due')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -342,7 +342,7 @@ export default function HomeScreen() {
               {stats?.overdueScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
-              متأخر
+              {t('home.tabs.overdue')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -358,7 +358,7 @@ export default function HomeScreen() {
               {stats?.laterScreenings || 0}
             </Text>
             <Text style={styles.statLabel}>
-              لاحقاً
+              {t('home.tabs.later')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -369,7 +369,7 @@ export default function HomeScreen() {
               {stats?.completedThisYear || 0}
             </Text>
             <Text style={styles.statLabel}>
-              مكتمل
+              {t('home.tabs.done')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -464,8 +464,8 @@ export default function HomeScreen() {
             onPress={() => setShowContactModal(true)}
           >
             <MaterialCommunityIcons name="email" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>تواصل معنا</ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>راسلنا لأي استفسار أو اقتراح</ThemedText>
+            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>{t('contact.title')}</ThemedText>
+            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>{t('contact.description')}</ThemedText>
           </TouchableOpacity>
         </View>
       </View>
@@ -476,39 +476,39 @@ export default function HomeScreen() {
       <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>تواصل معنا</Text>
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>الاسم</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>{t('contact.title')}</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.name')}</Text>
             <TextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
-              placeholder="أدخل اسمك"
+              placeholder={t('contact.namePlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>البريد الإلكتروني</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.email')}</Text>
             <TextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
-              placeholder="أدخل بريدك الإلكتروني"
+              placeholder={t('contact.emailPlaceholder')}
               placeholderTextColor="#94a3b8"
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>الموضوع</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.subject')}</Text>
             <TextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
-              placeholder="أدخل موضوع الرسالة"
+              placeholder={t('contact.subjectPlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>المحتوى</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.content')}</Text>
             <TextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
-              placeholder="اكتب رسالتك هنا"
+              placeholder={t('contact.contentPlaceholder')}
               placeholderTextColor="#94a3b8"
               multiline
             />
@@ -517,13 +517,13 @@ export default function HomeScreen() {
                 style={{ backgroundColor: '#4CCCE6', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
                 onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إرسال</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>{t('contact.send')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ backgroundColor: '#202221', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
                 onPress={() => setShowContactModal(false)}
               >
-                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>إلغاء</Text>
+                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
             </View>
           </View>

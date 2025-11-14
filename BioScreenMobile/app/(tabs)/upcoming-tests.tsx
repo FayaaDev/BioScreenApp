@@ -40,14 +40,14 @@ type FamilyMemberResponse = {
 };
 
 // Helper function to get frequency text - now supports both languages
-const getFrequencyText = (years: number, isRTL: boolean) => {
-  if (years === 0) return isRTL ? 'مرة واحدة فقط' : 'One time only';
-  if (years === 1) return isRTL ? 'كل سنة' : 'Every year';
-  if (years === 2) return isRTL ? 'كل سنتين' : 'Every 2 years';
-  if (years === 3) return isRTL ? 'كل ثلاث سنوات' : 'Every 3 years';
-  if (years === 4) return isRTL ? 'كل أربع سنوات' : 'Every 4 years';
-  if (years === 5) return isRTL ? 'كل خمس سنوات' : 'Every 5 years';
-  return isRTL ? `كل ${years} سنة` : `Every ${years} years`;
+const getFrequencyText = (years: number, t: any) => {
+  if (years === 0) return t('screening.frequency.oneTime');
+  if (years === 1) return t('screening.frequency.everyYear');
+  if (years === 2) return t('screening.frequency.every2Years');
+  if (years === 3) return t('screening.frequency.every3Years');
+  if (years === 4) return t('screening.frequency.every4Years');
+  if (years === 5) return t('screening.frequency.every5Years');
+  return t('screening.frequency.everyNYears', { years });
 };
 
 // Placeholder for ScreeningCard
@@ -64,10 +64,10 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
   let priorityLabel = '';
   let priorityColor = '';
   if (priority === 'strongly_recommended') {
-    priorityLabel = isRTL ? 'موصى به بشدة' : 'Strongly Recommended';
+    priorityLabel = t('screening.priority.stronglyRecommended');
     priorityColor = '#6B7280'; // grey
   } else if (priority === 'recommended') {
-    priorityLabel = isRTL ? 'موصى به' : 'Recommended';
+    priorityLabel = t('screening.priority.recommended');
     priorityColor = '#9CA3AF'; // lighter grey
   }
   // Translate and color the status label for each status
@@ -91,13 +91,13 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
         } as any,
       ];
       return (
-        <View style={[styles.screeningCard, { flexDirection: 'row', position: 'relative' }]}> 
-          {/* Priority tag in top left corner */}
+        <View style={[styles.screeningCard, { flexDirection: isRTL ? 'row-reverse' : 'row', position: 'relative' }]}> 
+          {/* Priority tag in top corner */}
           {priority && (
             <View style={{
               position: 'absolute',
               top: 8,
-              left: 8,
+              [isRTL ? 'left' : 'right']: 8,
               zIndex: 2,
               backgroundColor: priorityColor,
               borderRadius: 12,
@@ -108,19 +108,6 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
             </View>
           )}
-          {/* Buttons */}
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
-            <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
-              <Text style={styles.actionButtonText}>
-                {isRTL ? 'أحجز مع صحتي' : 'Book with Sehhaty'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
-              <Text style={styles.actionButtonText}>
-                {isRTL ? 'تم' : 'Done'}
-              </Text>
-            </TouchableOpacity>
-          </View>
           {/* Details */}
           <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
             {/* Name row: info icon, name */}
@@ -154,9 +141,22 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
             {/* Repetition frequency */}
             {typeof screening.screening?.frequencyYears === 'number' && (
               <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-                {getFrequencyText(screening.screening.frequencyYears, isRTL)}
+                {getFrequencyText(screening.screening.frequencyYears, t)}
               </Text>
             )}
+          </View>
+          {/* Buttons */}
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
+            <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
+              <Text style={styles.actionButtonText}>
+                {t('screening.bookWithSehhaty')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
+              <Text style={styles.actionButtonText}>
+                {t('screening.done')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       );
@@ -234,13 +234,13 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
     overdueYears = currentYear - targetYear;
   }
   return (
-    <View style={[styles.screeningCard, { flexDirection: 'row', position: 'relative' }]}> 
-      {/* Priority tag in top left corner */}
+    <View style={[styles.screeningCard, { flexDirection: isRTL ? 'row-reverse' : 'row', position: 'relative' }]}> 
+      {/* Priority tag in top corner */}
       {priority && (
         <View style={{
           position: 'absolute',
           top: 8,
-          left: 8,
+          [isRTL ? 'left' : 'right']: 8,
           zIndex: 2,
           backgroundColor: priorityColor,
           borderRadius: 12,
@@ -251,19 +251,6 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
           <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
         </View>
       )}
-      {/* Buttons */}
-      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
-        <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
-          <Text style={styles.actionButtonText}>
-            {isRTL ? 'أحجز مع صحتي' : 'Book with Sehhaty'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
-          <Text style={styles.actionButtonText}>
-            {isRTL ? 'تم' : 'Done'}
-          </Text>
-        </TouchableOpacity>
-      </View>
       {/* Details */}
       <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
         {/* Name row: info icon, name */}
@@ -293,7 +280,7 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
         {/* Repetition date below status */}
         {(screening.status === 'completed' || screening.status === 'due' || (screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due')) && typeof screening.screening?.frequencyYears === 'number' && (
           <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-            {getFrequencyText(screening.screening.frequencyYears)}
+            {getFrequencyText(screening.screening.frequencyYears, t)}
           </Text>
         )}
         {/* Next due message (only for original later, not recreated) */}
@@ -305,12 +292,22 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
         {/* Overdue years label */}
         {screening.status === 'overdue' && overdueYears !== null && overdueYears > 0 && (
           <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-            {isRTL 
-              ? `متأخر ${overdueYears} ${overdueYears === 1 ? 'سنة' : overdueYears < 11 ? 'سنوات' : 'سنة'}`
-              : `Overdue ${overdueYears} ${overdueYears === 1 ? 'year' : 'years'}`
-            }
+            {t('screening.overdueYears', { years: overdueYears, count: overdueYears })}
           </Text>
         )}
+      </View>
+      {/* Buttons */}
+      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
+        <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
+          <Text style={styles.actionButtonText}>
+            {t('screening.bookWithSehhaty')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
+          <Text style={styles.actionButtonText}>
+            {t('screening.done')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -599,7 +596,7 @@ export default function UpcomingTests() {
           onRefresh={onRefresh}
           colors={['#4CCCE6']} // Android
           tintColor="#4CCCE6" // iOS
-          title="جاري التحديث..." // iOS
+          title={t('common.refreshing')} // iOS
           titleColor="#4CCCE6" // iOS
         />
       }
@@ -610,15 +607,12 @@ export default function UpcomingTests() {
       >
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
           {selectedPersonId === 'user' 
-            ? (isRTL ? `مرحباً، ${currentPersonName}` : `Hello, ${currentPersonName}`)
-            : (isRTL ? `فحوصات ${currentPersonName}` : `${currentPersonName}'s Screenings`)
+            ? t('home.hello', { name: currentPersonName })
+            : t('home.screeningsFor', { name: currentPersonName })
           }
         </Text>
         <Text style={[styles.headerSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
-          {isRTL 
-            ? `العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`
-            : `Age: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'Male' : 'Female'}`
-          }
+          {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')}`}
         </Text>
         {/* Family selector */}
         <ScrollView
@@ -670,7 +664,7 @@ export default function UpcomingTests() {
       <ScrollView style={styles.screeningsList} contentContainerStyle={{ gap: 7, paddingBottom: 32 }}>
         {filteredScreenings.length === 0 ? (
           <Text style={styles.emptyText}>
-            {isRTL ? 'لا توجد فحوصات في هذا القسم' : 'No screenings in this section'}
+            {t('home.noScreenings')}
           </Text>
         ) : (
           filteredScreenings.map((screening, index) => (

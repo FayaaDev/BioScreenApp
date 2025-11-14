@@ -50,8 +50,9 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   userBirthDate: string;
 }) => {
   const [showTip, setShowTip] = React.useState(false);
-  // Always show 'مكتملة' with green pill in Completed Tests
-  const statusLabel = 'تم';
+  const { t } = useTranslation();
+  // Always show 'Done' with green pill in Completed Tests
+  const statusLabel = t('home.tabs.done');
   const statusLabelStyle = [
     styles.screeningStatus,
     {
@@ -257,7 +258,7 @@ export default function CompletedTests() {
           onRefresh={onRefresh}
           colors={['#4CCCE6']} // Android
           tintColor="#4CCCE6" // iOS
-          title="جاري التحديث..." // iOS
+          title={t('common.refreshing')} // iOS
           titleColor="#4CCCE6" // iOS
         />
       }
@@ -269,14 +270,11 @@ export default function CompletedTests() {
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
           {selectedPersonId === 'user' 
             ? t('completed.title')
-            : (isRTL ? `فحوصات ${currentPersonName}` : `${currentPersonName}'s Screenings`)
+            : t('home.screeningsFor', { name: currentPersonName })
           }
         </Text>
         <Text style={[styles.headerSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
-          {isRTL 
-            ? `العمر: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'ذكر' : 'أنثى'}`
-            : `Age: ${currentPersonAge} • ${currentPersonGender === 'male' ? 'Male' : 'Female'}`
-          }
+          {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')}`}
         </Text>
         {/* Family selector */}
         <ScrollView

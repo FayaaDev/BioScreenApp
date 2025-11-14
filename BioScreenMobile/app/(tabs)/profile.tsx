@@ -98,10 +98,10 @@ export default function Profile() {
     onSuccess: () => {
       setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ['/api/users', userId] });
-      showToast({ title: 'تم تحديث الملف الشخصي', type: 'success' });
+      showToast({ title: t('profile.profileUpdated'), type: 'success' });
     },
     onError: () => {
-      showToast({ title: 'خطأ', description: 'فشل في تحديث الملف الشخصي', type: 'error' });
+      showToast({ title: t('common.error'), description: t('profile.updateError'), type: 'error' });
     },
   });
 
@@ -110,7 +110,7 @@ export default function Profile() {
     const phoneError = validatePhoneNumber(formData.phoneNumber);
     if (phoneError) {
       showToast({ 
-        title: 'خطأ في رقم الهاتف', 
+        title: t('profile.phoneNumberError'), 
         description: phoneError, 
         type: 'error' 
       });
@@ -136,19 +136,19 @@ export default function Profile() {
 
   const handleResetProfile = async () => {
     await AsyncStorage.removeItem('healthscreen_user_id');
-    showToast({ title: 'تمت إعادة تعيين الملف الشخصي', type: 'success' });
+    showToast({ title: t('profile.profileReset'), type: 'success' });
     router.replace('/onboarding');
   };
 
   const handleSignOut = async () => {
     await AsyncStorage.removeItem('auth_token');
     await AsyncStorage.removeItem('healthscreen_user_id');
-    showToast({ title: 'تم تسجيل الخروج', type: 'success' });
+    showToast({ title: t('profile.signOutSuccess'), type: 'success' });
     router.replace('/login');
   };
 
   const handleSwitchPerson = (id: string) => {
-    showToast({ title: id === 'user' ? 'تم التبديل إلى حسابك' : 'تم التبديل إلى فرد العائلة', type: 'info' });
+    showToast({ title: id === 'user' ? t('family.yourself') : t('family.memberUpdated'), type: 'info' });
   };
 
   if (!userId || isLoading) {
@@ -236,7 +236,7 @@ export default function Profile() {
                           month: 'long',
                           day: 'numeric',
                         })
-                      : (isRTL ? 'اختر تاريخ الميلاد' : 'Select date of birth')}
+                      : t('family.selectDateOfBirth')}
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
@@ -265,7 +265,7 @@ export default function Profile() {
                         }}
                       >
                         <Text style={styles.confirmButtonText}>
-                          {isRTL ? 'تأكيد' : 'Confirm'}
+                          {t('family.confirm')}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -370,12 +370,12 @@ export default function Profile() {
       <View style={styles.card}>
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutButtonText}>
-            {i18n.language === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}
+            {t('profile.signOut')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.agreementButton} onPress={() => setShowAgreement(true)}>
           <Text style={styles.agreementButtonText}>
-            {i18n.language === 'ar' ? 'اتفاقية المستخدم' : 'User Agreement'}
+            {t('profile.userAgreement')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -385,7 +385,7 @@ export default function Profile() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 280 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>
-              {i18n.language === 'ar' ? 'تغيير اللغة' : 'Change Language'}
+              {t('profile.changeLanguage')}
             </Text>
             <TouchableOpacity
               style={{ backgroundColor: i18n.language === 'ar' ? '#4CCCE6' : '#202221', borderRadius: 8, paddingVertical: 12, marginBottom: 12, alignItems: 'center' }}
@@ -417,7 +417,7 @@ export default function Profile() {
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 8, alignItems: 'center' }} onPress={() => setShowLanguageModal(false)}>
               <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>
-                {i18n.language === 'ar' ? 'إغلاق' : 'Close'}
+                {t('common.close')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -428,33 +428,12 @@ export default function Profile() {
       <Modal visible={showAgreement} animationType="slide" onRequestClose={() => setShowAgreement(false)}>
         <View style={styles.modalContainer}>
           <ScrollView contentContainerStyle={[styles.modalContent, { paddingTop: 60 }]}>
-            <Text style={styles.modalTitle}>اتفاقية استخدام تطبيق "زِمامـ"</Text>
+            <Text style={styles.modalTitle}>{t('profile.userAgreementTitle')}</Text>
             <Text style={styles.modalText}>
-تهدف هذه الاتفاقية إلى تحديد شروط وأحكام استخدامك لتطبيق زمام ("زِمامـ")، والذي تم تطويره من قبل الدكتور/ محمد الشهري وفريق زِمامـ
-
-باستخدامك للتطبيق، فإنك توافق على الالتزام بجميع الشروط التالية:
-
-"زِمامـ" هو أداة لمعرفة الخدمات الوقائية الموصى بها وتسهيل حجز مواعيد الفحص الطبي لها وليس بديلاً عن الاستشارة الطبية.
-
-جميع التوصيات والإرشادات في التطبيق مستندة إلى توصيات هيئة الصحة العامة السعودية كإطار مرجعي اساسي ومن ثم تم تعزيزها من خلال المراجعة المنهجية للتوصيات من المنظمات الدولية الرائدة وتشمل:  فرقة الخدمات الوقائية الأمريكية والكلية الملكية الأسترالية للأطباء العامين وفرقة الرعاية الصحية الوقائية الكندية
-
-
-يقر المستخدم بأن  الدكتور/ محمد الشهري وفريق زِمامـ لا يتحملون أي مسؤولية عن أية أضرار أو خسائر تنجم عن استخدام التطبيق، بما في ذلك الأخطاء أو الأعطال أو القرارات المبنية على المعلومات المقدمة.
-
-
-جميع حقوق الملكية الفكرية محفوظة للدكتور/ محمد الشهري وفريق زِمامـ، ويمنع نسخ أو تعديل أو استخدام التطبيق لأغراض تجارية دون إذن خطي.
-
-
-يلتزم المستخدم باستخدام التطبيق لأغراض مشروعة فقط، ويُمنع أي استخدام يضر بالتطبيق أو يخل بحقوق الآخرين.
-
-يحق للدكتور/ محمد الشهري وفريق زِمامـ إنهاء استخدام التطبيق في حال مخالفة الشروط دون إشعار مسبق.
-
-تخضع هذه الاتفاقية لقوانين المملكة العربية السعودية. يجوز تعديل الشروط في أي وقت، ويُعتبر استمرار الاستخدام موافقة على التعديلات. للاستفسارات،
-باستخدامك للتطبيق، فإنك تقر بأنك قرأت ووافقت على هذه الاتفاقية.
-
+              {t('profile.userAgreementContent')}
             </Text>
             <TouchableOpacity style={styles.closeModalButton} onPress={() => setShowAgreement(false)}>
-              <Text style={styles.closeModalButtonText}>إغلاق</Text>
+              <Text style={styles.closeModalButtonText}>{t('common.close')}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
