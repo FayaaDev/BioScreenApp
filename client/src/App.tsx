@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,7 +12,6 @@ import Profile from "@/pages/profile";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 import { initializeMobileApp } from "@/lib/capacitor";
 import i18n from "./i18n";
 

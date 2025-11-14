@@ -9,7 +9,9 @@ export default defineConfig(async ({ command, mode }) => {
   
   return {
     plugins: [
-      react(),
+      react({
+        jsxRuntime: 'automatic',
+      }),
       runtimeErrorOverlay(),
       ...(process.env.NODE_ENV !== "production" &&
       process.env.REPL_ID !== undefined

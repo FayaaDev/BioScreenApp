@@ -76,7 +76,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Initialize storage
-  await storage.initializeDefaultScreenings();
+  try {
+    await storage.initializeDefaultScreenings();
+    console.log('✅ Default screenings initialized');
+  } catch (error) {
+    console.error('⚠️ Failed to initialize default screenings (database might be sleeping):', error instanceof Error ? error.message : error);
+    console.log('Server will continue without default screenings - they will be loaded on first database access');
+  }
 
   // Initialize WhatsApp service
   const whatsappService = WhatsAppService.getInstance();
