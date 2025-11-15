@@ -27,7 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       CFBundleLocalizations: ['ar'],
       UIDeviceFamily: [1], // iPhone only (1 = iPhone, 2 = iPad, [1,2] = Universal)
       UIRequiredDeviceCapabilities: ['telephony'],
-      UIViewSemanticContentAttribute: 'ForceRightToLeft',
+      // UIViewSemanticContentAttribute: 'ForceRightToLeft', // Removed - Let JS handle RTL dynamically
       NSAppTransportSecurity: {
         NSExceptionDomains: {
           'bakkerapp.com': {

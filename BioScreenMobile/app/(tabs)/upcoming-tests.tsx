@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,27 +6,26 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-  I18nManager,
-  SafeAreaView,
-  Platform,
-  StatusBar,
   Linking,
   RefreshControl,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '../../lib/api';
-import { useToast } from '../../hooks/useToast';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { STATUS_COLORS, calculateNextDueDate, ScreeningWithDetails } from '../../lib/screening-utils';
-import Tooltip from 'react-native-walkthrough-tooltip';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useContext } from 'react';
-import { SelectedPersonContext } from '../../context/SelectedPersonContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useColorScheme } from '../../hooks/useColorScheme';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "../../lib/api";
+import { useToast } from "../../hooks/useToast";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import {
+  STATUS_COLORS,
+  calculateNextDueDate,
+  ScreeningWithDetails,
+} from "../../lib/screening-utils";
+import Tooltip from "react-native-walkthrough-tooltip";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { SelectedPersonContext } from "../../context/SelectedPersonContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+import { LinearGradient } from "expo-linear-gradient";
+import { useColorScheme } from "../../hooks/useColorScheme";
 // import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
 
 type UserDataResponse = {
@@ -41,192 +40,261 @@ type FamilyMemberResponse = {
 
 // Helper function to get frequency text - now supports both languages
 const getFrequencyText = (years: number, t: any) => {
-  if (years === 0) return t('screening.frequency.oneTime');
-  if (years === 1) return t('screening.frequency.everyYear');
-  if (years === 2) return t('screening.frequency.every2Years');
-  if (years === 3) return t('screening.frequency.every3Years');
-  if (years === 4) return t('screening.frequency.every4Years');
-  if (years === 5) return t('screening.frequency.every5Years');
-  return t('screening.frequency.everyNYears', { years });
+  if (years === 0) return t("screening.frequency.oneTime");
+  if (years === 1) return t("screening.frequency.everyYear");
+  if (years === 2) return t("screening.frequency.every2Years");
+  if (years === 3) return t("screening.frequency.every3Years");
+  if (years === 4) return t("screening.frequency.every4Years");
+  if (years === 5) return t("screening.frequency.every5Years");
+  return t("screening.frequency.everyNYears", { years });
 };
 
 // Placeholder for ScreeningCard
-const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirthDate }: {
+const ScreeningCard = ({
+  screening,
+  onSchedule,
+  onMarkCompleted,
+  isRTL,
+  userBirthDate,
+}: {
   screening: ScreeningWithDetails;
   onSchedule: () => void;
   onMarkCompleted: () => void;
   isRTL: boolean;
   userBirthDate: string;
 }) => {
-  const [showTip, setShowTip] = React.useState(false);
+  const [showTip, setShowTip] = useState(false);
   const { t } = useTranslation();
   const priority = screening.screening.priority;
-  let priorityLabel = '';
-  let priorityColor = '';
-  if (priority === 'strongly_recommended') {
-    priorityLabel = t('screening.priority.stronglyRecommended');
-    priorityColor = '#6B7280'; // grey
-  } else if (priority === 'recommended') {
-    priorityLabel = t('screening.priority.recommended');
-    priorityColor = '#9CA3AF'; // lighter grey
+  let priorityLabel = "";
+  let priorityColor = "";
+  if (priority === "strongly_recommended") {
+    priorityLabel = t("screening.priority.stronglyRecommended");
+    priorityColor = "#6B7280"; // grey
+  } else if (priority === "recommended") {
+    priorityLabel = t("screening.priority.recommended");
+    priorityColor = "#9CA3AF"; // lighter grey
   }
   // Translate and color the status label for each status
   let statusLabel = screening.status;
   let statusLabelStyle = [styles.screeningStatus];
-  if (screening.status === 'later' || screening.status === 'laterRecreated') {
-    if (screening.status === 'laterRecreated' && screening.nextDue) {
-      statusLabel = t('home.later');
-      const nextAppointmentText = t('screening.NextOPD', { date: new Date(screening.nextDue).toLocaleDateString('en-GB') });
+  if (screening.status === "later" || screening.status === "laterRecreated") {
+    if (screening.status === "laterRecreated" && screening.nextDue) {
+      statusLabel = t("home.later");
+      const nextAppointmentText = t("screening.NextOPD", {
+        date: new Date(screening.nextDue).toLocaleDateString("en-GB"),
+      });
       statusLabelStyle = [
         styles.screeningStatus,
         {
-          color: '#FFFFFF',
-          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          color: "#FFFFFF",
+          backgroundColor: "rgba(255, 255, 255, 0.08)",
           borderRadius: 8,
           paddingHorizontal: 8,
           paddingVertical: 2,
-          alignSelf: 'flex-end',
-          overflow: 'hidden',
-          fontWeight: 'bold',
+          alignSelf: "flex-end",
+          overflow: "hidden",
+          fontWeight: "bold",
         } as any,
       ];
       return (
-        <View style={[styles.screeningCard, { flexDirection: isRTL ? 'row-reverse' : 'row', position: 'relative' }]}> 
+        <View
+          style={[
+            styles.screeningCard,
+            { flexDirection: "row", position: "relative" },
+          ]}
+        >
           {/* Priority tag in top corner */}
           {priority && (
-            <View style={{
-              position: 'absolute',
-              top: 8,
-              [isRTL ? 'left' : 'right']: 8,
-              zIndex: 2,
-              backgroundColor: priorityColor,
-              borderRadius: 12,
-              paddingHorizontal: 10,
-              paddingVertical: 3,
-              alignSelf: 'flex-start',
-            }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
+            <View
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 2,
+                backgroundColor: priorityColor,
+                borderRadius: 12,
+                paddingHorizontal: 10,
+                paddingVertical: 3,
+                alignSelf: "flex-start",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: "bold",
+                  fontFamily: "ReadexPro-Bold",
+                }}
+              >
+                {priorityLabel}
+              </Text>
             </View>
           )}
           {/* Details */}
-          <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+          <View style={{ flex: 1 }}>
             {/* Name row: info icon, name */}
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[styles.screeningTitle, { textAlign: "left" }]}>
+                {screening.screening.name}
+              </Text>
               {screening.screening?.description ? (
                 <Tooltip
                   isVisible={showTip}
-                  content={<Text style={{ maxWidth: 200 }}>{screening.screening.description}</Text>}
+                  content={
+                    <Text style={{ maxWidth: 200 }}>
+                      {screening.screening.description}
+                    </Text>
+                  }
                   placement="top"
                   onClose={() => setShowTip(false)}
                   showChildInTooltip={false}
                   backgroundColor="rgba(0,0,0,0.2)"
                 >
-                  <TouchableOpacity onPress={() => setShowTip(true)} style={isRTL ? { marginRight: 4 } : { marginLeft: 4 }}>
-                    <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
+                  <TouchableOpacity
+                    onPress={() => setShowTip(true)}
+                    style={{ marginStart: 8 }}
+                  >
+                    <MaterialCommunityIcons
+                      name="information-outline"
+                      size={18}
+                      color="#4CCCE6"
+                    />
                   </TouchableOpacity>
                 </Tooltip>
               ) : null}
-              <Text style={[styles.screeningTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{screening.screening.name}</Text>
             </View>
             {/* Status label below name row */}
-            <View style={{ width: '100%', marginTop: 4, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+            <View
+              style={{ width: "100%", marginTop: 4, alignItems: "flex-start" }}
+            >
               <View>
-                <Text style={[...statusLabelStyle, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{statusLabel}</Text>
+                <Text
+                  style={[
+                    ...statusLabelStyle,
+                    { textAlign: "left", alignSelf: "flex-start" },
+                  ]}
+                >
+                  {statusLabel}
+                </Text>
               </View>
             </View>
             {/* Next appointment date for recreated tests */}
-            <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 14,
+                marginBottom: 2,
+                textAlign: "left",
+                fontWeight: "bold",
+                fontFamily: "ReadexPro-Bold",
+              }}
+            >
               {nextAppointmentText}
             </Text>
             {/* Repetition frequency */}
-            {typeof screening.screening?.frequencyYears === 'number' && (
-              <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
+            {typeof screening.screening?.frequencyYears === "number" && (
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 13,
+                  marginTop: 2,
+                  marginBottom: 2,
+                  textAlign: "left",
+                  fontFamily: "ReadexPro",
+                }}
+              >
                 {getFrequencyText(screening.screening.frequencyYears, t)}
               </Text>
             )}
           </View>
           {/* Buttons */}
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
+          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
             <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
               <Text style={styles.actionButtonText}>
-                {t('screening.bookWithSehhaty')}
+                {t("screening.bookWithSehhaty")}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
-              <Text style={styles.actionButtonText}>
-                {t('screening.done')}
-              </Text>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={onMarkCompleted}
+            >
+              <Text style={styles.actionButtonText}>{t("screening.done")}</Text>
             </TouchableOpacity>
           </View>
         </View>
       );
     } else {
-      statusLabel = t('home.later');
+      statusLabel = t("home.later");
     }
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#FFFFFF',
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        color: "#FFFFFF",
+        backgroundColor: "rgba(255, 255, 255, 0.08)",
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
-        alignSelf: 'flex-end',
-        overflow: 'hidden',
-        fontWeight: 'bold',
+        alignSelf: "flex-end",
+        overflow: "hidden",
+        fontWeight: "bold",
       } as any,
     ];
-  } else if (screening.status === 'due') {
-    statusLabel = t('home.tabs.due');
+  } else if (screening.status === "due") {
+    statusLabel = t("home.tabs.due");
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#0EB39E',
-        backgroundColor: 'rgba(14, 179, 158, 0.16)',
+        color: "#0EB39E",
+        backgroundColor: "rgba(14, 179, 158, 0.16)",
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
-        alignSelf: 'flex-end',
-        overflow: 'hidden',
-        fontWeight: 'bold',
+        alignSelf: "flex-end",
+        overflow: "hidden",
+        fontWeight: "bold",
       } as any,
     ];
-  } else if (screening.status === 'overdue') {
-    statusLabel = t('home.tabs.overdue');
+  } else if (screening.status === "overdue") {
+    statusLabel = t("home.tabs.overdue");
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#A35829',
-        backgroundColor: 'rgba(163, 88, 41, 0.16)',
+        color: "#A35829",
+        backgroundColor: "rgba(163, 88, 41, 0.16)",
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
-        alignSelf: 'flex-end',
-        overflow: 'hidden',
-        fontWeight: 'bold',
+        alignSelf: "flex-end",
+        overflow: "hidden",
+        fontWeight: "bold",
       } as any,
     ];
-  } else if (screening.status === 'completed') {
-    statusLabel = t('home.tabs.done');
+  } else if (screening.status === "completed") {
+    statusLabel = t("home.tabs.done");
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: '#22c55e', // green-600
-        backgroundColor: '#f0fdf4', // green-50
+        color: "#22c55e", // green-600
+        backgroundColor: "#f0fdf4", // green-50
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
-        alignSelf: 'flex-end',
-        overflow: 'hidden',
-        fontWeight: 'bold',
+        alignSelf: "flex-end",
+        overflow: "hidden",
+        fontWeight: "bold",
       } as any,
     ];
   }
   // Add language detection (for i18n)
-  const language = isRTL ? 'ar' : 'en';
+  const language = isRTL ? "ar" : "en";
   // Calculate overdue years if needed
   let overdueYears: number | null = null;
-  if (screening.status === 'overdue' && screening.screening?.startAge && userBirthDate) {
+  if (
+    screening.status === "overdue" &&
+    screening.screening?.startAge &&
+    userBirthDate
+  ) {
     const birthDate = new Date(userBirthDate);
     const birthYear = birthDate.getFullYear();
     const targetYear = birthYear + screening.screening.startAge;
@@ -234,79 +302,150 @@ const ScreeningCard = ({ screening, onSchedule, onMarkCompleted, isRTL, userBirt
     overdueYears = currentYear - targetYear;
   }
   return (
-    <View style={[styles.screeningCard, { flexDirection: isRTL ? 'row-reverse' : 'row', position: 'relative' }]}> 
+    <View
+      style={[
+        styles.screeningCard,
+        { flexDirection: "row", position: "relative" },
+      ]}
+    >
       {/* Priority tag in top corner */}
       {priority && (
-        <View style={{
-          position: 'absolute',
-          top: 8,
-          [isRTL ? 'left' : 'right']: 8,
-          zIndex: 2,
-          backgroundColor: priorityColor,
-          borderRadius: 12,
-          paddingHorizontal: 10,
-          paddingVertical: 3,
-          alignSelf: 'flex-start',
-        }}>
-          <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{priorityLabel}</Text>
+        <View
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 2,
+            backgroundColor: priorityColor,
+            borderRadius: 12,
+            paddingHorizontal: 10,
+            paddingVertical: 3,
+            alignSelf: "flex-start",
+          }}
+        >
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: "bold",
+              fontFamily: "ReadexPro-Bold",
+            }}
+          >
+            {priorityLabel}
+          </Text>
         </View>
       )}
       {/* Details */}
-      <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+      <View style={{ flex: 1, alignItems: "flex-start" }}>
         {/* Name row: info icon, name */}
-        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={[styles.screeningTitle, { textAlign: "left" }]}>
+            {screening.screening.name}
+          </Text>
           {screening.screening?.description ? (
             <Tooltip
               isVisible={showTip}
-              content={<Text style={{ maxWidth: 200 }}>{screening.screening.description}</Text>}
+              content={
+                <Text style={{ maxWidth: 200 }}>
+                  {screening.screening.description}
+                </Text>
+              }
               placement="top"
               onClose={() => setShowTip(false)}
               showChildInTooltip={false}
               backgroundColor="rgba(0,0,0,0.2)"
             >
-              <TouchableOpacity onPress={() => setShowTip(true)} style={{ [isRTL ? 'marginRight' : 'marginLeft']: 4 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
+              <TouchableOpacity
+                onPress={() => setShowTip(true)}
+                style={{ marginStart: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name="information-outline"
+                  size={18}
+                  color="#4CCCE6"
+                />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
-          <Text style={[styles.screeningTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{screening.screening.name}</Text>
         </View>
         {/* Status label below name row */}
-        <View style={{ width: '100%', marginTop: 4, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+        <View style={{ width: "100%", marginTop: 4, alignItems: "flex-start" }}>
           <View>
-            <Text style={[...statusLabelStyle, { textAlign: isRTL ? 'right' : 'left', alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>{statusLabel}</Text>
+            <Text
+              style={[
+                ...statusLabelStyle,
+                { textAlign: "left", alignSelf: "flex-start" },
+              ]}
+            >
+              {statusLabel}
+            </Text>
           </View>
         </View>
         {/* Repetition date below status */}
-        {(screening.status === 'completed' || screening.status === 'due' || (screening.status !== 'overdue' && screening.status !== 'completed' && screening.status !== 'due')) && typeof screening.screening?.frequencyYears === 'number' && (
-          <Text style={{ color: '#fff', fontSize: 13, marginTop: 2, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-            {getFrequencyText(screening.screening.frequencyYears, t)}
-          </Text>
-        )}
+        {(screening.status === "completed" ||
+          screening.status === "due" ||
+          (screening.status !== "overdue" &&
+            screening.status !== "completed" &&
+            screening.status !== "due")) &&
+          typeof screening.screening?.frequencyYears === "number" && (
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 13,
+                marginTop: 2,
+                marginBottom: 2,
+                textAlign: "left",
+                fontFamily: "ReadexPro",
+              }}
+            >
+              {getFrequencyText(screening.screening.frequencyYears, t)}
+            </Text>
+          )}
         {/* Next due message (only for original later, not recreated) */}
-        {screening.status === 'later' && typeof screening.screening?.startAge === 'number' && userBirthDate && (
-          <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-            {t('screening.takeAtAge', { age: screening.screening.startAge })}
-          </Text>
-        )}
+        {screening.status === "later" &&
+          typeof screening.screening?.startAge === "number" &&
+          userBirthDate && (
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 14,
+                marginBottom: 2,
+                textAlign: "left",
+                fontFamily: "ReadexPro",
+              }}
+            >
+              {t("screening.takeAtAge", { age: screening.screening.startAge })}
+            </Text>
+          )}
         {/* Overdue years label */}
-        {screening.status === 'overdue' && overdueYears !== null && overdueYears > 0 && (
-          <Text style={{ color: '#fff', fontSize: 14, marginBottom: 2, textAlign: isRTL ? 'right' : 'left', fontFamily: 'ReadexPro' }}>
-            {t('screening.overdueYears', { years: overdueYears, count: overdueYears })}
-          </Text>
-        )}
+        {screening.status === "overdue" &&
+          overdueYears !== null &&
+          overdueYears > 0 && (
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 14,
+                marginBottom: 2,
+                textAlign: "left",
+                fontFamily: "ReadexPro",
+              }}
+            >
+              {t("screening.overdueYears", {
+                years: overdueYears,
+                count: overdueYears,
+              })}
+            </Text>
+          )}
       </View>
       {/* Buttons */}
-      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, alignItems: 'center' }}>
+      <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
         <TouchableOpacity style={styles.actionButton} onPress={onSchedule}>
           <Text style={styles.actionButtonText}>
-            {t('screening.bookWithSehhaty')}
+            {t("screening.bookWithSehhaty")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={onMarkCompleted}>
-          <Text style={styles.actionButtonText}>
-            {t('screening.done')}
-          </Text>
+          <Text style={styles.actionButtonText}>{t("screening.done")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -323,24 +462,27 @@ function calculateAge(dateOfBirth: string) {
 function calculateScreeningStats(screenings: ScreeningWithDetails[]) {
   const stats = { due: 0, overdue: 0, later: 0, completed: 0 };
   screenings.forEach((s) => {
-    if (s.status === 'due') stats.due++;
-    else if (s.status === 'overdue') stats.overdue++;
-    else if (s.status === 'later') stats.later++;
-    else if (s.status === 'completed') stats.completed++;
+    if (s.status === "due") stats.due++;
+    else if (s.status === "overdue") stats.overdue++;
+    else if (s.status === "later") stats.later++;
+    else if (s.status === "completed") stats.completed++;
   });
   return stats;
 }
 
-function filterScreeningsByStatus(screenings: ScreeningWithDetails[], status: string) {
-  if (status === 'all') {
+function filterScreeningsByStatus(
+  screenings: ScreeningWithDetails[],
+  status: string,
+) {
+  if (status === "all") {
     // For 'all' status, show all screenings except completed non-repeatable ones
-    return screenings.filter(s => {
-      if (s.status !== 'completed') return true;
+    return screenings.filter((s) => {
+      if (s.status !== "completed") return true;
       // For completed screenings, only show repeatable ones with a next due date
       return s.screening.frequencyYears > 0 && s.nextDue;
     });
   }
-  return screenings.filter(s => s.status === status);
+  return screenings.filter((s) => s.status === status);
 }
 
 // Add sorting function for screenings
@@ -348,12 +490,13 @@ function sortScreenings(screenings: ScreeningWithDetails[]) {
   const statusOrder = { due: 1, overdue: 2, later: 0 };
   return [...screenings].sort((a, b) => {
     // First sort by status
-    const statusDiff = (statusOrder[a.status as keyof typeof statusOrder] || 3) - 
-                      (statusOrder[b.status as keyof typeof statusOrder] || 3);
+    const statusDiff =
+      (statusOrder[a.status as keyof typeof statusOrder] || 3) -
+      (statusOrder[b.status as keyof typeof statusOrder] || 3);
     if (statusDiff !== 0) return statusDiff;
-    
+
     // Then sort by name
-    return (a.screening.name || '').localeCompare(b.screening.name || '');
+    return (a.screening.name || "").localeCompare(b.screening.name || "");
   });
 }
 
@@ -364,9 +507,11 @@ export default function UpcomingTests() {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const [userId, setUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
-  const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
-  const isRTL = i18n.language === 'ar';
+  const [activeTab, setActiveTab] = useState("all");
+  const { selectedPersonId, setSelectedPersonId } = useContext(
+    SelectedPersonContext,
+  );
+  const isRTL = i18n.language === "ar";
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
@@ -375,10 +520,10 @@ export default function UpcomingTests() {
   // Force re-render when language changes
   useEffect(() => {
     const handleLanguageChange = () => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     };
-    i18n.on('languageChanged', handleLanguageChange);
-    return () => i18n.off('languageChanged', handleLanguageChange);
+    i18n.on("languageChanged", handleLanguageChange);
+    return () => i18n.off("languageChanged", handleLanguageChange);
   }, [i18n]);
 
   // Get initial tab from route params
@@ -390,38 +535,50 @@ export default function UpcomingTests() {
 
   // Load userId from AsyncStorage
   useEffect(() => {
-    AsyncStorage.getItem('healthscreen_user_id').then((id) => {
+    AsyncStorage.getItem("healthscreen_user_id").then((id) => {
       if (id) setUserId(id);
-      else router.replace('/onboarding');
+      else router.replace("/onboarding");
     });
   }, []);
 
   // Data fetching
-  const { data: userData, isLoading, error } = useQuery({
-    queryKey: ['/api/users', userId],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}`),
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["/api/users", userId],
+    queryFn: () => apiRequest("GET", `/api/users/${userId}`),
     enabled: !!userId,
   });
 
   const { data: familyMembersData } = useQuery({
-    queryKey: ['/api/users', userId, 'family'],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
+    queryKey: ["/api/users", userId, "family"],
+    queryFn: () => apiRequest("GET", `/api/users/${userId}/family`),
     enabled: !!userId,
   });
 
-  const { data: selectedPersonData, isLoading: isLoadingSelectedPerson, error: selectedPersonError } = useQuery({
-    queryKey: ['selectedPerson', selectedPersonId, userId],
+  const {
+    data: selectedPersonData,
+    isLoading: isLoadingSelectedPerson,
+    error: selectedPersonError,
+  } = useQuery({
+    queryKey: ["selectedPerson", selectedPersonId, userId],
     queryFn: () =>
-      selectedPersonId === 'user'
-        ? apiRequest('GET', `/api/users/${userId}`)
-        : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId && (
-      selectedPersonId === "user" || 
-      (Array.isArray(familyMembersData) && familyMembersData.some((member: any) => member.id.toString() === selectedPersonId))
-    ),
+      selectedPersonId === "user"
+        ? apiRequest("GET", `/api/users/${userId}`)
+        : apiRequest("GET", `/api/family/${selectedPersonId}/screenings`),
+    enabled:
+      !!userId &&
+      !!selectedPersonId &&
+      (selectedPersonId === "user" ||
+        (Array.isArray(familyMembersData) &&
+          familyMembersData.some(
+            (member: any) => member.id.toString() === selectedPersonId,
+          ))),
     retry: (failureCount, error: any) => {
       // If it's a family member not found error, don't retry
-      if (error?.message?.includes('Family member not found')) {
+      if (error?.message?.includes("Family member not found")) {
         return false;
       }
       return failureCount < 3;
@@ -430,21 +587,28 @@ export default function UpcomingTests() {
 
   // Handle family member not found error - reset to user
   useEffect(() => {
-    if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
-      console.log('Selected family member not found, switching to user');
-      setSelectedPersonId('user');
-      AsyncStorage.setItem('selectedPersonId', 'user');
+    if (
+      selectedPersonError &&
+      selectedPersonError.message?.includes("Family member not found")
+    ) {
+      console.log("Selected family member not found, switching to user");
+      setSelectedPersonId("user");
+      AsyncStorage.setItem("selectedPersonId", "user");
     }
   }, [selectedPersonError]);
 
   // Validate selected person when family members data changes
   useEffect(() => {
-    if (Array.isArray(familyMembersData) && selectedPersonId !== 'user') {
-      const familyMemberExists = familyMembersData.some((member: any) => member.id.toString() === selectedPersonId);
+    if (Array.isArray(familyMembersData) && selectedPersonId !== "user") {
+      const familyMemberExists = familyMembersData.some(
+        (member: any) => member.id.toString() === selectedPersonId,
+      );
       if (!familyMemberExists) {
-        console.log('Selected family member no longer exists, switching to user');
-        setSelectedPersonId('user');
-        AsyncStorage.setItem('selectedPersonId', 'user');
+        console.log(
+          "Selected family member no longer exists, switching to user",
+        );
+        setSelectedPersonId("user");
+        AsyncStorage.setItem("selectedPersonId", "user");
       }
     }
   }, [familyMembersData, selectedPersonId]);
@@ -454,30 +618,39 @@ export default function UpcomingTests() {
     mutationFn: async (screening: any) => {
       const now = new Date();
       const nextDue = new Date();
-      nextDue.setFullYear(nextDue.getFullYear() + (screening.screening?.frequencyYears || 1));
-      if (selectedPersonId !== 'user') {
-        return apiRequest('POST', `/api/family/${selectedPersonId}/screenings/${screening.screeningId}/complete`, {
-          lastCompleted: now.toISOString(),
-          nextDue: nextDue.toISOString(),
-          status: 'completed',
-        });
+      nextDue.setFullYear(
+        nextDue.getFullYear() + (screening.screening?.frequencyYears || 1),
+      );
+      if (selectedPersonId !== "user") {
+        return apiRequest(
+          "POST",
+          `/api/family/${selectedPersonId}/screenings/${screening.screeningId}/complete`,
+          {
+            lastCompleted: now.toISOString(),
+            nextDue: nextDue.toISOString(),
+            status: "completed",
+          },
+        );
       } else {
-        return apiRequest('PUT', `/api/user-screenings/${screening.id}`, {
+        return apiRequest("PUT", `/api/user-screenings/${screening.id}`, {
           lastCompleted: now.toISOString(),
           nextDue: nextDue.toISOString(),
-          status: 'completed',
+          status: "completed",
         });
       }
     },
     onSuccess: async (data, screening) => {
       queryClient.invalidateQueries();
-      showToast({ title: isRTL ? 'تم تحديث الفحص' : 'Screening Updated', type: 'success' });
+      showToast({
+        title: isRTL ? "تم تحديث الفحص" : "Screening Updated",
+        type: "success",
+      });
     },
     onError: (error: any) => {
-      showToast({ 
-        title: isRTL ? 'خطأ' : 'Error', 
-        description: error.message || (isRTL ? 'حدث خطأ' : 'An error occurred'), 
-        type: 'error' 
+      showToast({
+        title: isRTL ? "خطأ" : "Error",
+        description: error.message || (isRTL ? "حدث خطأ" : "An error occurred"),
+        type: "error",
       });
     },
   });
@@ -487,38 +660,59 @@ export default function UpcomingTests() {
   };
 
   const handleScheduleScreening = async (screening: ScreeningWithDetails) => {
-    const sehhatyAppStoreUrl = 'https://apps.apple.com/sa/app/%D8%B5%D8%AD%D8%AA%D9%8A-sehhaty/id1459266578?l';
+    const sehhatyAppStoreUrl =
+      "https://apps.apple.com/sa/app/%D8%B5%D8%AD%D8%AA%D9%8A-sehhaty/id1459266578?l";
     try {
       const supported = await Linking.canOpenURL(sehhatyAppStoreUrl);
       if (supported) {
         await Linking.openURL(sehhatyAppStoreUrl);
       } else {
-        showToast({ 
-          title: isRTL ? 'خطأ' : 'Error', 
-          description: isRTL ? 'لا يمكن فتح رابط التطبيق' : 'Cannot open app link', 
-          type: 'error' 
+        showToast({
+          title: isRTL ? "خطأ" : "Error",
+          description: isRTL
+            ? "لا يمكن فتح رابط التطبيق"
+            : "Cannot open app link",
+          type: "error",
         });
       }
     } catch (error) {
-      showToast({ 
-        title: isRTL ? 'خطأ' : 'Error', 
-        description: isRTL ? 'حدث خطأ أثناء فتح التطبيق' : 'An error occurred while opening the app', 
-        type: 'error' 
+      showToast({
+        title: isRTL ? "خطأ" : "Error",
+        description: isRTL
+          ? "حدث خطأ أثناء فتح التطبيق"
+          : "An error occurred while opening the app",
+        type: "error",
       });
     }
   };
 
   // Data normalization
-  let familyMembers: any[] = Array.isArray(familyMembersData) ? familyMembersData : [];
-  let currentPerson: { name?: string; dateOfBirth: string; gender: string } = { dateOfBirth: '', gender: '' };
+  let familyMembers: any[] = Array.isArray(familyMembersData)
+    ? familyMembersData
+    : [];
+  let currentPerson: { name?: string; dateOfBirth: string; gender: string } = {
+    dateOfBirth: "",
+    gender: "",
+  };
   let screenings: ScreeningWithDetails[] = [];
 
-  if (selectedPersonData && typeof selectedPersonData === 'object' && selectedPersonData !== null) {
-    if (selectedPersonId === 'user' && 'user' in selectedPersonData && 'screenings' in selectedPersonData) {
+  if (
+    selectedPersonData &&
+    typeof selectedPersonData === "object" &&
+    selectedPersonData !== null
+  ) {
+    if (
+      selectedPersonId === "user" &&
+      "user" in selectedPersonData &&
+      "screenings" in selectedPersonData
+    ) {
       const userResponse = selectedPersonData as UserDataResponse;
       currentPerson = userResponse.user;
       screenings = userResponse.screenings;
-    } else if ('familyMember' in selectedPersonData && 'screenings' in selectedPersonData) {
+    } else if (
+      "familyMember" in selectedPersonData &&
+      "screenings" in selectedPersonData
+    ) {
       const familyResponse = selectedPersonData as FamilyMemberResponse;
       currentPerson = {
         name: familyResponse.familyMember.name,
@@ -529,40 +723,46 @@ export default function UpcomingTests() {
     }
   }
 
-  const currentPersonAge = currentPerson.dateOfBirth ? calculateAge(currentPerson.dateOfBirth) : '';
-  const currentPersonName = currentPerson.name || t('common.you');
-  const currentPersonGender = currentPerson.gender || '';
+  const currentPersonAge = currentPerson.dateOfBirth
+    ? calculateAge(currentPerson.dateOfBirth)
+    : "";
+  const currentPersonName = currentPerson.name || t("common.you");
+  const currentPersonGender = currentPerson.gender || "";
   const stats = calculateScreeningStats(screenings);
 
   // Tabs logic
   const tabOptions = [
-    { key: 'all', label: t('home.tabs.all'), color: undefined },
-    { key: 'due', label: t('home.tabs.due'), color: STATUS_COLORS.due },
-    { key: 'overdue', label: t('home.tabs.overdue'), color: STATUS_COLORS.overdue },
-    { key: 'later', label: t('home.tabs.later'), color: STATUS_COLORS.later },
+    { key: "all", label: t("home.tabs.all"), color: undefined },
+    { key: "due", label: t("home.tabs.due"), color: STATUS_COLORS.due },
+    {
+      key: "overdue",
+      label: t("home.tabs.overdue"),
+      color: STATUS_COLORS.overdue,
+    },
+    { key: "later", label: t("home.tabs.later"), color: STATUS_COLORS.later },
     //{ key: 'completed', label: t('home.tabs.done'), color: STATUS_COLORS.completed },
   ];
 
   let filteredScreenings = screenings;
-  if (activeTab === 'all') {
+  if (activeTab === "all") {
     // Only filter out completed screenings that are not repeatable
     filteredScreenings = screenings.filter((s) => {
       // Keep the screening if it's not completed
-      if (s.status !== 'completed') return true;
+      if (s.status !== "completed") return true;
       // For completed screenings, only keep them if they are repeatable and have a next due date
       return s.screening.frequencyYears > 0 && s.nextDue;
     });
     filteredScreenings = sortScreenings(filteredScreenings);
-  } else if (activeTab !== 'all') {
+  } else if (activeTab !== "all") {
     filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
   }
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await queryClient.invalidateQueries();
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
     }
@@ -573,87 +773,129 @@ export default function UpcomingTests() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#4CCCE6" />
-        <Text style={styles.loadingText}>{t('common.loading')}</Text>
+        <Text style={styles.loadingText}>{t("common.loading")}</Text>
       </View>
     );
   }
 
   if (error) {
-    AsyncStorage.removeItem('healthscreen_user_id');
-    router.replace('/onboarding');
+    AsyncStorage.removeItem("healthscreen_user_id");
+    router.replace("/onboarding");
     return null;
   }
 
   return (
-    <ScrollView 
+    <ScrollView
       key={refreshKey}
-      style={{ flex: 1, backgroundColor: '#202221' }} 
-      contentContainerStyle={{ paddingBottom: 32 }} 
+      style={{ flex: 1, backgroundColor: "#202221" }}
+      // style={{ flex: 1, backgroundColor: 'green' }}
+      contentContainerStyle={{ paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#4CCCE6']} // Android
+          colors={["#4CCCE6"]} // Android
           tintColor="#4CCCE6" // iOS
-          title={t('common.refreshing')} // iOS
+          title={t("common.refreshing")} // iOS
           titleColor="#4CCCE6" // iOS
         />
       }
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
+        colors={
+          colorScheme === "dark"
+            ? ["#202221", "#272A29"]
+            : ["#003848", "#4CCCE6"]
+        }
+        style={[
+          styles.header,
+          { paddingTop: insets.top + 16, paddingBottom: 16 },
+        ]}
       >
-        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
-          {selectedPersonId === 'user' 
-            ? t('home.hello', { name: currentPersonName })
-            : t('home.screeningsFor', { name: currentPersonName })
-          }
+        <Text style={[styles.headerTitle, { textAlign: "left" }]}>
+          {selectedPersonId === "user"
+            ? t("home.hello", { name: currentPersonName })
+            : t("home.screeningsFor", { name: currentPersonName })}
         </Text>
-        <Text style={[styles.headerSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
-          {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')}`}
+        <Text style={[styles.headerSubtitle, { textAlign: "left" }]}>
+          {`${t("profile.age")}: ${currentPersonAge} • ${currentPersonGender === "male" ? t("common.male") : t("common.female")}`}
         </Text>
         {/* Family selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.familySelector}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}
+          contentContainerStyle={{
+            gap: 8,
+            paddingHorizontal: 8,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
         >
           <TouchableOpacity
-            style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
-            onPress={() => setSelectedPersonId('user')}
+            style={[
+              styles.familyButton,
+              selectedPersonId === "user" && styles.familyButtonSelected,
+            ]}
+            onPress={() => setSelectedPersonId("user")}
           >
-            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>
-              {t('common.you')}
+            <Text
+              style={[
+                styles.familyButtonText,
+                selectedPersonId === "user" && styles.familyButtonSelectedText,
+              ]}
+            >
+              {t("common.you")}
             </Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
             <TouchableOpacity
               key={member.id}
-              style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
+              style={[
+                styles.familyButton,
+                selectedPersonId === member.id.toString() &&
+                  styles.familyButtonSelected,
+              ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
+              <Text
+                style={[
+                  styles.familyButtonText,
+                  selectedPersonId === member.id.toString() &&
+                    styles.familyButtonSelectedText,
+                ]}
+              >
+                {member.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </LinearGradient>
 
       {/* Tabs */}
-      <View style={[styles.tabsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {tabOptions.map(tab => (
+      <View style={[styles.tabsRow]}>
+        {tabOptions.map((tab) => (
           <TouchableOpacity
             key={tab.key}
-            style={[styles.tabButton, activeTab === tab.key && tab.color && {
-              backgroundColor: tab.color.background,
-              borderColor: tab.color.border,
-              borderWidth: 1,
-            }]}
+            style={[
+              styles.tabButton,
+              activeTab === tab.key &&
+                tab.color && {
+                  backgroundColor: tab.color.background,
+                  borderColor: tab.color.border,
+                  borderWidth: 1,
+                },
+            ]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <Text style={[styles.tabButtonText, activeTab === tab.key && tab.color && { color: tab.color.text, fontWeight: 'bold' }]}>
+            <Text
+              style={[
+                styles.tabButtonText,
+                activeTab === tab.key &&
+                  tab.color && { color: tab.color.text, fontWeight: "bold" },
+              ]}
+            >
               {tab.label}
             </Text>
           </TouchableOpacity>
@@ -661,24 +903,35 @@ export default function UpcomingTests() {
       </View>
 
       {/* Screenings List */}
-      <ScrollView style={styles.screeningsList} contentContainerStyle={{ gap: 7, paddingBottom: 32 }}>
-        {filteredScreenings.length === 0 ? (
-          <Text style={styles.emptyText}>
-            {t('home.noScreenings')}
-          </Text>
-        ) : (
-          filteredScreenings.map((screening, index) => (
-            <ScreeningCard
-              key={screening.id !== 0 ? screening.id : `${screening.screening.name}-${index}`}
-              screening={screening}
-              onSchedule={() => handleScheduleScreening(screening)}
-              onMarkCompleted={() => handleMarkCompleted(screening)}
-              isRTL={isRTL}
-              userBirthDate={currentPerson.dateOfBirth}
-            />
-          ))
-        )}
-      </ScrollView>
+      <View
+        style={{
+          padding: 16,
+        }}
+      >
+        <ScrollView
+          style={styles.screeningsList}
+          contentContainerStyle={{ gap: 7, paddingBottom: 32 }}
+        >
+          {filteredScreenings.length === 0 ? (
+            <Text style={styles.emptyText}>{t("home.noScreenings")}</Text>
+          ) : (
+            filteredScreenings.map((screening, index) => (
+              <ScreeningCard
+                key={
+                  screening.id !== 0
+                    ? screening.id
+                    : `${screening.screening.name}-${index}`
+                }
+                screening={screening}
+                onSchedule={() => handleScheduleScreening(screening)}
+                onMarkCompleted={() => handleMarkCompleted(screening)}
+                isRTL={true}
+                userBirthDate={currentPerson.dateOfBirth}
+              />
+            ))
+          )}
+        </ScrollView>
+      </View>
     </ScrollView>
   );
 }
@@ -686,108 +939,107 @@ export default function UpcomingTests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#202221',
+    backgroundColor: "#202221",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#202221',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#202221",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#045468',
+    color: "#045468",
   },
   header: {
     paddingHorizontal: 16,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     minHeight: 160,
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
-    textAlign: 'right',
-    fontFamily: 'ReadexPro-Bold',
+    textAlign: "left",
+    fontFamily: "ReadexPro-Bold",
   },
   headerSubtitle: {
-    color: '#e0ffe0',
+    color: "#e0ffe0",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
-    textAlign: 'right',
-    fontFamily: 'ReadexPro-Bold',
+    textAlign: "left",
+    fontFamily: "ReadexPro-Bold",
   },
   familySelector: {
     marginTop: 8,
     marginBottom: 8,
   },
   familyButton: {
-    backgroundColor: '#2E3130',
+    backgroundColor: "#2E3130",
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#045468',
+    borderColor: "#045468",
   },
   familyButtonSelected: {
-    backgroundColor: '#045468',
-    borderColor: '#045468',
+    backgroundColor: "#045468",
+    borderColor: "#045468",
   },
   familyButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
+    color: "#fff",
+    fontWeight: "bold",
+    fontFamily: "ReadexPro-Bold",
   },
   familyButtonSelectedText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
+    color: "#fff",
+    fontWeight: "bold",
+    fontFamily: "ReadexPro-Bold",
   },
   tabsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#202221',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#202221",
     paddingHorizontal: 8,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#555',
+    borderBottomColor: "#555",
   },
   tabButton: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 8,
     borderRadius: 8,
     marginHorizontal: 2,
-    backgroundColor: '#2E3130',
+    backgroundColor: "#2E3130",
   },
   tabButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
+    color: "#fff",
+    fontWeight: "bold",
+    fontFamily: "ReadexPro-Bold",
   },
   screeningsList: {
     flex: 1,
-    padding: 16,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#94a3b8',
+    textAlign: "center",
+    color: "#94a3b8",
     fontSize: 16,
     marginTop: 32,
-    fontFamily: 'ReadexPro',
+    fontFamily: "ReadexPro",
   },
   screeningCard: {
-    backgroundColor: '#2E3130',
+    backgroundColor: "#2E3130",
     borderRadius: 12,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -795,26 +1047,26 @@ const styles = StyleSheet.create({
   },
   screeningTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
-    fontFamily: 'ReadexPro-Bold',
+    fontFamily: "ReadexPro-Bold",
   },
   screeningStatus: {
     fontSize: 14,
-    color: '#fff',
-    fontFamily: 'ReadexPro',
+    color: "#fff",
+    fontFamily: "ReadexPro",
   },
   actionButton: {
-    backgroundColor: '#045468',
+    backgroundColor: "#045468",
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
     marginLeft: 4,
   },
   actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
+    color: "#fff",
+    fontWeight: "bold",
+    fontFamily: "ReadexPro-Bold",
   },
-}); 
+});

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-  I18nManager,
-  SafeAreaView,
-  Platform,
-  StatusBar,
   RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,7 +45,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   isRTL: boolean;
   userBirthDate: string;
 }) => {
-  const [showTip, setShowTip] = React.useState(false);
+  const [showTip, setShowTip] = useState(false);
   const { t } = useTranslation();
   // Always show 'Done' with green pill in Completed Tests
   const statusLabel = t('home.tabs.done');
@@ -69,9 +65,10 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   return (
     <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
       {/* Details aligned right */}
-      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+      <View style={{ flex: 1, alignItems: 'flex-start' }}>
         {/* Name row: info icon, name */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={styles.screeningTitle}>{screening.screening?.name || screening.name}</Text>
           {screening.screening?.description ? (
             <Tooltip
               isVisible={showTip}
@@ -81,12 +78,11 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
               showChildInTooltip={false}
               backgroundColor="rgba(0,0,0,0.2)"
             >
-              <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginLeft: 4 }}>
+              <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginStart: 8 }}>
                 <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
-          <Text style={styles.screeningTitle}>{screening.screening?.name || screening.name}</Text>
         </View>
         {/* Status label below name row */}
         <View style={{ width: '100%', marginTop: 4, alignItems: 'flex-end' }}>
@@ -132,7 +128,7 @@ export default function CompletedTests() {
     return () => i18n.off('languageChanged', handleLanguageChange);
   }, [i18n]);
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await queryClient.invalidateQueries();
@@ -267,13 +263,13 @@ export default function CompletedTests() {
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
-        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <Text style={[styles.headerTitle, { textAlign: 'left' }]}>
           {selectedPersonId === 'user' 
             ? t('completed.title')
             : t('home.screeningsFor', { name: currentPersonName })
           }
         </Text>
-        <Text style={[styles.headerSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <Text style={[styles.headerSubtitle, { textAlign: 'left' }]}>
           {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')}`}
         </Text>
         {/* Family selector */}
@@ -281,7 +277,7 @@ export default function CompletedTests() {
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.familySelector}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center' }}
         >
           <TouchableOpacity
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
@@ -353,7 +349,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: 'left',
     fontFamily: 'ReadexPro-Bold',
   },
   headerSubtitle: {
@@ -361,7 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: 'left',
     fontFamily: 'ReadexPro-Bold',
   },
   familySelector: {

@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
-import { I18nManager, Text, TextInput } from 'react-native';
+import { I18nManager,View, Text, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -13,6 +13,7 @@ import '../lib/i18n'; // Restore i18n import
 import { loadStoredLanguage } from '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 import { initializeRTL, verifyRTL } from '../lib/rtlSetup';
+import { DirectionTester } from '@/components/playground/DirectionTester';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -39,9 +40,6 @@ export default function RootLayout() {
           
           // Initialize RTL based on current language
           await initializeRTL(i18n.language as 'ar' | 'en');
-          
-          // Verify RTL is properly configured
-          verifyRTL();
           
           setIsReady(true);
         } catch (error) {
@@ -81,6 +79,13 @@ export default function RootLayout() {
     return null;
   }
 
+  // return <DirectionTester />
+  //  return <View style={{
+  //    padding: 48,
+  //  }}>
+  //    <Text> Hello wrold</Text>
+  // </View>;
+  
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>

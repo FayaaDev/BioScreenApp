@@ -80,7 +80,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   return (
     <View style={styles.container}>
       {label && (
-        <Text style={[styles.label, isRTL && { textAlign: 'right', alignSelf: 'flex-end' }]}>
+        <Text style={[styles.label]}>
           {label}
           {required && <Text style={styles.required}> *</Text>}
         </Text>
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     color: '#ECEDEE',
     marginBottom: 8,
     fontFamily: 'ReadexPro',
+    textAlign: "center",
   },
   required: {
     color: '#ef4444',

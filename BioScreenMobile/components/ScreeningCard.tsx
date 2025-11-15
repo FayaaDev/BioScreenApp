@@ -93,7 +93,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
             {t("screening.nextDue", { date: formatDate(screening.nextDue) })}
           </Text>
         )}
-        <View style={[styles.actions, isRTL && styles.rtlActions]}>
+        <View style={[styles.actions]}>
           {!isCompleted && (
             <TouchableOpacity 
               style={styles.scheduleButton}
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rtlHeaderRow: {
-    flexDirection: 'row-reverse',
+    // flexDirection: 'row-reverse',
   },
   statusBadge: {
     paddingHorizontal: 14,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rtlIconAndDescRow: {
-    flexDirection: 'row-reverse',
+    // flexDirection: 'row-reverse',
   },
   iconContainer: {
     width: 40,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   rtlTimeInfo: {
-    flexDirection: 'row-reverse',
+    // flexDirection: 'row-reverse',
   },
   timeText: {
     fontSize: 12,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   rtlActions: {
-    flexDirection: 'row-reverse',
+    // flexDirection: 'row-reverse',
   },
   scheduleButton: {
     paddingHorizontal: 12,

@@ -33,7 +33,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Serve static files from public directory with explicit MIME types
 app.use(express.static('public', {
-  setHeaders: (res, path) => {
+  setHeaders: (res, path) => { // Convex
     console.log('Serving static file:', path);
     if (path.endsWith('.js')) {
       res.set('Content-Type', 'application/javascript; charset=utf-8');

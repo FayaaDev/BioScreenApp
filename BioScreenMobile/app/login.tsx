@@ -139,11 +139,10 @@ export default function Login() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
+              <Text style={[styles.label,]}>البريد الإلكتروني</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.email && styles.inputError
                 ]}
                 value={formData.email}
@@ -168,11 +167,10 @@ export default function Login() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>كلمة المرور</Text>
+              <Text style={[styles.label, ]}>كلمة المرور</Text>
               <TextInput
                 style={[
                   styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
                   errors.password && styles.inputError
                 ]}
                 value={formData.password}

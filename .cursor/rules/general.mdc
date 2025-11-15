@@ -1,0 +1,7 @@
+---
+
+---
+
+When you're dealing with RTL content in an Expo codebase.
+do not ever set the "textAlign" property to right.
+

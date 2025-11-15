@@ -18,7 +18,8 @@
         "CFBundleDisplayName": "زمام",
         "CFBundleDevelopmentRegion": "ar",
         "CFBundleLocalizations": [
-          "ar"
+          "ar",
+          "en"
         ],
         "ITSAppUsesNonExemptEncryption": false,
         "UIDeviceFamily": [
@@ -26,8 +27,7 @@
         ],
         "UIRequiredDeviceCapabilities": [
           "telephony"
-        ],
-        "UIViewSemanticContentAttribute": "ForceRightToLeft"
+        ]
       }
     },
     "android": {

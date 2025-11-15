@@ -1,3 +1,4 @@
+import MobileText from '@/components/MobileText';
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
@@ -70,8 +71,17 @@ interface FamilyMemberResponse {
   };
 }
 
-const { width } = Dimensions.get('window');
-const isRTL = I18nManager.isRTL;
+/*
+Read this
+Make mobile native text compoennt (if it doesn't already exist)
+Grep every occurance of <Text> in the app, list the components, make a plan to
+1. import the newly created component using prefix alias (DONT USE RELATIVE PATH)
+2. Replace <Text> with <RNText> (With a sed command, do not replace manually)
+Replace </Text> (Closing tag) as well
+Apply to all files in one go
+Do not use file edit tool, rely solely on bash commands to achieve this goal
+https://docs.expo.dev/guides/localization/#text-alignment
+*/
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -245,6 +255,14 @@ export default function HomeScreen() {
     );
   }
 
+  // return <View style={{
+  //   paddingTop:insets.top
+  // }}>
+  //   <Text>
+  //     Am I right to left or left to right
+  //   </Text>
+  // </View>
+  
   return (
     <ScrollView 
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -268,7 +286,7 @@ export default function HomeScreen() {
         <View style={styles.headerContent}>
           <View>
             <ThemedText style={[styles.greeting, { color: 'white' }]}>
-              {getGreeting()}
+              {getGreeting()} 
             </ThemedText>
             <ThemedText style={[styles.subtitle, { color: 'rgba(255,255,255,0.9)' }]}>
               {t('home.manageHealth')}
@@ -286,7 +304,7 @@ export default function HomeScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.familySelector}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row-reverse', alignItems: 'center' }}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, alignItems: 'center' }}
         >
           <TouchableOpacity
             style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
@@ -377,7 +395,10 @@ export default function HomeScreen() {
 
       {/* Educational Content - Middle Section */}
       <View style={styles.educationalSection}>
-        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+        <ThemedText style={[styles.sectionTitle,
+          { color: colors.text,
+            textAlign: "left"
+          }]}>
           {t('home.healthTips')}
         </ThemedText>
         
@@ -414,7 +435,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Quick Actions - Bottom Section */}
-      <View style={styles.quickActionsSection}>
+      <View style={{ ...styles.quickActionsSection }}>
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
           {t('home.quickActions')}
         </ThemedText>
@@ -477,17 +498,17 @@ export default function HomeScreen() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>{t('contact.title')}</Text>
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.name')}</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.name')}</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
               placeholder={t('contact.namePlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.email')}</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8, color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.email')}</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
               placeholder={t('contact.emailPlaceholder')}
@@ -495,17 +516,17 @@ export default function HomeScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.subject')}</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.subject')}</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, textAlign: 'right', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12,  backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
               placeholder={t('contact.subjectPlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'right', color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.content')}</Text>
+            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.content')}</Text>
             <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right', height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16,  height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
               placeholder={t('contact.contentPlaceholder')}
@@ -553,7 +574,7 @@ const styles = StyleSheet.create({
     minHeight: 160,
   },
   headerContent: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -561,13 +582,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: "left",
     fontFamily: 'ReadexPro-Bold',
   },
   subtitle: {
     fontSize: 20,
     opacity: 0.9,
-    textAlign: 'right',
+    // 
     fontFamily: 'ReadexPro',
     marginBottom: 2,
   },
@@ -578,8 +599,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'right',
     fontFamily: 'ReadexPro-Bold',
+    textAlign: "left"
   },
   
   // Stats Section
@@ -636,7 +657,6 @@ const styles = StyleSheet.create({
   educationalSection: {
     paddingHorizontal: 20,
     marginBottom: 30,
-    alignItems: 'flex-end',
   },
   educationalCard: {
     width: '100%',
@@ -652,14 +672,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'right',
+    // 
     fontFamily: 'ReadexPro-Bold',
   },
   educationalContent: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
-    textAlign: 'right',
+    // 
     fontFamily: 'ReadexPro',
   },
 
