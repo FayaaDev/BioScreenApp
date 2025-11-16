@@ -1,13 +1,10 @@
 import { useEffect, useState, useContext, useCallback } from 'react';
 import {
-  View,
-  Text,
   ScrollView,
-  StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
@@ -63,7 +60,12 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
     } as any,
   ];
   return (
-    <View style={[styles.screeningCard, { flexDirection: 'row' }]}> 
+    <Card
+      backgroundColor="#2E3130"
+      enableShadow
+      elevation={3}
+      style={[styles.screeningCard, { flexDirection: 'row' }]}
+    >
       {/* Details aligned right */}
       <View style={{ flex: 1, alignItems: 'flex-start' }}>
         {/* Name row: info icon, name */}
@@ -91,7 +93,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
           </View>
         </View>
       </View>
-    </View>
+    </Card>
   );
 };
 
@@ -263,37 +265,73 @@ export default function CompletedTests() {
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
-        <Text style={[styles.headerTitle, { textAlign: 'left' }]}>
-          {selectedPersonId === 'user' 
-            ? t('completed.title')
-            : t('home.screeningsFor', { name: currentPersonName })
-          }
-        </Text>
-        <Text style={[styles.headerSubtitle, { textAlign: 'left' }]}>
-          {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')}`}
-        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <View>
+            <Text style={styles.headerTitle}>
+              {selectedPersonId === 'user'
+                ? t('completed.title')
+                : t('home.screeningsFor', { name: currentPersonName })}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {`${t('profile.age')}: ${currentPersonAge} • ${
+                currentPersonGender === 'male' ? t('common.male') : t('common.female')
+              }`}
+            </Text>
+          </View>
+        </View>
         {/* Family selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.familySelector}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center' }}
+          contentContainerStyle={{
+            gap: 8,
+            paddingHorizontal: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
         >
           <TouchableOpacity
-            style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
+            style={[
+              styles.familyButton,
+              selectedPersonId === 'user' && styles.familyButtonSelected,
+            ]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>
+            <Text
+              style={[
+                styles.familyButtonText,
+                selectedPersonId === 'user' && styles.familyButtonSelectedText,
+              ]}
+            >
               {t('common.you')}
             </Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
             <TouchableOpacity
               key={member.id}
-              style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
+              style={[
+                styles.familyButton,
+                selectedPersonId === member.id.toString() && styles.familyButtonSelected,
+              ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
+              <Text
+                style={[
+                  styles.familyButtonText,
+                  selectedPersonId === member.id.toString() &&
+                    styles.familyButtonSelectedText,
+                ]}
+              >
+                {member.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -320,15 +358,12 @@ export default function CompletedTests() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#202221',
-  },
+const styles = {
+  container: { flex: 1, backgroundColor: '#202221' },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     backgroundColor: '#202221',
   },
   loadingText: {
@@ -341,23 +376,58 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    overflow: 'hidden',
+    overflow: 'hidden' as const,
     minHeight: 160,
+    alignItems: 'flex-start' as const,
   },
   headerTitle: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginBottom: 2,
-    textAlign: 'left',
+    textAlign: 'left' as const,
     fontFamily: 'ReadexPro-Bold',
   },
   headerSubtitle: {
-    color: '#e0ffe0',
+    color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    textAlign: 'left',
+    fontFamily: 'ReadexPro',
+    textAlign: 'left' as const,
+  },
+  screeningsList: { flex: 1, padding: 16 },
+  emptyText: {
+    textAlign: 'center' as const,
+    color: '#94a3b8',
+    fontSize: 16,
+    marginTop: 32,
+    fontFamily: 'ReadexPro',
+  },
+  screeningCard: {
+    backgroundColor: '#2E3130',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    elevation: 2,
+  },
+  screeningTitle: {
+    fontSize: 16,
+    fontWeight: 'bold' as const,
+    color: '#fff',
+    marginBottom: 4,
+    fontFamily: 'ReadexPro-Bold',
+  },
+  screeningStatus: { fontSize: 14, color: '#fff', fontFamily: 'ReadexPro' },
+  actionButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginLeft: 4,
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontWeight: 'bold' as const,
     fontFamily: 'ReadexPro-Bold',
   },
   familySelector: {
@@ -378,59 +448,11 @@ const styles = StyleSheet.create({
   },
   familyButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     fontFamily: 'ReadexPro-Bold',
   },
   familyButtonSelectedText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
   },
-  screeningsList: {
-    flex: 1,
-    padding: 16,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#94a3b8',
-    fontSize: 16,
-    marginTop: 32,
-    fontFamily: 'ReadexPro',
-  },
-  screeningCard: {
-    backgroundColor: '#2E3130',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  screeningTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-    fontFamily: 'ReadexPro-Bold',
-  },
-  screeningStatus: {
-    fontSize: 14,
-    color: '#fff',
-    fontFamily: 'ReadexPro',
-  },
-  actionButton: {
-    backgroundColor: '#ef4444',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 4,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
-  },
-}); 
+};
+ 

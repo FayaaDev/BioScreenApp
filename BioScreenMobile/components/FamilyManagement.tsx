@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
+  TextInput as RNTextInput,
   ScrollView,
-  StyleSheet,
   Modal,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { View, Text, Card, Button, TouchableOpacity, Checkbox } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../lib/api";
@@ -367,8 +364,8 @@ export function FamilyManagement({
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>{t("family.title")}</Text>
+    <>
+      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: '#045468' }}>{t("family.title")}</Text>
       {isLoading ? (
         <ActivityIndicator size="large" color="#4CCCE6" />
       ) : (
@@ -377,7 +374,7 @@ export function FamilyManagement({
           contentContainerStyle={{ gap: 12 }}
         >
           {!familyMembers || familyMembers.length === 0 ? (
-            <Text style={styles.emptyText}>{t("family.noMembers")}</Text>
+            <Text center grey40 text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
           ) : (
             familyMembers.map((member) => (
               <View key={member.id} style={styles.memberRow}>
@@ -439,11 +436,11 @@ export function FamilyManagement({
           )}
         </ScrollView>
       )}
-      <TouchableOpacity
-        style={[
-          styles.addButton,
-          familyMembers && familyMembers.length >= 5 && { opacity: 0.5 },
-        ]}
+      <Button
+        label={t("family.addMember")}
+        backgroundColor="#045468"
+        marginT-s4
+        style={{ opacity: familyMembers && familyMembers.length >= 5 ? 0.5 : 1 }}
         disabled={familyMembers && familyMembers.length >= 5}
         onPress={() => {
           if (familyMembers && familyMembers.length >= 5) {
@@ -458,9 +455,8 @@ export function FamilyManagement({
           resetForm();
           setIsModalOpen(true);
         }}
-      >
-        <Text style={styles.addButtonText}>{t("family.addMember")}</Text>
-      </TouchableOpacity>
+        labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+      />
       {familyMembers && familyMembers.length >= 5 && (
         <Text
           style={{
@@ -500,7 +496,7 @@ export function FamilyManagement({
                   ? t("family.editMember")
                   : t("family.addMember")}
               </Text>
-              <TextInput
+              <RNTextInput
                 style={[
                   styles.input,
                   { textAlign: "left", writingDirection: "ltr" },
@@ -542,7 +538,7 @@ export function FamilyManagement({
               {submitAttempted && validationErrors.name && (
                 <Text style={styles.errorText}>{validationErrors.name}</Text>
               )}
-              <TextInput
+              <RNTextInput
                 style={[
                   styles.input,
                   { textAlign: "left", writingDirection: "ltr" },
@@ -727,64 +723,39 @@ export function FamilyManagement({
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
-                  <View style={styles.datePickerModal}>
-                    <DateTimePicker
-                      value={tempDate || new Date()}
-                      mode="date"
-                      display="default"
-                      onChange={(event, selectedDate) => {
-                        if (selectedDate) {
-                          setTempDate(selectedDate);
+                  <DateTimePicker
+                    value={tempDate || new Date()}
+                    mode="date"
+                    display="spinner"
+                    maximumDate={new Date()}
+                    minimumDate={
+                      new Date(
+                        new Date().setFullYear(
+                          new Date().getFullYear() - 120,
+                        ),
+                      )
+                    }
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setFormData({
+                          ...formData,
+                          dateOfBirth: selectedDate
+                            .toISOString()
+                            .split("T")[0],
+                        });
+                        if (validationErrors.dateOfBirth) {
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            dateOfBirth: "",
+                          }));
                         }
-                      }}
-                      maximumDate={new Date()}
-                      minimumDate={
-                        new Date(
-                          new Date().setFullYear(
-                            new Date().getFullYear() - 120,
-                          ),
-                        )
                       }
-                      style={{ alignSelf: "flex-end", width: "100%" }}
-                    />
-                    <View style={styles.datePickerActions}>
-                      <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => {
-                          if (tempDate) {
-                            setFormData({
-                              ...formData,
-                              dateOfBirth: tempDate
-                                .toISOString()
-                                .split("T")[0],
-                            });
-                            if (validationErrors.dateOfBirth) {
-                              setValidationErrors((prev) => ({
-                                ...prev,
-                                dateOfBirth: "",
-                              }));
-                            }
-                          }
-                          setShowDatePicker(false);
-                        }}
-                      >
-                        <Text style={styles.confirmButtonText}>
-                          {t("family.confirm")}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.cancelDateButton}
-                        onPress={() => {
-                          setShowDatePicker(false);
-                          setTempDate(null);
-                        }}
-                      >
-                        <Text style={styles.cancelDateButtonText}>
-                          {t("common.cancel")}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                      setShowDatePicker(false);
+                      setTempDate(null);
+                    }}
+                    style={{ alignSelf: "flex-end", width: "100%" }}
+                    textColor="#FFFFFF"
+                  />
                 )}
                 {submitAttempted && validationErrors.dateOfBirth && (
                   <Text style={styles.errorText}>
@@ -807,7 +778,7 @@ export function FamilyManagement({
                   >
                     {t("family.height")}
                   </Text>
-                  <TextInput
+                  <RNTextInput
                     style={[
                       styles.input,
                       { textAlign: "left", writingDirection: "ltr" },
@@ -840,7 +811,7 @@ export function FamilyManagement({
                   <Text style={[styles.label, { textAlign: "left" }]}>
                     {t("family.weight")}
                   </Text>
-                  <TextInput
+                  <RNTextInput
                     style={[
                       styles.input,
                       { textAlign: "left", writingDirection: "ltr" },
@@ -907,215 +878,60 @@ export function FamilyManagement({
 
               <View style={styles.medicalSurveyContainer}>
                 <View style={styles.questionContainer}>
-                  <Text style={[styles.questionLabel, { textAlign: "left" }]}>
-                    {t("family.medicalSurvey.diabetic")}
-                  </Text>
-                  <View
-                    style={[styles.yesNoContainer, { flexDirection: "row" }]}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isDiabetic && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isDiabetic: true })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isDiabetic &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.yes")}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isDiabetic && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isDiabetic: false })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isDiabetic &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.no")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isDiabetic}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, isDiabetic: value })
+                    }
+                    label={t("family.medicalSurvey.diabetic")}
+                    color="#045468"
+                    labelStyle={styles.checkboxLabel}
+                    containerStyle={styles.checkboxContainer}
+                  />
                 </View>
 
                 <View style={styles.questionContainer}>
-                  <Text
-                    style={[
-                      styles.questionLabel,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.medicalSurvey.hypertensive")}
-                  </Text>
-                  <View
-                    style={[styles.yesNoContainer, { flexDirection: "row" }]}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isHypertensive && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isHypertensive: true })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isHypertensive &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.yes")}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isHypertensive &&
-                          styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isHypertensive: false })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isHypertensive &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.no")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isHypertensive}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, isHypertensive: value })
+                    }
+                    label={t("family.medicalSurvey.hypertensive")}
+                    color="#045468"
+                    labelStyle={styles.checkboxLabel}
+                    containerStyle={styles.checkboxContainer}
+                  />
                 </View>
 
                 <View style={styles.questionContainer}>
-                  <Text
-                    style={[
-                      styles.questionLabel,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.medicalSurvey.cholesterol")}
-                  </Text>
-                  <View
-                    style={[styles.yesNoContainer, { flexDirection: "row" }]}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isCholesterol && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isCholesterol: true })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isCholesterol &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.yes")}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isCholesterol && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isCholesterol: false })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isCholesterol &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.no")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isCholesterol}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, isCholesterol: value })
+                    }
+                    label={t("family.medicalSurvey.cholesterol")}
+                    color="#045468"
+                    labelStyle={styles.checkboxLabel}
+                    containerStyle={styles.checkboxContainer}
+                  />
                 </View>
 
                 <View style={styles.questionContainer}>
-                  <Text
-                    style={[
-                      styles.questionLabel,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.medicalSurvey.smoker")}
-                  </Text>
-                  <View
-                    style={[styles.yesNoContainer, { flexDirection: "row" }]}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isSmoker && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isSmoker: true })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isSmoker && styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.yes")}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isSmoker && styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isSmoker: false })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isSmoker &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.no")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isSmoker}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, isSmoker: value })
+                    }
+                    label={t("family.medicalSurvey.smoker")}
+                    color="#045468"
+                    labelStyle={styles.checkboxLabel}
+                    containerStyle={styles.checkboxContainer}
+                  />
                 </View>
 
                 {formData.isSmoker && (
                   <View style={styles.smokingDetailsContainer}>
-                    <TextInput
+                    <RNTextInput
                       style={[
                         styles.input,
                         {
@@ -1152,7 +968,7 @@ export function FamilyManagement({
                         {validationErrors.smokingAmount}
                       </Text>
                     )}
-                    <TextInput
+                    <RNTextInput
                       style={[
                         styles.input,
                         {
@@ -1215,115 +1031,30 @@ export function FamilyManagement({
 
                 {formData.gender === "female" && (
                   <View style={styles.questionContainer}>
-                    <Text
-                      style={[
-                        styles.questionLabel,
-                        { textAlign: "left", alignSelf: "flex-start" },
-                      ]}
-                    >
-                      {t("family.medicalSurvey.pregnant")}
-                    </Text>
-                    <View
-                      style={[
-                        styles.yesNoContainer,
-                        { flexDirection: "row" },
-                      ]}
-                    >
-                      <TouchableOpacity
-                        style={[
-                          styles.yesNoButton,
-                          formData.isPregnant && styles.yesNoButtonSelected,
-                        ]}
-                        onPress={() =>
-                          setFormData({ ...formData, isPregnant: true })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.yesNoButtonText,
-                            formData.isPregnant &&
-                              styles.yesNoButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.yes")}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          styles.yesNoButton,
-                          !formData.isPregnant && styles.yesNoButtonSelected,
-                        ]}
-                        onPress={() =>
-                          setFormData({ ...formData, isPregnant: false })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.yesNoButtonText,
-                            !formData.isPregnant &&
-                              styles.yesNoButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.no")}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                    <Checkbox
+                      value={formData.isPregnant}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, isPregnant: value })
+                      }
+                      label={t("family.medicalSurvey.pregnant")}
+                      color="#045468"
+                      labelStyle={styles.checkboxLabel}
+                      containerStyle={styles.checkboxContainer}
+                    />
                   </View>
                 )}
 
                 <View style={styles.questionContainer}>
-                  <Text
-                    style={[
-                      styles.questionLabel,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.medicalSurvey.sexuallyActive")}
-                  </Text>
-                  <View
-                    style={[styles.yesNoContainer, { flexDirection: "row" }]}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isSexuallyActive &&
-                          styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isSexuallyActive: true })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isSexuallyActive &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.yes")}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isSexuallyActive &&
-                          styles.yesNoButtonSelected,
-                      ]}
-                      onPress={() =>
-                        setFormData({ ...formData, isSexuallyActive: false })
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isSexuallyActive &&
-                            styles.yesNoButtonTextSelected,
-                        ]}
-                      >
-                        {t("family.medicalSurvey.no")}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isSexuallyActive}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, isSexuallyActive: value })
+                    }
+                    label={t("family.medicalSurvey.sexuallyActive")}
+                    color="#045468"
+                    labelStyle={styles.checkboxLabel}
+                    containerStyle={styles.checkboxContainer}
+                  />
                 </View>
 
                 {formData.isSexuallyActive && (
@@ -1440,11 +1171,11 @@ export function FamilyManagement({
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   card: {
     backgroundColor: "#2E3130",
     borderRadius: 12,
@@ -1694,7 +1425,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   checkboxContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
@@ -1882,4 +1613,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",
   },
-});
+};

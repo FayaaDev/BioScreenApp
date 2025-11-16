@@ -14,6 +14,7 @@ import { loadStoredLanguage } from '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 import { initializeRTL, verifyRTL } from '../lib/rtlSetup';
 import { DirectionTester } from '@/components/playground/DirectionTester';
+import { configureUILibrary } from '../lib/uiLibConfig';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -74,6 +75,11 @@ export default function RootLayout() {
       console.warn('Failed to apply Readex Pro font:', error);
     }
   }, []);
+
+  // Configure React Native UI Library with current color scheme
+  useEffect(() => {
+    configureUILibrary(colorScheme ?? 'light');
+  }, [colorScheme]);
 
   if (!loaded || !isReady) {
     return null;

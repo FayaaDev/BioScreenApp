@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  TextInput as RNTextInput,
   ScrollView,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   I18nManager,
+  Pressable,
+  Modal,
 } from 'react-native';
+import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '../lib/api';
@@ -223,30 +222,26 @@ export default function Onboarding() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={{ flex: 1, backgroundColor: '#202221', paddingTop: 32 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>مرحباً بك في زِمامـ</Text>
-            <Text style={styles.subtitle}>
+        <Card padding-s5 backgroundColor="#2E3130" br40>
+          <View center marginB-s6>
+            <Text text60 zimam-primary style={{ fontFamily: 'ReadexPro-Bold', textAlign: 'center', marginBottom: 8 }}>مرحباً بك في زِمامـ</Text>
+            <Text text70 grey40 style={{ fontFamily: 'ReadexPro', textAlign: 'center' }}>
               زِمامـ بالفحص واكتشف جميع الفحوصات المناسبة لك
             </Text>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الاسم الكامل</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
-                  errors.name && styles.inputError,
-                ]}
+          <View>
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الاسم الكامل</Text>
+              <RNTextInput
+                style={{ height: 48, borderWidth: 1, borderColor: errors.name ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
                 value={formData.name}
                 onChangeText={(text) => {
                   setFormData({ ...formData, name: text });
@@ -259,23 +254,28 @@ export default function Onboarding() {
                 editable={!createUserMutation.isPending}
               />
               {errors.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.name}</Text>
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تاريخ الميلاد</Text>
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>تاريخ الميلاد</Text>
               <TouchableOpacity
-                style={[
-                  styles.datePickerButton,
-                  errors.dateOfBirth && styles.inputError,
-                ]}
+                paddingH-s4
+                style={{
+                  height: 48,
+                  borderWidth: 1,
+                  borderColor: errors.dateOfBirth ? '#ef4444' : '#555',
+                  borderRadius: 8,
+                  backgroundColor: '#202221',
+                  justifyContent: 'center',
+                }}
                 onPress={() => {
                   setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
                   setShowDatePicker(true);
                 }}
               >
-                <Text style={{ color: formData.dateOfBirth ? '#374151' : '#888', textAlign: 'right' }}>
+                <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro' }}>
                   {formData.dateOfBirth
                     ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
                         year: 'numeric',
@@ -286,61 +286,66 @@ export default function Onboarding() {
                 </Text>
               </TouchableOpacity>
               {showDatePicker && (
-                <View style={styles.datePickerOverlay}>
-                  <View style={styles.datePickerModalBox}>
-                    <DateTimePicker
-                      value={tempDate || new Date()}
-                      mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                      onChange={handleDateChange}
-                      maximumDate={new Date()}
-                      minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
-                      style={{ width: '100%' }}
-                    />
-                    <View style={styles.datePickerActionsRow}>
-                      <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={() => {
-                          if (tempDate) {
-                            setFormData({
-                              ...formData,
-                              dateOfBirth: tempDate.toISOString().split('T')[0],
-                            });
-                            if (errors.dateOfBirth) {
-                              setErrors({ ...errors, dateOfBirth: undefined });
+                <Modal
+                  visible={showDatePicker}
+                  transparent
+                  animationType="fade"
+                  onRequestClose={() => setShowDatePicker(false)}
+                >
+                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                    <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '85%', alignItems: 'center', elevation: 8 }}>
+                      <DateTimePicker
+                        value={tempDate || new Date()}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={handleDateChange}
+                        maximumDate={new Date()}
+                        minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                        style={{ width: '100%' }}
+                      />
+                      <View row spread marginT-s4 style={{ width: '100%' }}>
+                        <Button
+                          label="تأكيد"
+                          backgroundColor="#4CCCE6"
+                          style={{ paddingVertical: 12, paddingHorizontal: 24, marginRight: 8 }}
+                          onPress={() => {
+                            if (tempDate) {
+                              setFormData({
+                                ...formData,
+                                dateOfBirth: tempDate.toISOString().split('T')[0],
+                              });
+                              if (errors.dateOfBirth) {
+                                setErrors({ ...errors, dateOfBirth: undefined });
+                              }
                             }
-                          }
-                          setShowDatePicker(false);
-                        }}
-                      >
-                        <Text style={styles.confirmButtonText}>تأكيد</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.cancelDateButton}
-                        onPress={() => {
-                          setShowDatePicker(false);
-                          setTempDate(null);
-                        }}
-                      >
-                        <Text style={styles.cancelDateButtonText}>إلغاء</Text>
-                      </TouchableOpacity>
+                            setShowDatePicker(false);
+                          }}
+                          labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                        />
+                        <Button
+                          label="إلغاء"
+                          backgroundColor="#202221"
+                          style={{ paddingVertical: 12, paddingHorizontal: 24 }}
+                          onPress={() => {
+                            setShowDatePicker(false);
+                            setTempDate(null);
+                          }}
+                          labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
+                </Modal>
               )}
               {errors.dateOfBirth && (
-                <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.dateOfBirth}</Text>
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>البريد الإلكتروني</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
-                  errors.email && styles.inputError,
-                ]}
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>البريد الإلكتروني</Text>
+              <RNTextInput
+                style={{ height: 48, borderWidth: 1, borderColor: errors.email ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
                 value={formData.email}
                 onChangeText={(text) => {
                   setFormData({ ...formData, email: text });
@@ -358,7 +363,7 @@ export default function Onboarding() {
                 editable={!createUserMutation.isPending}
               />
               {errors.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.email}</Text>
               )}
             </View>
 
@@ -375,14 +380,10 @@ export default function Onboarding() {
               required={true}
             />
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>كلمة المرور</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
-                  errors.password && styles.inputError,
-                ]}
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>كلمة المرور</Text>
+              <RNTextInput
+                style={{ height: 48, borderWidth: 1, borderColor: errors.password ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
                 value={formData.password}
                 onChangeText={(text) => {
                   setFormData({ ...formData, password: text });
@@ -397,18 +398,14 @@ export default function Onboarding() {
                 editable={!createUserMutation.isPending}
               />
               {errors.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.password}</Text>
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>تأكيد كلمة المرور</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { textAlign: 'right', writingDirection: 'rtl' },
-                  errors.confirmPassword && styles.inputError,
-                ]}
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>تأكيد كلمة المرور</Text>
+              <RNTextInput
+                style={{ height: 48, borderWidth: 1, borderColor: errors.confirmPassword ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
                 value={formData.confirmPassword}
                 onChangeText={(text) => {
                   setFormData({ ...formData, confirmPassword: text });
@@ -423,18 +420,26 @@ export default function Onboarding() {
                 editable={!createUserMutation.isPending}
               />
               {errors.confirmPassword && (
-                <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.confirmPassword}</Text>
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الجنس</Text>
-              <View style={[styles.genderContainer, { flexDirection: 'row-reverse' }]}>
+            <View marginB-s4>
+              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الجنس</Text>
+              <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
                 <TouchableOpacity
-                  style={[
-                    styles.genderButton,
-                    formData.gender === 'male' && styles.genderButtonSelected,
-                  ]}
+                  flex
+                  center
+                  br20
+                  paddingV-s3
+                  style={{
+                    height: 48,
+                    borderWidth: 1,
+                    borderColor: '#045468',
+                    backgroundColor: formData.gender === 'male' ? '#045468' : '#fff',
+                    flexDirection: 'row',
+                    gap: 8,
+                  }}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'male' });
                     if (errors.gender) {
@@ -449,20 +454,29 @@ export default function Onboarding() {
                     color={formData.gender === 'male' ? '#fff' : '#045468'}
                   />
                   <Text
-                    style={[
-                      styles.genderButtonText,
-                      formData.gender === 'male' && styles.genderButtonTextSelected,
-                    ]}
+                    text70
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === 'male' ? '#fff' : '#045468',
+                    }}
                   >
                     ذكر
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[
-                    styles.genderButton,
-                    formData.gender === 'female' && styles.genderButtonSelected,
-                  ]}
+                  flex
+                  center
+                  br20
+                  paddingV-s3
+                  style={{
+                    height: 48,
+                    borderWidth: 1,
+                    borderColor: '#045468',
+                    backgroundColor: formData.gender === 'female' ? '#045468' : '#fff',
+                    flexDirection: 'row',
+                    gap: 8,
+                  }}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'female' });
                     if (errors.gender) {
@@ -477,57 +491,72 @@ export default function Onboarding() {
                     color={formData.gender === 'female' ? '#fff' : '#045468'}
                   />
                   <Text
-                    style={[
-                      styles.genderButtonText,
-                      formData.gender === 'female' && styles.genderButtonTextSelected,
-                    ]}
+                    text70
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === 'female' ? '#fff' : '#045468',
+                    }}
                   >
                     أنثى
                   </Text>
                 </TouchableOpacity>
               </View>
               {errors.gender && (
-                <Text style={styles.errorText}>{errors.gender}</Text>
+                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.gender}</Text>
               )}
             </View>
 
             {/* Medical Survey Section */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>الاستبيان الطبي</Text>
+            <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+              <Text text60 zimam-primary center style={{ fontFamily: 'ReadexPro-Bold' }}>الاستبيان الطبي</Text>
             </View>
 
-            <View style={styles.medicalSurveyContainer}>
-              <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت مصاب بالسكري؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+            <View style={{ gap: 16 }}>
+              <View style={{ gap: 8 }}>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بالسكري؟</Text>
+                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      formData.isDiabetic && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: formData.isDiabetic ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isDiabetic: true })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        formData.isDiabetic && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: formData.isDiabetic ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       نعم
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      !formData.isDiabetic && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: !formData.isDiabetic ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isDiabetic: false })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        !formData.isDiabetic && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: !formData.isDiabetic ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       لا
                     </Text>
@@ -535,37 +564,51 @@ export default function Onboarding() {
                 </View>
               </View>
 
-              <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+              <View style={{ gap: 8 }}>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
+                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      formData.isHypertensive && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: formData.isHypertensive ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isHypertensive: true })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        formData.isHypertensive && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: formData.isHypertensive ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       نعم
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      !formData.isHypertensive && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: !formData.isHypertensive ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isHypertensive: false })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        !formData.isHypertensive && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: !formData.isHypertensive ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       لا
                     </Text>
@@ -573,37 +616,51 @@ export default function Onboarding() {
                 </View>
               </View>
 
-              <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت مصاب بارتفاع في الكوليسترول؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+              <View style={{ gap: 8 }}>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع في الكوليسترول؟</Text>
+                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      formData.isCholesterol && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: formData.isCholesterol ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isCholesterol: true })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        formData.isCholesterol && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: formData.isCholesterol ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       نعم
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      !formData.isCholesterol && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: !formData.isCholesterol ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isCholesterol: false })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        !formData.isCholesterol && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: !formData.isCholesterol ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       لا
                     </Text>
@@ -611,37 +668,51 @@ export default function Onboarding() {
                 </View>
               </View>
 
-              <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت مدخن؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+              <View style={{ gap: 8 }}>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
+                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      formData.isSmoker && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: formData.isSmoker ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isSmoker: true })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        formData.isSmoker && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: formData.isSmoker ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       نعم
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      !formData.isSmoker && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: !formData.isSmoker ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isSmoker: false })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        !formData.isSmoker && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: !formData.isSmoker ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       لا
                     </Text>
@@ -650,13 +721,21 @@ export default function Onboarding() {
               </View>
 
               {formData.isSmoker && (
-                <View style={styles.smokingDetailsContainer}>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl' },
-                      errors.smokingDetails?.amount && styles.inputError,
-                    ]}
+                <View style={{ gap: 12 }}>
+                  <RNTextInput
+                    style={{
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: errors.smokingDetails?.amount ? '#ef4444' : '#555',
+                      borderRadius: 8,
+                      paddingHorizontal: 16,
+                      fontSize: 16,
+                      fontFamily: 'ReadexPro',
+                      backgroundColor: '#202221',
+                      color: '#ECEDEE',
+                      textAlign: 'right',
+                      writingDirection: 'rtl',
+                    }}
                     placeholder=" كم عدد علب السجائر التي تدخنها يوميا؟"
                     value={formData.smokingDetails?.amount}
                     onChangeText={(text) =>
@@ -670,12 +749,20 @@ export default function Onboarding() {
                     }
                     placeholderTextColor="#999"
                   />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { textAlign: 'right', writingDirection: 'rtl' },
-                      errors.smokingDetails?.duration && styles.inputError,
-                    ]}
+                  <RNTextInput
+                    style={{
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: errors.smokingDetails?.duration ? '#ef4444' : '#555',
+                      borderRadius: 8,
+                      paddingHorizontal: 16,
+                      fontSize: 16,
+                      fontFamily: 'ReadexPro',
+                      backgroundColor: '#202221',
+                      color: '#ECEDEE',
+                      textAlign: 'right',
+                      writingDirection: 'rtl',
+                    }}
                     placeholder="منذ متى تدخن؟ (بالسنوات)"
                     value={formData.smokingDetails?.duration}
                     onChangeText={(text) =>
@@ -690,22 +777,30 @@ export default function Onboarding() {
                     placeholderTextColor="#999"
                   />
                   {formData.smokingDetails?.amount && formData.smokingDetails?.duration && (
-                    <View style={[styles.metricBox, styles.packYearsBox]}>
-                      <Text style={[styles.metricLabel, styles.packYearsLabel]}>سنوات التدخين (Pack-Years):</Text>
-                      <Text style={[styles.metricValue, styles.packYearsValue]}>{calculatePackYears(formData.smokingDetails)}</Text>
+                    <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: '#045468' }}>
+                      <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right' }}>سنوات التدخين (Pack-Years):</Text>
+                      <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right' }}>{calculatePackYears(formData.smokingDetails)}</Text>
                     </View>
                   )}
                 </View>
               )}
 
-              <View style={styles.inputContainer}>
-                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الطول (سم)</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl' },
-                    errors.height && styles.inputError,
-                  ]}
+              <View marginB-s4>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الطول (سم)</Text>
+                <RNTextInput
+                  style={{
+                    height: 48,
+                    borderWidth: 1,
+                    borderColor: errors.height ? '#ef4444' : '#555',
+                    borderRadius: 8,
+                    paddingHorizontal: 16,
+                    fontSize: 16,
+                    fontFamily: 'ReadexPro',
+                    backgroundColor: '#202221',
+                    color: '#ECEDEE',
+                    textAlign: 'right',
+                    writingDirection: 'rtl',
+                  }}
                   value={formData.height}
                   onChangeText={(text) => {
                     setFormData({ ...formData, height: text });
@@ -717,17 +812,25 @@ export default function Onboarding() {
                   placeholder="أدخل طولك"
                   placeholderTextColor="#999"
                 />
-                {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+                {errors.height && <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.height}</Text>}
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>الوزن (كجم)</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: 'right', writingDirection: 'rtl' },
-                    errors.weight && styles.inputError,
-                  ]}
+              <View marginB-s4>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الوزن (كجم)</Text>
+                <RNTextInput
+                  style={{
+                    height: 48,
+                    borderWidth: 1,
+                    borderColor: errors.weight ? '#ef4444' : '#555',
+                    borderRadius: 8,
+                    paddingHorizontal: 16,
+                    fontSize: 16,
+                    fontFamily: 'ReadexPro',
+                    backgroundColor: '#202221',
+                    color: '#ECEDEE',
+                    textAlign: 'right',
+                    writingDirection: 'rtl',
+                  }}
                   value={formData.weight}
                   onChangeText={(text) => {
                     setFormData({ ...formData, weight: text });
@@ -739,53 +842,67 @@ export default function Onboarding() {
                   placeholder="أدخل وزنك"
                   placeholderTextColor="#999"
                 />
-                {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+                {errors.weight && <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.weight}</Text>}
               </View>
 
               {/* BMI Display */}
               {formData.height && formData.weight && (
-                <View style={[styles.metricBox, styles.bmiContainer]}>
-                  <Text style={[styles.metricLabel, styles.bmiLabel]}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text style={[styles.metricValue, styles.bmiValue]}>
+                <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: '#045468' }}>
+                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right' }}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right' }}>
                     {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                   </Text>
-                  <Text style={[styles.bmiCategory, { textAlign: 'right', width: '100%' }]}>
+                  <Text text80 style={{ fontFamily: 'ReadexPro', color: '#ECEDEE', textAlign: 'right', width: '100%' }}>
                     {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}</Text>
                 </View>
               )}
 
               {formData.gender === 'female' && (
-                <View style={styles.questionContainer}>
-                  <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت حامل؟</Text>
-                  <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+                <View style={{ gap: 8 }}>
+                  <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت حامل؟</Text>
+                  <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                     <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        formData.isPregnant && styles.yesNoButtonSelected,
-                      ]}
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: '#045468',
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: formData.isPregnant ? '#045468' : 'transparent',
+                      }}
                       onPress={() => setFormData({ ...formData, isPregnant: true })}
                     >
                       <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          formData.isPregnant && styles.yesNoButtonTextSelected,
-                        ]}
+                        text70
+                        style={{
+                          fontFamily: 'ReadexPro-Bold',
+                          color: formData.isPregnant ? '#ECEDEE' : '#045468',
+                        }}
                       >
                         نعم
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[
-                        styles.yesNoButton,
-                        !formData.isPregnant && styles.yesNoButtonSelected,
-                      ]}
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: '#045468',
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: !formData.isPregnant ? '#045468' : 'transparent',
+                      }}
                       onPress={() => setFormData({ ...formData, isPregnant: false })}
                     >
                       <Text
-                        style={[
-                          styles.yesNoButtonText,
-                          !formData.isPregnant && styles.yesNoButtonTextSelected,
-                        ]}
+                        text70
+                        style={{
+                          fontFamily: 'ReadexPro-Bold',
+                          color: !formData.isPregnant ? '#ECEDEE' : '#045468',
+                        }}
                       >
                         لا
                       </Text>
@@ -794,37 +911,51 @@ export default function Onboarding() {
                 </View>
               )}
 
-              <View style={styles.questionContainer}>
-                <Text style={[styles.questionLabel, { textAlign: 'right', alignSelf: 'flex-end' }]}>هل أنت نشط جنسياً؟</Text>
-                <View style={[styles.yesNoContainer, { flexDirection: 'row-reverse' }]}>
+              <View style={{ gap: 8 }}>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
+                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      formData.isSexuallyActive && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: formData.isSexuallyActive ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isSexuallyActive: true })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        formData.isSexuallyActive && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: formData.isSexuallyActive ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       نعم
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[
-                      styles.yesNoButton,
-                      !formData.isSexuallyActive && styles.yesNoButtonSelected,
-                    ]}
+                    style={{
+                      flex: 1,
+                      height: 48,
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: !formData.isSexuallyActive ? '#045468' : 'transparent',
+                    }}
                     onPress={() => setFormData({ ...formData, isSexuallyActive: false })}
                   >
                     <Text
-                      style={[
-                        styles.yesNoButtonText,
-                        !formData.isSexuallyActive && styles.yesNoButtonTextSelected,
-                      ]}
+                      text70
+                      style={{
+                        fontFamily: 'ReadexPro-Bold',
+                        color: !formData.isSexuallyActive ? '#ECEDEE' : '#045468',
+                      }}
                     >
                       لا
                     </Text>
@@ -833,14 +964,20 @@ export default function Onboarding() {
               </View>
 
               {formData.isSexuallyActive && (
-                <View style={styles.partnerCountContainer}>
-                  <Text style={[styles.label, { textAlign: 'right', alignSelf: 'flex-end' }]}>عدد الشركاء</Text>
-                  <View style={[styles.partnerCountButtons, { flexDirection: 'row-reverse' }]}>
+                <View marginB-s4>
+                  <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>عدد الشركاء</Text>
+                  <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
                     <TouchableOpacity
-                      style={[
-                        styles.partnerCountButton,
-                        formData.sexualActivityDetails?.partnerCount === 'single' && styles.partnerCountButtonSelected,
-                      ]}
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: '#045468',
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: formData.sexualActivityDetails?.partnerCount === 'single' ? '#045468' : 'transparent',
+                      }}
                       onPress={() =>
                         setFormData({
                           ...formData,
@@ -849,19 +986,26 @@ export default function Onboarding() {
                       }
                     >
                       <Text
-                        style={[
-                          styles.partnerCountButtonText,
-                          formData.sexualActivityDetails?.partnerCount === 'single' && styles.partnerCountButtonTextSelected,
-                        ]}
+                        text70
+                        style={{
+                          fontFamily: 'ReadexPro-Bold',
+                          color: formData.sexualActivityDetails?.partnerCount === 'single' ? '#ECEDEE' : '#045468',
+                        }}
                       >
                         شريك واحد
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[
-                        styles.partnerCountButton,
-                        formData.sexualActivityDetails?.partnerCount === 'multiple' && styles.partnerCountButtonSelected,
-                      ]}
+                      style={{
+                        flex: 1,
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: '#045468',
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: formData.sexualActivityDetails?.partnerCount === 'multiple' ? '#045468' : 'transparent',
+                      }}
                       onPress={() =>
                         setFormData({
                           ...formData,
@@ -870,10 +1014,11 @@ export default function Onboarding() {
                       }
                     >
                       <Text
-                        style={[
-                          styles.partnerCountButtonText,
-                          formData.sexualActivityDetails?.partnerCount === 'multiple' && styles.partnerCountButtonTextSelected,
-                        ]}
+                        text70
+                        style={{
+                          fontFamily: 'ReadexPro-Bold',
+                          color: formData.sexualActivityDetails?.partnerCount === 'multiple' ? '#ECEDEE' : '#045468',
+                        }}
                       >
                         أكثر من شريك
                       </Text>
@@ -884,376 +1029,36 @@ export default function Onboarding() {
             </View>
 
             <TouchableOpacity
-              style={[
-                styles.submitButton,
-                createUserMutation.isPending && styles.submitButtonDisabled,
-              ]}
+              style={{
+                backgroundColor: createUserMutation.isPending ? '#666' : '#045468',
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: 'center',
+                marginTop: 24,
+              }}
               onPress={handleSubmit}
               disabled={createUserMutation.isPending}
             >
               {createUserMutation.isPending ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitButtonText}>ابدأ</Text>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Bold' }}>ابدأ</Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.loginButton}
+              center
+              paddingV-s3
               onPress={() => router.push('/login')}
               disabled={createUserMutation.isPending}
             >
-              <Text style={styles.loginButtonText}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
+              <Text text80 zimam-primary style={{ fontFamily: 'ReadexPro' }}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#202221',
-    paddingTop: 32,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#2E3130',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#4CCCE6',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-    color: '#94a3b8',
-    textAlign: 'center',
-  },
-  form: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-    color: '#ECEDEE',
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#555',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-    backgroundColor: '#202221',
-    color: '#ECEDEE',
-  },
-  inputError: {
-    borderColor: '#ef4444',
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: 14,
-    fontFamily: 'ReadexPro',
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  genderButton: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#045468',
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-  },
-  genderButtonSelected: {
-    backgroundColor: '#045468',
-  },
-  genderButtonText: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#045468',
-  },
-  genderButtonTextSelected: {
-    color: '#fff',
-  },
-  questionContainer: {
-    gap: 8,
-    width: '100%',
-  },
-  questionLabel: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro-Medium',
-    color: '#ECEDEE',
-    marginBottom: 4,
-  },
-  yesNoContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  yesNoButton: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#045468',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  yesNoButtonSelected: {
-    backgroundColor: '#045468',
-  },
-  yesNoButtonText: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#045468',
-  },
-  yesNoButtonTextSelected: {
-    color: '#fff',
-  },
-  datePickerButton: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#555',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    backgroundColor: '#202221',
-  },
-  datePickerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  datePickerModalBox: {
-    backgroundColor: '#2E3130',
-    borderRadius: 18,
-    padding: 24,
-    width: '85%',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  datePickerActionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 16,
-  },
-  confirmButton: {
-    backgroundColor: '#4CCCE6',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  confirmButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-  },
-  cancelDateButton: {
-    backgroundColor: '#202221',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelDateButtonText: {
-    color: '#4CCCE6',
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-  },
-  submitButton: {
-    height: 48,
-    backgroundColor: '#045468',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  submitButtonDisabled: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-  },
-  loginButton: {
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loginButtonText: {
-    color: '#4CCCE6',
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-  },
-  sectionHeader: {
-    marginTop: 24,
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingBottom: 8,
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#4CCCE6',
-    textAlign: 'center',
-    alignSelf: 'center',
-  },
-  medicalSurveyContainer: {
-    gap: 16,
-  },
-  checkboxContainer: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 8,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#4CCCE6',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-    color: '#333',
-  },
-  smokingDetailsContainer: {
-    gap: 8,
-    marginLeft: 32,
-  },
-  partnerCountContainer: {
-    marginLeft: 32,
-    gap: 8,
-  },
-  partnerCountButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  partnerCountButton: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#045468',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  partnerCountButtonSelected: {
-    backgroundColor: '#045468',
-  },
-  partnerCountButtonText: {
-    fontSize: 14,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#045468',
-  },
-  partnerCountButtonTextSelected: {
-    color: '#fff',
-  },
-  bmiContainer: {
-    backgroundColor: '#f0fdf4',
-  },
-  bmiLabel: {
-    color: '#4CCCE6',
-    fontFamily: 'ReadexPro-Bold',
-  },
-  bmiValue: {
-    color: '#4CCCE6',
-    fontFamily: 'ReadexPro-Bold',
-    marginVertical: 4,
-  },
-  bmiCategory: {
-    fontSize: 14,
-    fontFamily: 'ReadexPro',
-    color: '#666',
-    textAlign: 'right',
-    width: '100%',
-  },
-  metricBox: {
-    width: '100%',
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 12,
-    alignItems: 'flex-start',
-    alignSelf: 'flex-end',
-  },
-  metricLabel: {
-    fontFamily: 'ReadexPro-Bold',
-    fontSize: 18,
-    marginBottom: 4,
-    textAlign: 'right',
-    width: '100%',
-  },
-  metricValue: {
-    fontFamily: 'ReadexPro-Bold',
-    fontSize: 28,
-    marginBottom: 4,
-    textAlign: 'right',
-    width: '100%',
-  },
-  packYearsBox: {
-    backgroundColor: '#fffbe6',
-  },
-  packYearsLabel: {
-    color: '#bfa100',
-    fontFamily: 'ReadexPro-Bold',
-  },
-  packYearsValue: {
-    color: '#bfa100',
-    fontFamily: 'ReadexPro-Bold',
-  },
-}); 
+ 

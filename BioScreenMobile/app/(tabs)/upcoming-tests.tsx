@@ -1,14 +1,11 @@
 import { useEffect, useState, useContext, useCallback } from "react";
 import {
-  View,
-  Text,
   ScrollView,
-  StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
   Linking,
   RefreshControl,
 } from "react-native";
+import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/api";
@@ -98,7 +95,10 @@ const ScreeningCard = ({
         } as any,
       ];
       return (
-        <View
+        <Card
+          backgroundColor="#2E3130"
+          enableShadow
+          elevation={3}
           style={[
             styles.screeningCard,
             { flexDirection: "row", position: "relative" },
@@ -222,7 +222,7 @@ const ScreeningCard = ({
               <Text style={styles.actionButtonText}>{t("screening.done")}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Card>
       );
     } else {
       statusLabel = t("home.later");
@@ -302,7 +302,10 @@ const ScreeningCard = ({
     overdueYears = currentYear - targetYear;
   }
   return (
-    <View
+    <Card
+      backgroundColor="#2E3130"
+      enableShadow
+      elevation={3}
       style={[
         styles.screeningCard,
         { flexDirection: "row", position: "relative" },
@@ -448,7 +451,7 @@ const ScreeningCard = ({
           <Text style={styles.actionButtonText}>{t("screening.done")}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Card>
   );
 };
 
@@ -813,14 +816,29 @@ export default function UpcomingTests() {
           { paddingTop: insets.top + 16, paddingBottom: 16 },
         ]}
       >
-        <Text style={[styles.headerTitle, { textAlign: "left" }]}>
-          {selectedPersonId === "user"
-            ? t("home.hello", { name: currentPersonName })
-            : t("home.screeningsFor", { name: currentPersonName })}
-        </Text>
-        <Text style={[styles.headerSubtitle, { textAlign: "left" }]}>
-          {`${t("profile.age")}: ${currentPersonAge} • ${currentPersonGender === "male" ? t("common.male") : t("common.female")}`}
-        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <View>
+            <Text style={[styles.headerTitle, { textAlign: "left" }]}>
+              {selectedPersonId === "user"
+                ? t("home.hello", { name: currentPersonName })
+                : t("home.screeningsFor", { name: currentPersonName })}
+            </Text>
+            <Text style={[styles.headerSubtitle, { textAlign: "left" }]}>
+              {`${t("profile.age")}: ${currentPersonAge} • ${
+                currentPersonGender === "male"
+                  ? t("common.male")
+                  : t("common.female")
+              }`}
+            </Text>
+          </View>
+        </View>
         {/* Family selector */}
         <ScrollView
           horizontal
@@ -936,43 +954,65 @@ export default function UpcomingTests() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#202221",
-  },
+const styles = {
   centered: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
     backgroundColor: "#202221",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
     color: "#045468",
+    fontFamily: "ReadexPro",
   },
   header: {
     paddingHorizontal: 16,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    overflow: "hidden",
+    overflow: "hidden" as const,
     minHeight: 160,
+    alignItems: "flex-start" as const,
   },
   headerTitle: {
-    color: "#fff",
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: "bold" as const,
     marginBottom: 2,
-    textAlign: "left",
     fontFamily: "ReadexPro-Bold",
+    color: "#FFFFFF",
   },
   headerSubtitle: {
-    color: "#e0ffe0",
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 2,
-    textAlign: "left",
+    fontFamily: "ReadexPro",
+    color: "#FFFFFF",
+  },
+  screeningCard: {
+    backgroundColor: "#2E3130",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    elevation: 2,
+  },
+  screeningTitle: {
+    fontSize: 16,
+    fontWeight: "bold" as const,
+    color: "#fff",
+    marginBottom: 4,
+    fontFamily: "ReadexPro-Bold",
+  },
+  screeningStatus: { fontSize: 14, color: "#fff", fontFamily: "ReadexPro" },
+  actionButton: {
+    backgroundColor: "#045468",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginLeft: 4,
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "bold" as const,
     fontFamily: "ReadexPro-Bold",
   },
   familySelector: {
@@ -993,80 +1033,36 @@ const styles = StyleSheet.create({
   },
   familyButtonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  familyButtonSelectedText: {
-    color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "bold" as const,
     fontFamily: "ReadexPro-Bold",
   },
   tabsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#202221",
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#555",
+    flexDirection: "row" as const,
+    justifyContent: "space-around" as const,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   tabButton: {
     flex: 1,
-    alignItems: "center",
+    alignItems: "center" as const,
     paddingVertical: 8,
-    borderRadius: 8,
-    marginHorizontal: 2,
+    borderRadius: 16,
+    marginHorizontal: 4,
     backgroundColor: "#2E3130",
   },
   tabButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
+    color: "#ECEDEE",
+    fontFamily: "ReadexPro",
+    fontSize: 14,
   },
   screeningsList: {
     flex: 1,
   },
   emptyText: {
-    textAlign: "center",
-    color: "#94a3b8",
-    fontSize: 16,
-    marginTop: 32,
+    color: "#ECEDEE",
+    textAlign: "center" as const,
     fontFamily: "ReadexPro",
+    marginTop: 16,
   },
-  screeningCard: {
-    backgroundColor: "#2E3130",
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  screeningTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  screeningStatus: {
-    fontSize: 14,
-    color: "#fff",
-    fontFamily: "ReadexPro",
-  },
-  actionButton: {
-    backgroundColor: "#045468",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 4,
-  },
-  actionButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-});
+};
+

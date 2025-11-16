@@ -1,18 +1,16 @@
 import MobileText from '@/components/MobileText';
 import React, { useState, useEffect, useContext } from 'react';
 import {
-  View,
-  Text,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   I18nManager,
   Dimensions,
   Modal,
-  TextInput,
+  TextInput as RNTextInput,
 } from 'react-native';
+import { View, Text, Card, Button } from 'react-native-ui-lib';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -248,9 +246,9 @@ export default function HomeScreen() {
 
   if (isLoading && !userId) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+      <View flex center backgroundColor="background">
         <ActivityIndicator size="large" color={colors.primary} />
-        <ThemedText style={styles.loadingText}>{t('common.loading')}</ThemedText>
+        <Text body marginT-s3 color="text">{t('common.loading')}</Text>
       </View>
     );
   }
@@ -265,7 +263,7 @@ export default function HomeScreen() {
   
   return (
     <ScrollView 
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={{ flex: 1, backgroundColor: colors.background }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -281,19 +279,27 @@ export default function HomeScreen() {
       {/* Header with Gradient */}
       <LinearGradient
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={[styles.headerGradient, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
+        style={{ 
+          paddingHorizontal: 16,
+          borderBottomLeftRadius: 16,
+          borderBottomRightRadius: 16,
+          overflow: 'hidden',
+          minHeight: 160,
+          paddingTop: insets.top + 16, 
+          paddingBottom: 16 
+        }}
       >
-        <View style={styles.headerContent}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <ThemedText style={[styles.greeting, { color: 'white' }]}>
+            <ThemedText style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
               {getGreeting()} 
             </ThemedText>
-            <ThemedText style={[styles.subtitle, { color: 'rgba(255,255,255,0.9)' }]}>
+            <ThemedText style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: '#FFFFFF' }}>
               {t('home.manageHealth')}
             </ThemedText>
           </View>
           <TouchableOpacity 
-            style={styles.profileButton}
+            style={{ padding: 8 }}
             onPress={() => router.push('/profile')}
           >
             <Ionicons name="person-circle-outline" size={32} color="white" />
@@ -303,36 +309,42 @@ export default function HomeScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.familySelector}
+          style={{ marginTop: 8, marginBottom: 8 }}
           contentContainerStyle={{ gap: 8, paddingHorizontal: 8, alignItems: 'center' }}
         >
           <TouchableOpacity
-            style={[styles.familyButton, selectedPersonId === 'user' && styles.familyButtonSelected]}
+            style={[
+              { backgroundColor: '#2E3130', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: '#045468' },
+              selectedPersonId === 'user' && { backgroundColor: '#045468', borderColor: '#045468' }
+            ]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={[styles.familyButtonText, selectedPersonId === 'user' && styles.familyButtonSelectedText]}>{t('common.you')}</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{t('common.you')}</Text>
           </TouchableOpacity>
           {Array.isArray(familyMembersData) && familyMembersData.map((member) => (
             <TouchableOpacity
               key={member.id}
-              style={[styles.familyButton, selectedPersonId === member.id.toString() && styles.familyButtonSelected]}
+              style={[
+                { backgroundColor: '#2E3130', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: '#045468' },
+                selectedPersonId === member.id.toString() && { backgroundColor: '#045468', borderColor: '#045468' }
+              ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={[styles.familyButtonText, selectedPersonId === member.id.toString() && styles.familyButtonSelectedText]}>{member.name}</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{member.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </LinearGradient>
 
       {/* Test Status Stats - Top Section */}
-      <View style={styles.statsContainer}>
-        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+      <View padding-s5>
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
           {t('home.testStatus')}
-        </ThemedText>
+        </Text>
         
-        <View style={styles.statsRow}>
+        <View row marginB-s3 style={{ justifyContent: 'space-between' }}>
           <TouchableOpacity 
-            style={styles.statBox}
+            style={{ flex: 1, marginHorizontal: 4 }}
             onPress={() => {
               router.push({
                 pathname: '/(tabs)/upcoming-tests',
@@ -340,15 +352,17 @@ export default function HomeScreen() {
               });
             }}
           >
-            <Text style={[styles.statNumber, styles.statNumberDue]}>
-              {stats?.dueScreenings || 0}
-            </Text>
-            <Text style={styles.statLabel}>
-              {t('home.tabs.due')}
-            </Text>
+            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
+              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#0EB39E' }}>
+                {stats?.dueScreenings || 0}
+              </Text>
+              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
+                {t('home.tabs.due')}
+              </Text>
+            </Card>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.statBox}
+            style={{ flex: 1, marginHorizontal: 4 }}
             onPress={() => {
               router.push({
                 pathname: '/(tabs)/upcoming-tests',
@@ -356,15 +370,17 @@ export default function HomeScreen() {
               });
             }}
           >
-            <Text style={[styles.statNumber, styles.statNumberOverdue]}>
-              {stats?.overdueScreenings || 0}
-            </Text>
-            <Text style={styles.statLabel}>
-              {t('home.tabs.overdue')}
-            </Text>
+            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
+              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#A35829' }}>
+                {stats?.overdueScreenings || 0}
+              </Text>
+              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
+                {t('home.tabs.overdue')}
+              </Text>
+            </Card>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.statBox}
+            style={{ flex: 1, marginHorizontal: 4 }}
             onPress={() => {
               router.push({
                 pathname: '/(tabs)/upcoming-tests',
@@ -372,142 +388,152 @@ export default function HomeScreen() {
               });
             }}
           >
-            <Text style={[styles.statNumber, styles.statNumberLater]}>
-              {stats?.laterScreenings || 0}
-            </Text>
-            <Text style={styles.statLabel}>
-              {t('home.tabs.later')}
-            </Text>
+            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
+              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#fff' }}>
+                {stats?.laterScreenings || 0}
+              </Text>
+              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
+                {t('home.tabs.later')}
+              </Text>
+            </Card>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.statBox}
+            style={{ flex: 1, marginHorizontal: 4 }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
-            <Text style={[styles.statNumber, styles.statNumberCompleted]}>
-              {stats?.completedThisYear || 0}
-            </Text>
-            <Text style={styles.statLabel}>
-              {t('home.tabs.done')}
-            </Text>
+            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
+              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>
+                {stats?.completedThisYear || 0}
+              </Text>
+              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
+                {t('home.tabs.done')}
+              </Text>
+            </Card>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Educational Content - Middle Section */}
-      <View style={styles.educationalSection}>
-        <ThemedText style={[styles.sectionTitle,
-          { color: colors.text,
-            textAlign: "left"
-          }]}>
+      <View paddingH-s5 marginB-s8>
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
           {t('home.healthTips')}
-        </ThemedText>
+        </Text>
         
         {educationalContent.length > 0 ? (
-          <View style={{ width: '100%' }}>
+          <View>
             {educationalContent.slice(0, 3).map((content) => (
-              <View 
-                key={content.id} 
-                style={[
-                  styles.educationalCard, 
-                  { backgroundColor: colors.card, marginBottom: 12 }
-                ]}
+              <Card
+                key={content.id}
+                padding-s5
+                marginB-s3
+                backgroundColor="#2E3130"
+                enableShadow
+                elevation={3}
               >
-                <ThemedText style={[styles.educationalTitle, { color: colors.text, fontFamily: 'ReadexPro-Bold' }]}>
+                <Text body style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', marginBottom: 8, color: '#FFFFFF' }}>
                   {content.title}
-                </ThemedText>
-                <ThemedText style={[styles.educationalContent, { color: colors.textSecondary, fontFamily: 'ReadexPro' }]} numberOfLines={4}>
+                </Text>
+                <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: '#ECEDEE' }} numberOfLines={4}>
                   {content.content}
-                </ThemedText>
-              </View>
+                </Text>
+              </Card>
             ))}
           </View>
         ) : (
-          <View style={[styles.educationalCard, { backgroundColor: colors.card }]}>
-            <MaterialCommunityIcons name="information" size={32} color={colors.textSecondary} />
-            <ThemedText style={[styles.educationalTitle, { color: colors.text }]}>
+          <Card padding-s5 backgroundColor="#2E3130" enableShadow elevation={3}>
+            <MaterialCommunityIcons name="information" size={32} color="#4CCCE6" />
+            <Text body marginT-s3 marginB-s2 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
               {t('home.defaultTipTitle')}
-            </ThemedText>
-            <ThemedText style={[styles.educationalContent, { color: colors.textSecondary }]}>
+            </Text>
+            <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: '#ECEDEE' }}>
               {t('home.defaultTipContent')}
-            </ThemedText>
-          </View>
+            </Text>
+          </Card>
         )}
       </View>
 
       {/* Quick Actions - Bottom Section */}
-      <View style={{ ...styles.quickActionsSection }}>
-        <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+      <View paddingH-s5 marginB-s5>
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
           {t('home.quickActions')}
-        </ThemedText>
+        </Text>
         
-        <View style={styles.actionsGrid}>
+        <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between' }}>
           <TouchableOpacity 
-            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            style={{ width: '48%' }}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <MaterialCommunityIcons name="account-group" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
-              {t('home.addFamily')}
-            </ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
-              {t('home.manageFamilyMembers')}
-            </ThemedText>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+              <MaterialCommunityIcons name="account-group" size={32} color="#4CCCE6" />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
+                {t('home.addFamily')}
+              </Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
+                {t('home.manageFamilyMembers')}
+              </Text>
+            </Card>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            style={{ width: '48%' }}
             onPress={() => router.push('/(tabs)/upcoming-tests')}
           >
-            <MaterialCommunityIcons name="calendar-check" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
-              {t('home.upcomingTests')}
-            </ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
-              {t('home.viewScheduledTests')}
-            </ThemedText>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+              <MaterialCommunityIcons name="calendar-check" size={32} color="#4CCCE6" />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
+                {t('home.upcomingTests')}
+              </Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
+                {t('home.viewScheduledTests')}
+              </Text>
+            </Card>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            style={{ width: '48%' }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
-            <MaterialCommunityIcons name="clipboard-check" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>
-              {t('home.completedTests')}
-            </ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>
-              {t('home.viewTestHistory')}
-            </ThemedText>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+              <MaterialCommunityIcons name="clipboard-check" size={32} color="#4CCCE6" />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
+                {t('home.completedTests')}
+              </Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
+                {t('home.viewTestHistory')}
+              </Text>
+            </Card>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionCard, { backgroundColor: colors.card }]}
+            style={{ width: '48%' }}
             onPress={() => setShowContactModal(true)}
           >
-            <MaterialCommunityIcons name="email" size={32} color={colors.primary} />
-            <ThemedText style={[styles.actionTitle, { color: colors.text }]}>{t('contact.title')}</ThemedText>
-            <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>{t('contact.description')}</ThemedText>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+              <MaterialCommunityIcons name="email" size={32} color="#4CCCE6" />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>{t('contact.title')}</Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>{t('contact.description')}</Text>
+            </Card>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Bottom padding for better scrolling */}
-      <View style={styles.bottomPadding} />
+      <View style={{ height: 20 }} />
 
       <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, minWidth: 320, width: '90%' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', fontFamily: 'ReadexPro-Bold' }}>{t('contact.title')}</Text>
-            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.name')}</Text>
-            <TextInput
+        <View flex center style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+          <Card backgroundColor="#2E3130" padding-s6 style={{ minWidth: 320, width: '90%' }}>
+            <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>{t('contact.title')}</Text>
+            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.name')}</Text>
+            <RNTextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
               placeholder={t('contact.namePlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8, color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.email')}</Text>
-            <TextInput
+            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.email')}</Text>
+            <RNTextInput
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
@@ -516,236 +542,42 @@ export default function HomeScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.subject')}</Text>
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12,  backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.subject')}</Text>
+            <RNTextInput
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
               placeholder={t('contact.subjectPlaceholder')}
               placeholderTextColor="#94a3b8"
             />
-            <Text style={{ fontSize: 16, marginBottom: 8,  color: '#ECEDEE', fontFamily: 'ReadexPro' }}>{t('contact.content')}</Text>
-            <TextInput
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16,  height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
+            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.content')}</Text>
+            <RNTextInput
+              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
               placeholder={t('contact.contentPlaceholder')}
               placeholderTextColor="#94a3b8"
               multiline
             />
-            <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
-              <TouchableOpacity
-                style={{ backgroundColor: '#4CCCE6', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center', marginLeft: 8 }}
+            <View row style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
+              <Button
+                label={t('contact.send')}
+                backgroundColor="primary"
+                flex
+                style={{ marginLeft: 8 }}
                 onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>{t('contact.send')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ backgroundColor: '#202221', borderRadius: 8, paddingVertical: 12, flex: 1, alignItems: 'center' }}
+              />
+              <Button
+                label={t('common.cancel')}
+                backgroundColor="#202221"
+                color="primary"
+                flex
                 onPress={() => setShowContactModal(false)}
-              >
-                <Text style={{ color: '#4CCCE6', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
+              />
             </View>
-          </View>
+          </Card>
         </View>
       </Modal>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-  },
-  headerGradient: {
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    overflow: 'hidden',
-    minHeight: 160,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  greeting: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    textAlign: "left",
-    fontFamily: 'ReadexPro-Bold',
-  },
-  subtitle: {
-    fontSize: 20,
-    opacity: 0.9,
-    // 
-    fontFamily: 'ReadexPro',
-    marginBottom: 2,
-  },
-  profileButton: {
-    padding: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    fontFamily: 'ReadexPro-Bold',
-    textAlign: "left"
-  },
-  
-  // Stats Section
-  statsContainer: {
-    padding: 20,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  statBox: {
-    flex: 1,
-    marginHorizontal: 6,
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    backgroundColor: '#004558',
-    borderWidth: 1,
-    borderColor: '#555',
-  },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    fontFamily: 'ReadexPro-Bold',
-  },
-  statNumberDue: {
-    color: '#0EB39E', // Accent for الآن (due)
-  },
-  statNumberOverdue: {
-    color: '#A35829', // Red for متأخر (overdue)
-  },
-  statNumberLater: {
-    color: '#fff', // White for لاحقاً (later)
-  },
-  statNumberCompleted: {
-    color: '#4CCCE6', // Green for مكتملة (completed)
-  },
-  statLabel: {
-    fontSize: 12,
-    textAlign: 'center',
-    fontWeight: '500',
-    color: '#ECEDEE',
-    fontFamily: 'ReadexPro-Medium',
-  },
-
-  // Educational Section
-  educationalSection: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  educationalCard: {
-    width: '100%',
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  educationalTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    // 
-    fontFamily: 'ReadexPro-Bold',
-  },
-  educationalContent: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-    // 
-    fontFamily: 'ReadexPro',
-  },
-
-  // Quick Actions Section
-  quickActionsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  actionCard: {
-    width: '48%',
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  actionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 12,
-    marginBottom: 4,
-    textAlign: 'center',
-    fontFamily: 'ReadexPro-Bold',
-  },
-  actionSubtitle: {
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 16,
-    fontFamily: 'ReadexPro',
-  },
-  bottomPadding: {
-    height: 20,
-  },
-  familyButton: {
-    backgroundColor: '#2E3130',
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#045468',
-  },
-  familyButtonSelected: {
-    backgroundColor: '#045468',
-    borderColor: '#045468',
-  },
-  familyButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
-  },
-  familyButtonSelectedText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'ReadexPro-Bold',
-  },
-  familySelector: {
-    marginTop: 8,
-    marginBottom: 8,
-  },
-});

@@ -1,6 +1,13 @@
 /**
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * 
+ * IMPORTANT: These colors are now integrated with React Native UI Library.
+ * The UI Library configuration (lib/uiLibConfig.ts) uses these exact values.
+ * Any changes here should be reflected in the UI Library config for consistency.
+ * 
+ * You can also use colors directly from react-native-ui-lib:
+ * import { Colors } from 'react-native-ui-lib';
+ * Colors.primary, Colors.primary60, etc.
  */
 
 const tintColorLight = '#4CCCE6';
@@ -36,6 +43,11 @@ export const Colors = {
     // Gradient colors for headers
     gradientStart: '#003848',
     gradientEnd: '#4CCCE6',
+    // Semantic colors
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    info: '#4CCCE6',
   },
   dark: {
     text: '#ECEDEE',
@@ -66,5 +78,31 @@ export const Colors = {
     // Gradient colors for headers in dark mode
     gradientStart: '#202221',
     gradientEnd: '#272A29',
+    // Semantic colors
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    info: '#4CCCE6',
   },
 };
+
+/**
+ * Helper function to get UI Library Colors
+ * This allows components to use UI Library colors directly
+ */
+export function getUILibraryColors() {
+  try {
+    const { Colors: UIColors } = require('react-native-ui-lib');
+    return UIColors;
+  } catch (error) {
+    console.warn('UI Library not loaded, using fallback colors');
+    return null;
+  }
+}
+
+/**
+ * Re-export for convenience - use UI Library colors in your components
+ * Example: import { UILibColors } from '@/constants/Colors';
+ * Then use: UILibColors.primary, UILibColors.primary60, etc.
+ */
+export const UILibColors = getUILibraryColors();

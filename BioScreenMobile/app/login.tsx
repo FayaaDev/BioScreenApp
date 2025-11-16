@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  TextInput as RNTextInput,
   TouchableOpacity,
-  StyleSheet,
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -13,6 +10,7 @@ import {
   I18nManager,
   Alert,
 } from 'react-native';
+import { View, Text, Card, Button, TextField } from 'react-native-ui-lib';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -121,29 +119,29 @@ export default function Login() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={{ flex: 1, backgroundColor: '#202221' }}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.card}>
-          <View style={styles.header}>
+        <Card padding-s5 backgroundColor="#2E3130" enableShadow elevation={3}>
+          <View center marginB-s6>
             <Image
               source={require('../assets/logo.png')}
-              style={styles.logo}
+              style={{ width: 64, height: 64, marginBottom: 16 }}
               resizeMode="contain"
             />
-            <Text style={styles.title}>تسجيل الدخول</Text>
+            <Text h3 color="primary" style={{ fontFamily: 'ReadexPro-Bold' }}>تسجيل الدخول</Text>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label,]}>البريد الإلكتروني</Text>
-              <TextInput
+          <View style={{ gap: 16 }}>
+            <View style={{ gap: 8 }}>
+              <Text body color="text" style={{ fontFamily: 'ReadexPro-SemiBold' }}>البريد الإلكتروني</Text>
+              <RNTextInput
                 style={[
-                  styles.input,
-                  errors.email && styles.inputError
+                  { height: 48, borderWidth: 1, borderColor: '#555', borderRadius: 8, paddingHorizontal: 12, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE' },
+                  errors.email && { borderColor: '#ef4444' }
                 ]}
                 value={formData.email}
                 onChangeText={(text) => {
@@ -162,16 +160,16 @@ export default function Login() {
                 editable={!loginMutation.isPending}
               />
               {errors.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <Text bodySmall color="error" style={{ fontFamily: 'ReadexPro', marginTop: 4 }}>{errors.email}</Text>
               )}
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, ]}>كلمة المرور</Text>
-              <TextInput
+            <View style={{ gap: 8 }}>
+              <Text body color="text" style={{ fontFamily: 'ReadexPro-SemiBold' }}>كلمة المرور</Text>
+              <RNTextInput
                 style={[
-                  styles.input,
-                  errors.password && styles.inputError
+                  { height: 48, borderWidth: 1, borderColor: '#555', borderRadius: 8, paddingHorizontal: 12, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE' },
+                  errors.password && { borderColor: '#ef4444' }
                 ]}
                 value={formData.password}
                 onChangeText={(text) => {
@@ -187,131 +185,30 @@ export default function Login() {
                 editable={!loginMutation.isPending}
               />
               {errors.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
+                <Text bodySmall color="error" style={{ fontFamily: 'ReadexPro', marginTop: 4 }}>{errors.password}</Text>
               )}
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.loginButton,
-                loginMutation.isPending && styles.loginButtonDisabled
-              ]}
-              onPress={handleSubmit}
+            <Button
+              label="تسجيل الدخول"
+              backgroundColor="#045468"
               disabled={loginMutation.isPending}
+              onPress={handleSubmit}
+              style={{ marginTop: 8, opacity: loginMutation.isPending ? 0.7 : 1 }}
             >
-              {loginMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
-              )}
-            </TouchableOpacity>
+              {loginMutation.isPending && <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />}
+            </Button>
 
             <TouchableOpacity
-              style={styles.signupButton}
+              style={{ marginTop: 16, alignItems: 'center' }}
               onPress={() => router.push('/onboarding')}
               disabled={loginMutation.isPending}
             >
-              <Text style={styles.signupButtonText}>التسجيل</Text>
+              <Text body color="text" style={{ fontFamily: 'ReadexPro' }}>التسجيل</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#202221',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#2E3130',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 64,
-    height: 64,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'ReadexPro-Bold',
-    color: '#4CCCE6',
-    textAlign: 'center',
-  },
-  form: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-    color: '#ECEDEE',
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#555',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-    backgroundColor: '#202221',
-    color: '#ECEDEE',
-  },
-  inputError: {
-    borderColor: '#ef4444',
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: 14,
-    fontFamily: 'ReadexPro',
-    marginTop: 4,
-  },
-  loginButton: {
-    backgroundColor: '#045468',
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  loginButtonDisabled: {
-    opacity: 0.7,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'ReadexPro-SemiBold',
-  },
-  signupButton: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  signupButtonText: {
-    color: '#ECEDEE',
-    fontSize: 16,
-    fontFamily: 'ReadexPro',
-  },
-}); 

@@ -1,7 +1,50 @@
 ---
-
+description: Arabic/RTL handling for Expo (React Native + Web). Dynamic RTL, never force native RTL, and never set textAlign to right.
+globs:
+  - "BioScreenMobile/**"
+alwaysApply: false
 ---
 
-When you're dealing with RTL content in an Expo codebase.
-do not ever set the "textAlign" property to right.
+- Do NOT force RTL natively
+  - Do not set native iOS RTL flags (e.g., `UIViewSemanticContentAttribute`) or use plugins that force RTL at startup.
+  - Allow JS to control RTL/LTR at runtime.
 
+- Initialize RTL dynamically
+  - Read stored language preference early (e.g., AsyncStorage).
+  - React Native:
+    - `I18nManager.allowRTL(true)`
+    - `I18nManager.forceRTL(language === 'ar')`
+    - Reload once (e.g., `Updates.reloadAsync()`).
+  - Web:
+    - `document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'`.
+
+- Never set textAlign to right
+  - Use `textAlign: 'auto'` to respect direction automatically.
+
+- Prefer logical style props
+  - Use `paddingStart`, `marginStart`, `borderStartWidth`, etc. Avoid left/right-specific spacing.
+
+- Flip layout, not text
+  - For directional containers: `flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row'`.
+  - Do not mirror text or numbers; only mirror directional UI (icons/arrows) if needed.
+
+- Avoid Arabic-only native defaults unless the app is truly Arabic-only
+  - Do not hardcode Arabic-only CFBundle settings.
+
+- Single source of truth
+  - Centralize language and RTL logic (e.g., `rtlSetup.ts`) and call it early in app bootstrap after language is loaded.
+  - Log language and `I18nManager.isRTL` in dev for verification.
+
+- iOS restart UX
+  - When toggling direction on iOS, prompt the user to restart once after change.
+
+- Testing checklist
+  - Tabs/headers/back icons: verify row-reverse where needed.
+  - Replace any `marginLeft/Right` with logical `Start/End`.
+  - Inputs/numbers: ensure numeric input is not reversed.
+  - Web: verify `<html dir="rtl">` toggles correctly.
+
+- Examples of relevant file names:
+/lib/rtlSetup.ts
+/app/_layout.tsx
+/lib/languageManager.ts

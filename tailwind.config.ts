@@ -1,5 +1,48 @@
 import type { Config } from "tailwindcss";
 
+// Import colors from React Native UI Library configuration
+// This ensures consistency between web (Tailwind) and mobile (UI Library)
+const uiLibColors = {
+  primary: "#4CCCE6",
+  primaryAlpha: "#52E1FEE5",
+  primary10: "#004558",
+  primary20: "#003848",
+  primary30: "#045468",
+  primary40: "#12677E",
+  primary50: "#11809C",
+  primary60: "#00A2C7",
+  primary70: "#23AFD0",
+  primary80: "#4CCCE6",
+  
+  secondary: "#202221",
+  secondary10: "#202221",
+  secondary20: "#272A29",
+  
+  background: "#202221",
+  backgroundDark: "#151718",
+  surface: "#2E3130",
+  surfaceDark: "#1e293b",
+  card: "#2E3130",
+  cardDark: "#1e293b",
+  
+  text: "#ECEDEE",
+  textSecondary: "#94a3b8",
+  
+  tint: "#4CCCE6",
+  tintDark: "#52E1FEE5",
+  icon: "#9BA1A6",
+  
+  gradientStart: "#003848",
+  gradientEnd: "#4CCCE6",
+  gradientStartDark: "#202221",
+  gradientEndDark: "#272A29",
+  
+  success: "#10b981",
+  error: "#ef4444",
+  warning: "#f59e0b",
+  info: "#4CCCE6",
+};
+
 export default {
   darkMode: ["class"],
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
@@ -11,22 +54,22 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        // Zimam Brand Colors
+        // Zimam Brand Colors - now synced with UI Library
         zimam: {
-          primary: "#4CCCE6",
-          primaryAlpha: "#52E1FEE5",
-          50: "#4CCCE6",
-          100: "#23AFD0",
-          200: "#00A2C7",
-          300: "#11809C",
-          400: "#12677E",
-          500: "#045468",
-          600: "#003848",
-          700: "#004558",
+          primary: uiLibColors.primary,
+          primaryAlpha: uiLibColors.primaryAlpha,
+          50: uiLibColors.primary80,
+          100: uiLibColors.primary70,
+          200: uiLibColors.primary60,
+          300: uiLibColors.primary50,
+          400: uiLibColors.primary40,
+          500: uiLibColors.primary30,
+          600: uiLibColors.primary20,
+          700: uiLibColors.primary10,
         },
         zimamdark: {
-          primary: "#202221",
-          secondary: "#272A29",
+          primary: uiLibColors.secondary,
+          secondary: uiLibColors.secondary20,
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
