@@ -14,7 +14,9 @@
     "start:staging": "NODE_ENV=development vite --mode staging",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "gu": "tsx server/scripts/GenerateFakeUsers.ts"
+    "gu": "tsx server/scripts/GenerateFakeUsers.ts",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.2.0",
@@ -106,7 +108,9 @@
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0"
+    "zod-validation-error": "^3.4.0",
+    "expo": "~54.0.23",
+    "react-native": "0.81.5"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.8.0",

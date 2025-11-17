@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "../../lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../hooks/useToast";
 import { useRouter } from "expo-router";
 import { FamilyManagement } from "../../components/FamilyManagement";
@@ -20,11 +19,8 @@ import { Picker } from "@react-native-picker/picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from "../../lib/i18n";
-import {
-  PhoneNumberInput,
-  validatePhoneNumber,
-} from "../../components/PhoneNumberInput";
 import { changeRTLDirection } from "../../lib/rtlSetup";
+import { medicalStorage } from "../../lib/medical-storage";
 
 /**
 * After fetching docs about RTL setup from here, see what's going wrong in this app
@@ -40,9 +36,6 @@ export default function Profile() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phoneNumber: "+966",
     dateOfBirth: "",
     gender: "",
   });
@@ -63,120 +56,77 @@ export default function Profile() {
   }, [i18n]);
 
   useEffect(() => {
-    AsyncStorage.getItem("healthscreen_user_id").then((id) => {
-      if (id) setUserId(id);
-      else router.replace("/onboarding");
+    AsyncStorage.getItem("local_user_id").then((id) => {
+      if (id) {
+        setUserId(id);
+      } else {
+        // Create a new local user ID if it doesn't exist
+        const newUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        AsyncStorage.setItem("local_user_id", newUserId);
+        setUserId(newUserId);
+      }
     });
   }, []);
 
-  const {
-    data: userData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["/api/users", userId],
-    queryFn: () => apiRequest("GET", `/api/users/${userId}`),
-    enabled: !!userId,
-  });
+  // No API calls - using local storage only
+  const isLoading = false;
+  const userData = null;
 
   useEffect(() => {
-    if (userData && typeof userData === "object" && "user" in userData) {
-      const user = userData.user as {
-        name?: string;
-        email?: string;
-        phoneNumber?: string;
-        dateOfBirth: string;
-        gender: string;
-      };
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phoneNumber: user.phoneNumber || "+966",
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-      });
-    }
-  }, [userData]);
+    // Load user profile from local storage if needed
+    const loadProfile = async () => {
+      if (userId) {
+        const profile = await medicalStorage.getUserProfile(userId);
+        if (profile) {
+          setFormData({
+            dateOfBirth: profile.dateOfBirth,
+            gender: profile.gender,
+          });
+        }
+      }
+    };
+    loadProfile();
+  }, [userId]);
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: {
-      name: string;
-      email: string;
-      phoneNumber: string;
-      dateOfBirth: string;
-      gender: string;
-    }) => {
-      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
-      const normalizedEmail = data.email
-        .trim()
-        .toLowerCase()
-        .replace(/[\u200E\u200F\u202A-\u202E]/g, ""); // Remove RTL/LTR marks
-
-      return apiRequest("PATCH", `/api/users/${userId}`, {
-        ...data,
-        email: normalizedEmail,
-      });
-    },
-    onSuccess: () => {
+  const handleSave = async () => {
+    if (userId) {
+      await medicalStorage.saveUserProfile(userId, formData);
       setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/users", userId] });
       showToast({ title: t("profile.profileUpdated"), type: "success" });
-    },
-    onError: () => {
-      showToast({
-        title: t("common.error"),
-        description: t("profile.updateError"),
-        type: "error",
-      });
-    },
-  });
-
-  const handleSave = () => {
-    // Validate phone number before saving
-    const phoneError = validatePhoneNumber(formData.phoneNumber);
-    if (phoneError) {
-      showToast({
-        title: t("profile.phoneNumberError"),
-        description: phoneError,
-        type: "error",
-      });
-      return;
     }
-
-    updateProfileMutation.mutate(formData);
   };
 
-  const handleCancel = () => {
-    if (userData && typeof userData === "object" && "user" in userData) {
-      const user = userData.user as {
-        name?: string;
-        email?: string;
-        phoneNumber?: string;
-        dateOfBirth: string;
-        gender: string;
-      };
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phoneNumber: user.phoneNumber || "+966",
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-      });
+  const handleCancel = async () => {
+    if (userId) {
+      const profile = await medicalStorage.getUserProfile(userId);
+      if (profile) {
+        setFormData({
+          dateOfBirth: profile.dateOfBirth,
+          gender: profile.gender,
+        });
+      }
     }
     setIsEditing(false);
   };
 
   const handleResetProfile = async () => {
-    await AsyncStorage.removeItem("healthscreen_user_id");
+    const userId = await AsyncStorage.getItem("local_user_id");
+    if (userId) {
+      await medicalStorage.clearUserData(userId);
+    }
+    await AsyncStorage.removeItem("local_user_id");
     showToast({ title: t("profile.profileReset"), type: "success" });
     router.replace("/onboarding");
   };
 
   const handleSignOut = async () => {
-    await AsyncStorage.removeItem("auth_token");
-    await AsyncStorage.removeItem("healthscreen_user_id");
+    const userId = await AsyncStorage.getItem("local_user_id");
+    if (userId) {
+      await medicalStorage.clearUserData(userId);
+    }
+    await AsyncStorage.removeItem("local_user_id");
     showToast({ title: t("profile.signOutSuccess"), type: "success" });
-    router.replace("/login");
+    router.replace("/onboarding");
   };
 
   const handleSwitchPerson = (id: string) => {
@@ -193,12 +143,6 @@ export default function Profile() {
         <Text marginT-s3 text70 zimam-primary style={{ fontFamily: 'ReadexPro' }}>{t("common.loading")}</Text>
       </View>
     );
-  }
-
-  if (error) {
-    AsyncStorage.removeItem("healthscreen_user_id");
-    router.replace("/onboarding");
-    return null;
   }
 
   return (
@@ -244,67 +188,6 @@ export default function Profile() {
             {t("profile.title")}
           </Text>
           <View style={{ gap: 16 }}>
-            <View style={{ gap: 8 }}>
-              <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.name")}</Text>
-              <RNTextInput
-                style={{
-                  height: 48,
-                  borderWidth: 1,
-                  borderColor: '#555',
-                  borderRadius: 8,
-                  paddingHorizontal: 12,
-                  fontSize: 16,
-                  backgroundColor: '#2E3130',
-                  color: '#ECEDEE',
-                  fontFamily: 'ReadexPro',
-                  textAlign: isRTL ? "right" : "left",
-                  writingDirection: isRTL ? "rtl" : "ltr",
-                }}
-                value={formData.name}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, name: text })
-                }
-                editable={isEditing}
-              />
-            </View>
-            <View style={{ gap: 8 }}>
-              <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.email")}</Text>
-              <RNTextInput
-                style={{
-                  height: 48,
-                  borderWidth: 1,
-                  borderColor: '#555',
-                  borderRadius: 8,
-                  paddingHorizontal: 12,
-                  fontSize: 16,
-                  backgroundColor: '#2E3130',
-                  color: '#ECEDEE',
-                  fontFamily: 'ReadexPro',
-                  textAlign: isRTL ? "right" : "left",
-                  writingDirection: isRTL ? "rtl" : "ltr",
-                }}
-                value={formData.email}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, email: text })
-                }
-                editable={isEditing}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-              />
-            </View>
-
-            <PhoneNumberInput
-              value={formData.phoneNumber}
-              onChangeText={(text) =>
-                setFormData({ ...formData, phoneNumber: text })
-              }
-              editable={isEditing}
-              required={true}
-            />
-
             <View style={{ gap: 8 }}>
               <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.dateOfBirth")}</Text>
               {isEditing ? (
@@ -466,7 +349,6 @@ export default function Profile() {
                 br20
                 labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleSave}
-                disabled={updateProfileMutation.isPending}
               />
               <Button
                 flex

@@ -5,28 +5,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  I18nManager,
-  Pressable,
   Modal,
+  TouchableOpacity as RNTouchableOpacity,
 } from 'react-native';
-import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
+import { View, Text, Card, Button } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '../lib/api';
 import { useToast } from '../hooks/useToast';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User as UserType } from '../types/api';
-import { IconSymbol } from '../components/ui/IconSymbol';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { PhoneNumberInput, validatePhoneNumber } from '../components/PhoneNumberInput';
+import { medicalStorage } from '../lib/medical-storage';
 
-interface SignupFormData {
-  name: string;
-  email: string;
-  phoneNumber: string;
-  password: string;
-  confirmPassword: string;
+interface OnboardingFormData {
   gender: string;
   dateOfBirth: string;
   isDiabetic: boolean;
@@ -47,11 +37,6 @@ interface SignupFormData {
 }
 
 interface FormErrors {
-  name?: string;
-  email?: string;
-  phoneNumber?: string;
-  password?: string;
-  confirmPassword?: string;
   gender?: string;
   dateOfBirth?: string;
   height?: string;
@@ -67,12 +52,7 @@ export default function Onboarding() {
   const { showToast } = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
-  const [formData, setFormData] = useState<SignupFormData>({
-    name: '',
-    email: '',
-    phoneNumber: '+966',
-    password: '',
-    confirmPassword: '',
+  const [formData, setFormData] = useState<OnboardingFormData>({
     gender: '',
     dateOfBirth: '',
     isDiabetic: false,
@@ -92,72 +72,47 @@ export default function Onboarding() {
     },
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createUserMutation = useMutation({
-    mutationFn: async (userData: Omit<SignupFormData, 'confirmPassword'>) => {
-      // Normalize email: trim whitespace, convert to lowercase, remove RTL markers
-      const normalizedEmail = userData.email
-        .trim()
-        .toLowerCase()
-        .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
-      
-      const response = await apiRequest<UserType>('POST', '/api/users', {
-        ...userData,
-        email: normalizedEmail,
-      });
-      return response;
-    },
-    onSuccess: (user) => {
-      AsyncStorage.setItem('healthscreen_user_id', user.id.toString());
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Get or create local user ID
+      let userId = await AsyncStorage.getItem('local_user_id');
+      if (!userId) {
+        userId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await AsyncStorage.setItem('local_user_id', userId);
+      }
+
+      // Save medical profile to local storage
+      medicalStorage.saveUserProfile(userId, formData);
+      medicalStorage.setOnboardingComplete(userId, true);
+
       showToast({
         title: 'مرحباً بك',
-        description: 'تم إنشاء حسابك بنجاح',
+        description: 'تم حفظ بياناتك بنجاح',
         type: 'success',
       });
-      router.push('/');
-    },
-    onError: () => {
+      
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Error saving onboarding data:', error);
       showToast({
         title: 'خطأ',
-        description: 'فشل في إنشاء حسابك. حاول مرة أخرى',
+        description: 'فشل في حفظ بياناتك. حاول مرة أخرى',
         type: 'error',
       });
-    },
-  });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-
-    if (!formData.name) {
-      newErrors.name = 'الرجاء إدخال الاسم الكامل';
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'الرجاء إدخال البريد الإلكتروني';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'الرجاء إدخال بريد إلكتروني صحيح';
-    }
-
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = 'الرجاء إدخال رقم الهاتف';
-    } else {
-      const phoneError = validatePhoneNumber(formData.phoneNumber);
-      if (phoneError) {
-        newErrors.phoneNumber = phoneError;
-      }
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'الرجاء إدخال كلمة المرور';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'يجب أن تكون كلمة المرور 6 أحرف على الأقل';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'الرجاء تأكيد كلمة المرور';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'كلمات المرور غير متطابقة';
-    }
 
     if (!formData.gender) {
       newErrors.gender = 'الرجاء اختيار الجنس';
@@ -184,13 +139,6 @@ export default function Onboarding() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
-      const { confirmPassword, ...userData } = formData;
-      createUserMutation.mutate(userData);
-    }
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -239,29 +187,8 @@ export default function Onboarding() {
 
           <View>
             <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الاسم الكامل</Text>
-              <RNTextInput
-                style={{ height: 48, borderWidth: 1, borderColor: errors.name ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
-                value={formData.name}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, name: text });
-                  if (errors.name) {
-                    setErrors({ ...errors, name: undefined });
-                  }
-                }}
-                placeholder="أدخل اسمك الكامل"
-                placeholderTextColor="#999"
-                editable={!createUserMutation.isPending}
-              />
-              {errors.name && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.name}</Text>
-              )}
-            </View>
-
-            <View marginB-s4>
               <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>تاريخ الميلاد</Text>
-              <TouchableOpacity
-                paddingH-s4
+              <RNTouchableOpacity
                 style={{
                   height: 48,
                   borderWidth: 1,
@@ -284,7 +211,7 @@ export default function Onboarding() {
                       })
                     : 'اختر تاريخ الميلاد'}
                 </Text>
-              </TouchableOpacity>
+              </RNTouchableOpacity>
               {showDatePicker && (
                 <Modal
                   visible={showDatePicker}
@@ -343,100 +270,19 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>البريد الإلكتروني</Text>
-              <RNTextInput
-                style={{ height: 48, borderWidth: 1, borderColor: errors.email ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
-                value={formData.email}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, email: text });
-                  if (errors.email) {
-                    setErrors({ ...errors, email: undefined });
-                  }
-                }}
-                placeholder="أدخل بريدك الإلكتروني"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-                editable={!createUserMutation.isPending}
-              />
-              {errors.email && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.email}</Text>
-              )}
-            </View>
-
-            <PhoneNumberInput
-              value={formData.phoneNumber}
-              onChangeText={(text) => {
-                setFormData({ ...formData, phoneNumber: text });
-                if (errors.phoneNumber) {
-                  setErrors({ ...errors, phoneNumber: undefined });
-                }
-              }}
-              error={errors.phoneNumber}
-              editable={!createUserMutation.isPending}
-              required={true}
-            />
-
-            <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>كلمة المرور</Text>
-              <RNTextInput
-                style={{ height: 48, borderWidth: 1, borderColor: errors.password ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
-                value={formData.password}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, password: text });
-                  if (errors.password) {
-                    setErrors({ ...errors, password: undefined });
-                  }
-                }}
-                placeholder="أدخل كلمة المرور"
-                placeholderTextColor="#999"
-                secureTextEntry
-                textContentType="password"
-                editable={!createUserMutation.isPending}
-              />
-              {errors.password && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.password}</Text>
-              )}
-            </View>
-
-            <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>تأكيد كلمة المرور</Text>
-              <RNTextInput
-                style={{ height: 48, borderWidth: 1, borderColor: errors.confirmPassword ? '#ef4444' : '#555', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, fontFamily: 'ReadexPro', backgroundColor: '#202221', color: '#ECEDEE', textAlign: 'right', writingDirection: 'rtl' }}
-                value={formData.confirmPassword}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, confirmPassword: text });
-                  if (errors.confirmPassword) {
-                    setErrors({ ...errors, confirmPassword: undefined });
-                  }
-                }}
-                placeholder="أعد إدخال كلمة المرور"
-                placeholderTextColor="#999"
-                secureTextEntry
-                textContentType="password"
-                editable={!createUserMutation.isPending}
-              />
-              {errors.confirmPassword && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.confirmPassword}</Text>
-              )}
-            </View>
-
-            <View marginB-s4>
               <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الجنس</Text>
               <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                <TouchableOpacity
-                  flex
-                  center
-                  br20
-                  paddingV-s3
+                <RNTouchableOpacity
                   style={{
+                    flex: 1,
                     height: 48,
                     borderWidth: 1,
                     borderColor: '#045468',
                     backgroundColor: formData.gender === 'male' ? '#045468' : '#fff',
+                    borderRadius: 20,
+                    paddingVertical: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     flexDirection: 'row',
                     gap: 8,
                   }}
@@ -446,7 +292,7 @@ export default function Onboarding() {
                       setErrors({ ...errors, gender: undefined });
                     }
                   }}
-                  disabled={createUserMutation.isPending}
+                  disabled={isSubmitting}
                 >
                   <MaterialIcons
                     name="male"
@@ -462,18 +308,19 @@ export default function Onboarding() {
                   >
                     ذكر
                   </Text>
-                </TouchableOpacity>
+                </RNTouchableOpacity>
 
-                <TouchableOpacity
-                  flex
-                  center
-                  br20
-                  paddingV-s3
+                <RNTouchableOpacity
                   style={{
+                    flex: 1,
                     height: 48,
                     borderWidth: 1,
                     borderColor: '#045468',
                     backgroundColor: formData.gender === 'female' ? '#045468' : '#fff',
+                    borderRadius: 20,
+                    paddingVertical: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     flexDirection: 'row',
                     gap: 8,
                   }}
@@ -483,7 +330,7 @@ export default function Onboarding() {
                       setErrors({ ...errors, gender: undefined });
                     }
                   }}
-                  disabled={createUserMutation.isPending}
+                  disabled={isSubmitting}
                 >
                   <MaterialIcons
                     name="female"
@@ -499,7 +346,7 @@ export default function Onboarding() {
                   >
                     أنثى
                   </Text>
-                </TouchableOpacity>
+                </RNTouchableOpacity>
               </View>
               {errors.gender && (
                 <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.gender}</Text>
@@ -515,7 +362,7 @@ export default function Onboarding() {
               <View style={{ gap: 8 }}>
                 <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بالسكري؟</Text>
                 <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <TouchableOpacity
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -537,8 +384,8 @@ export default function Onboarding() {
                     >
                       نعم
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </RNTouchableOpacity>
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -560,14 +407,14 @@ export default function Onboarding() {
                     >
                       لا
                     </Text>
-                  </TouchableOpacity>
+                  </RNTouchableOpacity>
                 </View>
               </View>
 
               <View style={{ gap: 8 }}>
                 <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
                 <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <TouchableOpacity
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -589,8 +436,8 @@ export default function Onboarding() {
                     >
                       نعم
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </RNTouchableOpacity>
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -612,14 +459,14 @@ export default function Onboarding() {
                     >
                       لا
                     </Text>
-                  </TouchableOpacity>
+                  </RNTouchableOpacity>
                 </View>
               </View>
 
               <View style={{ gap: 8 }}>
                 <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع في الكوليسترول؟</Text>
                 <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <TouchableOpacity
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -641,8 +488,8 @@ export default function Onboarding() {
                     >
                       نعم
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </RNTouchableOpacity>
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -664,14 +511,14 @@ export default function Onboarding() {
                     >
                       لا
                     </Text>
-                  </TouchableOpacity>
+                  </RNTouchableOpacity>
                 </View>
               </View>
 
               <View style={{ gap: 8 }}>
                 <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
                 <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <TouchableOpacity
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -693,8 +540,8 @@ export default function Onboarding() {
                     >
                       نعم
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </RNTouchableOpacity>
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -716,7 +563,7 @@ export default function Onboarding() {
                     >
                       لا
                     </Text>
-                  </TouchableOpacity>
+                  </RNTouchableOpacity>
                 </View>
               </View>
 
@@ -861,7 +708,7 @@ export default function Onboarding() {
                 <View style={{ gap: 8 }}>
                   <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت حامل؟</Text>
                   <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <TouchableOpacity
+                    <RNTouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -883,8 +730,8 @@ export default function Onboarding() {
                       >
                         نعم
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </RNTouchableOpacity>
+                    <RNTouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -906,7 +753,7 @@ export default function Onboarding() {
                       >
                         لا
                       </Text>
-                    </TouchableOpacity>
+                    </RNTouchableOpacity>
                   </View>
                 </View>
               )}
@@ -914,7 +761,7 @@ export default function Onboarding() {
               <View style={{ gap: 8 }}>
                 <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
                 <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <TouchableOpacity
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -936,8 +783,8 @@ export default function Onboarding() {
                     >
                       نعم
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </RNTouchableOpacity>
+                  <RNTouchableOpacity
                     style={{
                       flex: 1,
                       height: 48,
@@ -959,7 +806,7 @@ export default function Onboarding() {
                     >
                       لا
                     </Text>
-                  </TouchableOpacity>
+                  </RNTouchableOpacity>
                 </View>
               </View>
 
@@ -967,7 +814,7 @@ export default function Onboarding() {
                 <View marginB-s4>
                   <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>عدد الشركاء</Text>
                   <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <TouchableOpacity
+                    <RNTouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -994,8 +841,8 @@ export default function Onboarding() {
                       >
                         شريك واحد
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </RNTouchableOpacity>
+                    <RNTouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -1022,38 +869,29 @@ export default function Onboarding() {
                       >
                         أكثر من شريك
                       </Text>
-                    </TouchableOpacity>
+                    </RNTouchableOpacity>
                   </View>
                 </View>
               )}
             </View>
 
-            <TouchableOpacity
+            <RNTouchableOpacity
               style={{
-                backgroundColor: createUserMutation.isPending ? '#666' : '#045468',
+                backgroundColor: isSubmitting ? '#666' : '#045468',
                 paddingVertical: 16,
                 borderRadius: 8,
                 alignItems: 'center',
                 marginTop: 24,
               }}
               onPress={handleSubmit}
-              disabled={createUserMutation.isPending}
+              disabled={isSubmitting}
             >
-              {createUserMutation.isPending ? (
+              {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Bold' }}>ابدأ</Text>
+                <Text text70 white style={{ fontFamily: 'ReadexPro-Bold' }}>حفظ البيانات</Text>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              center
-              paddingV-s3
-              onPress={() => router.push('/login')}
-              disabled={createUserMutation.isPending}
-            >
-              <Text text80 zimam-primary style={{ fontFamily: 'ReadexPro' }}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
-            </TouchableOpacity>
+            </RNTouchableOpacity>
           </View>
         </Card>
       </ScrollView>

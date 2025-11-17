@@ -12,7 +12,7 @@ export default function Index() {
       if (userId) {
         router.replace('/(tabs)');
       } else {
-        router.replace('/login');
+        router.replace('/onboarding');
       }
     };
     checkAuth();

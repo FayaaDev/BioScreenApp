@@ -11,21 +11,18 @@ import {
 import { View, Text, Card, Button, TouchableOpacity, Checkbox } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "../lib/api";
 import { useToast } from "../hooks/useToast";
+import { medicalStorage } from "../lib/medical-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { PhoneNumberInput, validatePhoneNumber } from "./PhoneNumberInput";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FamilyMember {
-  id: number;
-  userId: number;
-  name: string;
+  id: string;
+  userId: string;
   relationship: string;
-  phoneNumber?: string;
   gender: string;
   dateOfBirth: string;
   createdAt: string;
@@ -63,9 +60,7 @@ export function FamilyManagement({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
     relationship: "",
-    phoneNumber: "+966",
     gender: "",
     dateOfBirth: "",
     // Medical survey fields
@@ -93,18 +88,28 @@ export function FamilyManagement({
   >({});
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
-    queryKey: ["/api/users", userId, "family"],
-    queryFn: () => apiRequest("GET", `/api/users/${userId}/family`),
+    queryKey: ["family", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return await medicalStorage.getFamilyMembers(userId);
+    },
     enabled: !!userId,
   });
 
   const createFamilyMemberMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return apiRequest("POST", `/api/users/${userId}/family`, data);
+      const newMember: FamilyMember = {
+        ...data,
+        id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId,
+        createdAt: new Date().toISOString(),
+      };
+      await medicalStorage.saveFamilyMember(userId, newMember);
+      return newMember;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["/api/users", userId, "family"],
+        queryKey: ["family", userId],
       });
       setIsModalOpen(false);
       setEditingMember(null);
@@ -125,14 +130,20 @@ export function FamilyManagement({
       id,
       data,
     }: {
-      id: number;
+      id: string;
       data: Partial<typeof formData>;
     }) => {
-      return apiRequest("PATCH", `/api/family/${id}`, data);
+      const members = await medicalStorage.getFamilyMembers(userId);
+      const memberIndex = members.findIndex(m => m.id === id);
+      if (memberIndex !== -1) {
+        members[memberIndex] = { ...members[memberIndex], ...data };
+        await AsyncStorage.setItem(`family_members_${userId}`, JSON.stringify(members));
+      }
+      return members[memberIndex];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["/api/users", userId, "family"],
+        queryKey: ["family", userId],
       });
       setEditingMember(null);
       setIsModalOpen(false);
@@ -149,12 +160,15 @@ export function FamilyManagement({
   });
 
   const deleteFamilyMemberMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return apiRequest("DELETE", `/api/family/${id}`, {});
+    mutationFn: async (id: string) => {
+      const members = await medicalStorage.getFamilyMembers(userId);
+      const filteredMembers = members.filter(m => m.id !== id);
+      await AsyncStorage.setItem(`family_members_${userId}`, JSON.stringify(filteredMembers));
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["/api/users", userId, "family"],
+        queryKey: ["family", userId],
       });
       showToast({ title: t("family.memberDeleted"), type: "success" });
     },
@@ -169,9 +183,7 @@ export function FamilyManagement({
 
   const resetForm = () => {
     setFormData({
-      name: "",
       relationship: "",
-      phoneNumber: "+966",
       gender: "",
       dateOfBirth: "",
       isDiabetic: false,
@@ -197,18 +209,8 @@ export function FamilyManagement({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = t("family.validation.nameRequired");
-    }
-
     if (!formData.relationship.trim()) {
       newErrors.relationship = t("family.validation.relationshipRequired");
-    }
-
-    // Phone number validation - mandatory
-    const phoneError = validatePhoneNumber(formData.phoneNumber);
-    if (phoneError) {
-      newErrors.phoneNumber = phoneError;
     }
 
     if (!formData.gender) {
@@ -296,9 +298,7 @@ export function FamilyManagement({
   const handleEdit = (member: FamilyMember) => {
     setEditingMember(member);
     setFormData({
-      name: member.name,
       relationship: member.relationship,
-      phoneNumber: member.phoneNumber ?? "+966",
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
       isDiabetic: member.isDiabetic ?? false,
@@ -317,7 +317,7 @@ export function FamilyManagement({
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     Alert.alert(t("family.confirmDelete"), t("family.confirmDeleteDesc"), [
       { text: t("common.cancel"), style: "cancel" },
       {
@@ -380,11 +380,10 @@ export function FamilyManagement({
               <View key={member.id} style={styles.memberRow}>
                 <TouchableOpacity
                   style={styles.memberInfo}
-                  onPress={() => handleSwitch(member.id.toString())}
+                  onPress={() => handleSwitch(member.id)}
                 >
-                  <Text style={styles.memberName}>{member.name}</Text>
+                  <Text style={styles.memberName}>{member.relationship}</Text>
                   <Text style={styles.memberDetails}>
-                    {member.relationship} •{" "}
                     {member.gender === "male"
                       ? t("common.male")
                       : t("common.female")}
@@ -501,48 +500,6 @@ export function FamilyManagement({
                   styles.input,
                   { textAlign: "left", writingDirection: "ltr" },
                   submitAttempted &&
-                    validationErrors.name &&
-                    styles.inputError,
-                ]}
-                placeholder={t("family.name")}
-                placeholderTextColor="#999"
-                value={formData.name}
-                maxLength={4}
-                onChangeText={(text) => {
-                  if (text.length > 4) {
-                    showToast({
-                      title: t("common.error"),
-                      description: t("family.validation.nameMaxLength"),
-                      type: "error",
-                    });
-                    return;
-                  }
-                  setFormData({ ...formData, name: text });
-                  if (validationErrors.name) {
-                    setValidationErrors((prev) => ({ ...prev, name: "" }));
-                  }
-                }}
-              />
-              {formData.name.length > 0 && (
-                <Text
-                  style={[
-                    styles.warningText,
-                    { alignSelf: "flex-start", textAlign: "left" },
-                  ]}
-                >
-                  {t("family.validation.nameCounter", {
-                    count: formData.name.length,
-                  })}
-                </Text>
-              )}
-              {submitAttempted && validationErrors.name && (
-                <Text style={styles.errorText}>{validationErrors.name}</Text>
-              )}
-              <RNTextInput
-                style={[
-                  styles.input,
-                  { textAlign: "left", writingDirection: "ltr" },
-                  submitAttempted &&
                     validationErrors.relationship &&
                     styles.inputError,
                 ]}
@@ -564,23 +521,6 @@ export function FamilyManagement({
                   {validationErrors.relationship}
                 </Text>
               )}
-
-              <PhoneNumberInput
-                value={formData.phoneNumber}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, phoneNumber: text });
-                  if (validationErrors.phoneNumber) {
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      phoneNumber: "",
-                    }));
-                  }
-                }}
-                error={
-                  submitAttempted ? validationErrors.phoneNumber : undefined
-                }
-                required={true}
-              />
 
               <View
                 style={{ alignItems: "center", width: "100%", marginTop: 16 }}

@@ -143,43 +143,25 @@ export default function CompletedTests() {
 
   // Load userId from AsyncStorage
   useEffect(() => {
-    AsyncStorage.getItem('healthscreen_user_id').then((id) => {
-      if (id) setUserId(id);
-      else router.replace('/onboarding');
+    AsyncStorage.getItem("local_user_id").then((id) => {
+      if (id) {
+        setUserId(id);
+      } else {
+        // Create a new local user ID if it doesn't exist
+        const newUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        AsyncStorage.setItem("local_user_id", newUserId);
+        setUserId(newUserId);
+      }
     });
   }, []);
 
-  // Data fetching
-  const { isLoading, error } = useQuery({
-    queryKey: ['/api/users', userId],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}`),
-    enabled: !!userId,
-  });
-
-  const { data: familyMembersData } = useQuery({
-    queryKey: ['/api/users', userId, 'family'],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
-    enabled: !!userId,
-  });
-
-  const { data: selectedPersonData, isLoading: isLoadingSelectedPerson, error: selectedPersonError } = useQuery({
-    queryKey: ['selectedPerson', selectedPersonId, userId],
-    queryFn: () =>
-      selectedPersonId === 'user'
-        ? apiRequest('GET', `/api/users/${userId}`)
-        : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId && (
-      selectedPersonId === "user" || 
-      (Array.isArray(familyMembersData) && familyMembersData.some((member: any) => member.id.toString() === selectedPersonId))
-    ),
-    retry: (failureCount, error: any) => {
-      // If it's a family member not found error, don't retry
-      if (error?.message?.includes('Family member not found')) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
+  // Since we're now using local storage only, skip API calls
+  const isLoading = false;
+  const error = null;
+  const familyMembersData = [];
+  const selectedPersonData = null;
+  const isLoadingSelectedPerson = false;
+  const selectedPersonError = null;
 
   // Handle family member not found error - reset to user
   useEffect(() => {
@@ -238,11 +220,13 @@ export default function CompletedTests() {
     );
   }
 
-  if (error) {
-    AsyncStorage.removeItem('healthscreen_user_id');
-    router.replace('/onboarding');
-    return null;
-  }
+  // For now, show empty screenings list since we're using local storage
+  currentPerson = {
+    dateOfBirth: "2000-01-01",
+    gender: "male",
+    name: currentPersonName,
+  };
+  screenings = [];
 
   return (
     <ScrollView 
