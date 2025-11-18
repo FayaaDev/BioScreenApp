@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from "react";
 import {
-  TextInput as RNTextInput,
   ScrollView,
-  ActivityIndicator,
-  I18nManager,
-  Modal,
   Alert,
   Platform,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../hooks/useToast";
 import { useRouter } from "expo-router";
 import { FamilyManagement } from "../../components/FamilyManagement";
 import { useTranslation } from "react-i18next";
-import { Picker } from "@react-native-picker/picker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from "../../lib/i18n";
@@ -138,10 +133,7 @@ export default function Profile() {
 
   if (!userId || isLoading) {
     return (
-      <View flex center style={{ backgroundColor: '#202221' }}>
-        <ActivityIndicator size="large" color="#4CCCE6" />
-        <Text marginT-s3 text70 zimam-primary style={{ fontFamily: 'ReadexPro' }}>{t("common.loading")}</Text>
-      </View>
+      <LoaderScreen color="#4CCCE6" message={t("common.loading")} backgroundColor="#202221" />
     );
   }
 
@@ -395,21 +387,15 @@ export default function Profile() {
         {/* Language Selection Modal */}
         <Modal
           visible={showLanguageModal}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setShowLanguageModal(false)}
+          onDismiss={() => setShowLanguageModal(false)}
+          overlayBackgroundColor="rgba(0,0,0,0.2)"
         >
-          <View
-            flex
-            center
-            style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          <Card
+            padding-s6
+            backgroundColor="#2E3130"
+            br40
+            style={{ minWidth: 280 }}
           >
-            <Card
-              padding-s6
-              backgroundColor="#2E3130"
-              br40
-              style={{ minWidth: 280 }}
-            >
               <Text
                 text70
                 zimam-primary
@@ -477,13 +463,14 @@ export default function Profile() {
                 </Text>
               </TouchableOpacity>
             </Card>
-          </View>
         </Modal>
 
         {/* User Agreement Modal */}
         <Modal
           visible={showAgreement}
-          animationType="slide"
+          onDismiss={() => setShowAgreement(false)}
+          overlayBackgroundColor="rgba(0,0,0,0.2)"
+        >
           onRequestClose={() => setShowAgreement(false)}
         >
           <View flex center padding-s6 backgroundColor="#202221">

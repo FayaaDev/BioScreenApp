@@ -2,15 +2,11 @@ import MobileText from '@/components/MobileText';
 import React, { useState, useEffect, useContext } from 'react';
 import {
   ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   I18nManager,
   Dimensions,
-  Modal,
-  TextInput as RNTextInput,
 } from 'react-native';
-import { View, Text, Card, Button } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen } from 'react-native-ui-lib';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -19,8 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
@@ -246,10 +240,7 @@ export default function HomeScreen() {
 
   if (isLoading && !userId) {
     return (
-      <View flex center backgroundColor="background">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text body marginT-s3 color="text">{t('common.loading')}</Text>
-      </View>
+      <LoaderScreen color={colors.primary} message={t('common.loading')} backgroundColor={colors.background} />
     );
   }
 
@@ -291,12 +282,12 @@ export default function HomeScreen() {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <ThemedText style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
               {getGreeting()} 
-            </ThemedText>
-            <ThemedText style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: '#FFFFFF' }}>
+            </Text>
+            <Text style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: '#FFFFFF' }}>
               {t('home.manageHealth')}
-            </ThemedText>
+            </Text>
           </View>
           <TouchableOpacity 
             style={{ padding: 8 }}
@@ -520,12 +511,15 @@ export default function HomeScreen() {
       {/* Bottom padding for better scrolling */}
       <View style={{ height: 20 }} />
 
-      <Modal visible={showContactModal} animationType="slide" transparent onRequestClose={() => setShowContactModal(false)}>
-        <View flex center style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <Card backgroundColor="#2E3130" padding-s6 style={{ minWidth: 320, width: '90%' }}>
+      <Modal 
+        visible={showContactModal} 
+        onDismiss={() => setShowContactModal(false)}
+        overlayBackgroundColor="rgba(0,0,0,0.2)"
+      >
+        <Card backgroundColor="#2E3130" padding-s6 style={{ minWidth: 320, width: '90%' }}>
             <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>{t('contact.title')}</Text>
             <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.name')}</Text>
-            <RNTextInput
+            <TextField
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.name}
               onChangeText={text => setContactForm({ ...contactForm, name: text })}
@@ -533,7 +527,7 @@ export default function HomeScreen() {
               placeholderTextColor="#94a3b8"
             />
             <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.email')}</Text>
-            <RNTextInput
+            <TextField
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.email}
               onChangeText={text => setContactForm({ ...contactForm, email: text })}
@@ -543,7 +537,7 @@ export default function HomeScreen() {
               autoCapitalize="none"
             />
             <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.subject')}</Text>
-            <RNTextInput
+            <TextField
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.subject}
               onChangeText={text => setContactForm({ ...contactForm, subject: text })}
@@ -551,7 +545,7 @@ export default function HomeScreen() {
               placeholderTextColor="#94a3b8"
             />
             <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.content')}</Text>
-            <RNTextInput
+            <TextField
               style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
               value={contactForm.content}
               onChangeText={text => setContactForm({ ...contactForm, content: text })}
@@ -576,7 +570,6 @@ export default function HomeScreen() {
               />
             </View>
           </Card>
-        </View>
       </Modal>
     </ScrollView>
   );

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  TextInput as RNTextInput,
   ScrollView,
-  Modal,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, Checkbox } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../hooks/useToast";
@@ -471,8 +469,8 @@ export function FamilyManagement({
       {/* Modal for add/edit */}
       <Modal
         visible={isModalOpen}
-        animationType="slide"
-        onRequestClose={() => setIsModalOpen(false)}
+        onDismiss={() => setIsModalOpen(false)}
+        overlayBackgroundColor="rgba(0,0,0,0.5)"
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -495,7 +493,7 @@ export function FamilyManagement({
                   ? t("family.editMember")
                   : t("family.addMember")}
               </Text>
-              <RNTextInput
+              <TextField
                 style={[
                   styles.input,
                   { textAlign: "left", writingDirection: "ltr" },
@@ -718,7 +716,7 @@ export function FamilyManagement({
                   >
                     {t("family.height")}
                   </Text>
-                  <RNTextInput
+                  <TextField
                     style={[
                       styles.input,
                       { textAlign: "left", writingDirection: "ltr" },
@@ -751,7 +749,7 @@ export function FamilyManagement({
                   <Text style={[styles.label, { textAlign: "left" }]}>
                     {t("family.weight")}
                   </Text>
-                  <RNTextInput
+                  <TextField
                     style={[
                       styles.input,
                       { textAlign: "left", writingDirection: "ltr" },
@@ -871,7 +869,7 @@ export function FamilyManagement({
 
                 {formData.isSmoker && (
                   <View style={styles.smokingDetailsContainer}>
-                    <RNTextInput
+                    <TextField
                       style={[
                         styles.input,
                         {
@@ -908,7 +906,7 @@ export function FamilyManagement({
                         {validationErrors.smokingAmount}
                       </Text>
                     )}
-                    <RNTextInput
+                    <TextField
                       style={[
                         styles.input,
                         {

@@ -1,11 +1,10 @@
 import { useEffect, useState, useContext, useCallback } from "react";
 import {
   ScrollView,
-  ActivityIndicator,
   Linking,
   RefreshControl,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, LoaderScreen } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/api";
@@ -745,10 +744,7 @@ export default function UpcomingTests() {
   // Loading and error states
   if (!userId || isLoading || isLoadingSelectedPerson) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#4CCCE6" />
-        <Text style={styles.loadingText}>{t("common.loading")}</Text>
-      </View>
+      <LoaderScreen color="#4CCCE6" message={t("common.loading")} backgroundColor="#202221" />
     );
   }
 

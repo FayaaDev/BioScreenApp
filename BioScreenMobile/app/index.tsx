@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ActivityIndicator, View } from 'react-native';
+import { LoaderScreen } from 'react-native-ui-lib';
 
 // RTL initialization is now handled in _layout.tsx after language is loaded
 
@@ -19,8 +19,6 @@ export default function Index() {
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" />
-    </View>
+    <LoaderScreen color="#4CCCE6" />
   );
 } 

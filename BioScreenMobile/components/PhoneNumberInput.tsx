@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import { View, Text, StyleSheet, TextInputProps } from 'react-native';
+import { TextField } from 'react-native-ui-lib';
 
 interface PhoneNumberInputProps extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   value: string;
@@ -99,7 +100,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
         <View style={styles.separator} />
         
         {/* Phone number input box */}
-        <TextInput
+        <TextField
           style={[
             styles.phoneInput,
             isRTL && { textAlign: 'right', writingDirection: 'rtl' },

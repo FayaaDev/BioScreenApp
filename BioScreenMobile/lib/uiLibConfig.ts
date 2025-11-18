@@ -21,9 +21,11 @@ export function configureUILibrary(colorScheme: 'light' | 'dark' = 'light') {
 
   // Configure colors to match existing theme
   Colors.loadColors({
-    // Primary colors
+    // Primary colors - Zimam brand
     primary: currentColors.primary,
     primaryAlpha: currentColors.primaryAlpha,
+    'zimam-primary': currentColors.primary,
+    'zimam-brand': currentColors.primaryShades.shade5,
     
     // Primary shades
     primary10: currentColors.primaryShades.shade7,
@@ -44,10 +46,15 @@ export function configureUILibrary(colorScheme: 'light' | 'dark' = 'light') {
     background: currentColors.background,
     surface: currentColors.card,
     card: currentColors.card,
+    'bg-dark': '#202221',
+    'bg-card': '#2E3130',
     
     // Text colors
     text: currentColors.text,
     textSecondary: currentColors.textSecondary,
+    dark10: '#ECEDEE', // Main text color
+    dark20: '#999',    // Placeholder text
+    dark30: '#888',    // Disabled text
     
     // UI elements
     tint: currentColors.tint,
@@ -57,7 +64,7 @@ export function configureUILibrary(colorScheme: 'light' | 'dark' = 'light') {
     gradientStart: currentColors.gradientStart,
     gradientEnd: currentColors.gradientEnd,
     
-    // Common semantic colors (you can customize these)
+    // Common semantic colors
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
@@ -72,6 +79,10 @@ export function configureUILibrary(colorScheme: 'light' | 'dark' = 'light') {
     grey60: '#6b7280',
     grey70: '#4b5563',
     grey80: '#374151',
+    
+    // Border colors
+    border: '#555',
+    borderError: '#ef4444',
     
     // Additional utility colors
     white: '#ffffff',

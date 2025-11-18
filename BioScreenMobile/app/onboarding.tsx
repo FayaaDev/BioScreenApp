@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import {
-  TextInput as RNTextInput,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  I18nManager,
+  KeyboardAvoidingView as RNKeyboardAvoidingView,
+  StyleSheet,
   Modal,
-  TouchableOpacity as RNTouchableOpacity,
 } from 'react-native';
-import { View, Text, Card, Button } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
 import { useToast } from '../hooks/useToast';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -19,10 +18,7 @@ import { medicalStorage } from '../lib/medical-storage';
 interface OnboardingFormData {
   gender: string;
   dateOfBirth: string;
-  isDiabetic: boolean;
-  isHypertensive: boolean;
-  isCholesterol: boolean;
-  isSmoker: boolean;
+  medicalConditions: string[];
   smokingDetails?: {
     amount: string;
     duration: string;
@@ -55,10 +51,7 @@ export default function Onboarding() {
   const [formData, setFormData] = useState<OnboardingFormData>({
     gender: '',
     dateOfBirth: '',
-    isDiabetic: false,
-    isHypertensive: false,
-    isCholesterol: false,
-    isSmoker: false,
+    medicalConditions: [],
     smokingDetails: {
       amount: '',
       duration: '',
@@ -89,7 +82,14 @@ export default function Onboarding() {
       }
 
       // Save medical profile to local storage
-      medicalStorage.saveUserProfile(userId, formData);
+      const profileData = {
+        ...formData,
+        isDiabetic: formData.medicalConditions.includes('السكري'),
+        isHypertensive: formData.medicalConditions.includes('ارتفاع ضغط الدم'),
+        isCholesterol: formData.medicalConditions.includes('الكوليسترول'),
+        isSmoker: formData.medicalConditions.includes('مدخن'),
+      };
+      medicalStorage.saveUserProfile(userId, profileData);
       medicalStorage.setOnboardingComplete(userId, true);
 
       showToast({
@@ -130,7 +130,7 @@ export default function Onboarding() {
       newErrors.weight = 'الرجاء إدخال الوزن';
     }
 
-    if (formData.isSmoker && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
+    if (formData.medicalConditions.includes('مدخن') && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
       newErrors.smokingDetails = {
         amount: !formData.smokingDetails?.amount ? 'الرجاء تحديد كمية التدخين' : undefined,
         duration: !formData.smokingDetails?.duration ? 'الرجاء تحديد مدة التدخين' : undefined,
@@ -169,26 +169,26 @@ export default function Onboarding() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#202221', paddingTop: 32 }}
+    <RNKeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Card padding-s5 backgroundColor="#2E3130" br40>
+        <Card padding-s5 backgroundColor="#202221" br40>
           <View center marginB-s6>
-            <Text text60 zimam-primary style={{ fontFamily: 'ReadexPro-Bold', textAlign: 'center', marginBottom: 8 }}>مرحباً بك في زِمامـ</Text>
-            <Text text70 grey40 style={{ fontFamily: 'ReadexPro', textAlign: 'center' }}>
+            <Text h2 zimam-primary center marginB-s2>مرحباً بك في زِمامـ</Text>
+            <Text body grey40 center>
               زِمامـ بالفحص واكتشف جميع الفحوصات المناسبة لك
             </Text>
           </View>
 
           <View>
             <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>تاريخ الميلاد</Text>
-              <RNTouchableOpacity
+              <Text bodySmall dark10 right marginB-s2>تاريخ الميلاد</Text>
+              <TouchableOpacity
                 style={{
                   height: 48,
                   borderWidth: 1,
@@ -196,13 +196,14 @@ export default function Onboarding() {
                   borderRadius: 8,
                   backgroundColor: '#202221',
                   justifyContent: 'center',
+                  paddingHorizontal: 16,
                 }}
                 onPress={() => {
                   setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
                   setShowDatePicker(true);
                 }}
               >
-                <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro' }}>
+                <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
                   {formData.dateOfBirth
                     ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
                         year: 'numeric',
@@ -211,16 +212,16 @@ export default function Onboarding() {
                       })
                     : 'اختر تاريخ الميلاد'}
                 </Text>
-              </RNTouchableOpacity>
+              </TouchableOpacity>
               {showDatePicker && (
                 <Modal
                   visible={showDatePicker}
-                  transparent
+                  transparent={true}
                   animationType="fade"
                   onRequestClose={() => setShowDatePicker(false)}
                 >
-                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                    <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '85%', alignItems: 'center', elevation: 8 }}>
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                    <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                       <DateTimePicker
                         value={tempDate || new Date()}
                         mode="date"
@@ -230,11 +231,21 @@ export default function Onboarding() {
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                         style={{ width: '100%' }}
                       />
-                      <View row spread marginT-s4 style={{ width: '100%' }}>
+                      <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
+                        <Button
+                          label="إلغاء"
+                          backgroundColor="#202221"
+                          style={{ flex: 1, paddingVertical: 12 }}
+                          onPress={() => {
+                            setShowDatePicker(false);
+                            setTempDate(null);
+                          }}
+                          labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                        />
                         <Button
                           label="تأكيد"
                           backgroundColor="#4CCCE6"
-                          style={{ paddingVertical: 12, paddingHorizontal: 24, marginRight: 8 }}
+                          style={{ flex: 1, paddingVertical: 12 }}
                           onPress={() => {
                             if (tempDate) {
                               setFormData({
@@ -249,30 +260,20 @@ export default function Onboarding() {
                           }}
                           labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
                         />
-                        <Button
-                          label="إلغاء"
-                          backgroundColor="#202221"
-                          style={{ paddingVertical: 12, paddingHorizontal: 24 }}
-                          onPress={() => {
-                            setShowDatePicker(false);
-                            setTempDate(null);
-                          }}
-                          labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
-                        />
                       </View>
                     </View>
                   </View>
                 </Modal>
               )}
               {errors.dateOfBirth && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.dateOfBirth}</Text>
+                <Text error caption marginT-s1>{errors.dateOfBirth}</Text>
               )}
             </View>
 
             <View marginB-s4>
-              <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الجنس</Text>
+              <Text bodySmall dark10 right marginB-s2>الجنس</Text>
               <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                <RNTouchableOpacity
+                <TouchableOpacity
                   style={{
                     flex: 1,
                     height: 48,
@@ -304,13 +305,14 @@ export default function Onboarding() {
                     style={{
                       fontFamily: 'ReadexPro-Bold',
                       color: formData.gender === 'male' ? '#fff' : '#045468',
+                      writingDirection: 'rtl',
                     }}
                   >
                     ذكر
                   </Text>
-                </RNTouchableOpacity>
+                </TouchableOpacity>
 
-                <RNTouchableOpacity
+                <TouchableOpacity
                   style={{
                     flex: 1,
                     height: 48,
@@ -342,234 +344,60 @@ export default function Onboarding() {
                     style={{
                       fontFamily: 'ReadexPro-Bold',
                       color: formData.gender === 'female' ? '#fff' : '#045468',
+                      writingDirection: 'rtl',
                     }}
                   >
                     أنثى
                   </Text>
-                </RNTouchableOpacity>
+                </TouchableOpacity>
               </View>
               {errors.gender && (
-                <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.gender}</Text>
+                <Text error caption marginT-s1>{errors.gender}</Text>
               )}
             </View>
 
             {/* Medical Survey Section */}
             <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-              <Text text60 zimam-primary center style={{ fontFamily: 'ReadexPro-Bold' }}>الاستبيان الطبي</Text>
+              <Text h3 zimam-primary center>الاستبيان الطبي</Text>
+            </View>
+
+            <View marginB-s4>
+              <Text bodySmall dark10 right marginB-s2>اختر الحالات الصحية المنطبقة عليك:</Text>
+              <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                {['السكري', 'ارتفاع ضغط الدم', 'الكوليسترول', 'مدخن'].map((condition) => (
+                  <Chip
+                    key={condition}
+                    label={condition}
+                    onPress={() => {
+                      const isSelected = formData.medicalConditions.includes(condition);
+                      setFormData({
+                        ...formData,
+                        medicalConditions: isSelected
+                          ? formData.medicalConditions.filter(c => c !== condition)
+                          : [...formData.medicalConditions, condition]
+                      });
+                    }}
+                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#202221'}
+                    labelStyle={{
+                      fontFamily: 'ReadexPro-Medium',
+                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#045468',
+                      fontSize: 16,
+                    }}
+                    containerStyle={{
+                      borderWidth: 1,
+                      borderColor: '#045468',
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                    }}
+                  />
+                ))}
+              </View>
             </View>
 
             <View style={{ gap: 16 }}>
-              <View style={{ gap: 8 }}>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بالسكري؟</Text>
-                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: formData.isDiabetic ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isDiabetic: true })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: formData.isDiabetic ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      نعم
-                    </Text>
-                  </RNTouchableOpacity>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: !formData.isDiabetic ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isDiabetic: false })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: !formData.isDiabetic ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      لا
-                    </Text>
-                  </RNTouchableOpacity>
-                </View>
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع ضغط الدم؟</Text>
-                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: formData.isHypertensive ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isHypertensive: true })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: formData.isHypertensive ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      نعم
-                    </Text>
-                  </RNTouchableOpacity>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: !formData.isHypertensive ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isHypertensive: false })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: !formData.isHypertensive ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      لا
-                    </Text>
-                  </RNTouchableOpacity>
-                </View>
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت مصاب بارتفاع في الكوليسترول؟</Text>
-                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: formData.isCholesterol ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isCholesterol: true })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: formData.isCholesterol ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      نعم
-                    </Text>
-                  </RNTouchableOpacity>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: !formData.isCholesterol ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isCholesterol: false })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: !formData.isCholesterol ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      لا
-                    </Text>
-                  </RNTouchableOpacity>
-                </View>
-              </View>
-
-              <View style={{ gap: 8 }}>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
-                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: formData.isSmoker ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isSmoker: true })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: formData.isSmoker ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      نعم
-                    </Text>
-                  </RNTouchableOpacity>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: !formData.isSmoker ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isSmoker: false })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: !formData.isSmoker ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      لا
-                    </Text>
-                  </RNTouchableOpacity>
-                </View>
-              </View>
-
-              {formData.isSmoker && (
+              {formData.medicalConditions.includes('مدخن') && (
                 <View style={{ gap: 12 }}>
-                  <RNTextInput
+                  <TextField
                     style={{
                       height: 48,
                       borderWidth: 1,
@@ -596,7 +424,7 @@ export default function Onboarding() {
                     }
                     placeholderTextColor="#999"
                   />
-                  <RNTextInput
+                  <TextField
                     style={{
                       height: 48,
                       borderWidth: 1,
@@ -624,197 +452,101 @@ export default function Onboarding() {
                     placeholderTextColor="#999"
                   />
                   {formData.smokingDetails?.amount && formData.smokingDetails?.duration && (
-                    <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: '#045468' }}>
-                      <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right' }}>سنوات التدخين (Pack-Years):</Text>
-                      <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right' }}>{calculatePackYears(formData.smokingDetails)}</Text>
+                    <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderRightWidth: 3, borderRightColor: '#045468' }}>
+                      <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right', writingDirection: 'rtl' }}>سنوات التدخين (Pack-Years):</Text>
+                      <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right', writingDirection: 'rtl' }}>{calculatePackYears(formData.smokingDetails)}</Text>
                     </View>
                   )}
                 </View>
               )}
 
               <View marginB-s4>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الطول (سم)</Text>
-                <RNTextInput
-                  style={{
-                    height: 48,
-                    borderWidth: 1,
-                    borderColor: errors.height ? '#ef4444' : '#555',
-                    borderRadius: 8,
-                    paddingHorizontal: 16,
-                    fontSize: 16,
-                    fontFamily: 'ReadexPro',
-                    backgroundColor: '#202221',
-                    color: '#ECEDEE',
-                    textAlign: 'right',
-                    writingDirection: 'rtl',
-                  }}
-                  value={formData.height}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, height: text });
+                <Text bodySmall dark10 right marginB-s2>
+                  الطول: {formData.height || '140'} سم
+                </Text>
+                <Slider
+                  value={parseFloat(formData.height) || 140}
+                  minimumValue={100}
+                  maximumValue={250}
+                  step={1}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, height: value.toString() });
                     if (errors.height) {
                       setErrors({ ...errors, height: undefined });
                     }
                   }}
-                  keyboardType="numeric"
-                  placeholder="أدخل طولك"
-                  placeholderTextColor="#999"
+                  thumbTintColor="#045468"
+                  minimumTrackTintColor="#045468"
+                  maximumTrackTintColor="#555"
+                  containerStyle={{ marginBottom: 8 }}
                 />
-                {errors.height && <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.height}</Text>}
+                {errors.height && <Text error caption marginT-s1>{errors.height}</Text>}
               </View>
 
               <View marginB-s4>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>الوزن (كجم)</Text>
-                <RNTextInput
-                  style={{
-                    height: 48,
-                    borderWidth: 1,
-                    borderColor: errors.weight ? '#ef4444' : '#555',
-                    borderRadius: 8,
-                    paddingHorizontal: 16,
-                    fontSize: 16,
-                    fontFamily: 'ReadexPro',
-                    backgroundColor: '#202221',
-                    color: '#ECEDEE',
-                    textAlign: 'right',
-                    writingDirection: 'rtl',
-                  }}
-                  value={formData.weight}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, weight: text });
+                <Text bodySmall dark10 right marginB-s2>
+                  الوزن: {formData.weight || '60'} كجم
+                </Text>
+                <Slider
+                  value={parseFloat(formData.weight) || 60}
+                  minimumValue={30}
+                  maximumValue={200}
+                  step={1}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, weight: value.toString() });
                     if (errors.weight) {
                       setErrors({ ...errors, weight: undefined });
                     }
                   }}
-                  keyboardType="numeric"
-                  placeholder="أدخل وزنك"
-                  placeholderTextColor="#999"
+                  thumbTintColor="#045468"
+                  minimumTrackTintColor="#045468"
+                  maximumTrackTintColor="#555"
+                  containerStyle={{ marginBottom: 8 }}
                 />
-                {errors.weight && <Text color="error" text80 style={{ fontFamily: 'ReadexPro' }}>{errors.weight}</Text>}
+                {errors.weight && <Text error caption marginT-s1>{errors.weight}</Text>}
               </View>
 
               {/* BMI Display */}
               {formData.height && formData.weight && (
-                <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: '#045468' }}>
-                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right' }}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right' }}>
+                <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderRightWidth: 3, borderRightColor: '#045468' }}>
+                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right', writingDirection: 'rtl' }}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right', writingDirection: 'rtl' }}>
                     {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                   </Text>
-                  <Text text80 style={{ fontFamily: 'ReadexPro', color: '#ECEDEE', textAlign: 'right', width: '100%' }}>
+                  <Text text80 style={{ fontFamily: 'ReadexPro', color: '#ECEDEE', textAlign: 'right', width: '100%', writingDirection: 'rtl' }}>
                     {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}</Text>
                 </View>
               )}
 
               {formData.gender === 'female' && (
                 <View style={{ gap: 8 }}>
-                  <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت حامل؟</Text>
-                  <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <RNTouchableOpacity
-                      style={{
-                        flex: 1,
-                        height: 48,
-                        borderWidth: 1,
-                        borderColor: '#045468',
-                        borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: formData.isPregnant ? '#045468' : 'transparent',
-                      }}
-                      onPress={() => setFormData({ ...formData, isPregnant: true })}
-                    >
-                      <Text
-                        text70
-                        style={{
-                          fontFamily: 'ReadexPro-Bold',
-                          color: formData.isPregnant ? '#ECEDEE' : '#045468',
-                        }}
-                      >
-                        نعم
-                      </Text>
-                    </RNTouchableOpacity>
-                    <RNTouchableOpacity
-                      style={{
-                        flex: 1,
-                        height: 48,
-                        borderWidth: 1,
-                        borderColor: '#045468',
-                        borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: !formData.isPregnant ? '#045468' : 'transparent',
-                      }}
-                      onPress={() => setFormData({ ...formData, isPregnant: false })}
-                    >
-                      <Text
-                        text70
-                        style={{
-                          fontFamily: 'ReadexPro-Bold',
-                          color: !formData.isPregnant ? '#ECEDEE' : '#045468',
-                        }}
-                      >
-                        لا
-                      </Text>
-                    </RNTouchableOpacity>
-                  </View>
+                  <Checkbox
+                    value={formData.isPregnant}
+                    onValueChange={(value) => setFormData({ ...formData, isPregnant: value })}
+                    label="هل أنت حامل؟"
+                    color="#045468"
+                    labelStyle={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, writingDirection: 'rtl' }}
+                    containerStyle={{ flexDirection: 'row-reverse', gap: 8, alignItems: 'center' }}
+                  />
                 </View>
               )}
 
               <View style={{ gap: 8 }}>
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Medium', textAlign: 'right', alignSelf: 'flex-end' }}>هل أنت نشط جنسياً؟</Text>
-                <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: formData.isSexuallyActive ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isSexuallyActive: true })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: formData.isSexuallyActive ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      نعم
-                    </Text>
-                  </RNTouchableOpacity>
-                  <RNTouchableOpacity
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: '#045468',
-                      borderRadius: 8,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: !formData.isSexuallyActive ? '#045468' : 'transparent',
-                    }}
-                    onPress={() => setFormData({ ...formData, isSexuallyActive: false })}
-                  >
-                    <Text
-                      text70
-                      style={{
-                        fontFamily: 'ReadexPro-Bold',
-                        color: !formData.isSexuallyActive ? '#ECEDEE' : '#045468',
-                      }}
-                    >
-                      لا
-                    </Text>
-                  </RNTouchableOpacity>
-                </View>
+                <Checkbox
+                  value={formData.isSexuallyActive}
+                  onValueChange={(value) => setFormData({ ...formData, isSexuallyActive: value })}
+                  label="هل أنت نشط جنسياً؟"
+                  color="#045468"
+                  labelStyle={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, writingDirection: 'rtl' }}
+                  containerStyle={{ flexDirection: 'row-reverse', gap: 8, alignItems: 'center' }}
+                />
               </View>
 
               {formData.isSexuallyActive && (
                 <View marginB-s4>
-                  <Text text70 white style={{ fontFamily: 'ReadexPro-SemiBold', textAlign: 'right', alignSelf: 'flex-end', marginBottom: 8 }}>عدد الشركاء</Text>
+                  <Text bodySmall dark10 right marginB-s2>عدد الشركاء</Text>
                   <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <RNTouchableOpacity
+                    <TouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -837,12 +569,13 @@ export default function Onboarding() {
                         style={{
                           fontFamily: 'ReadexPro-Bold',
                           color: formData.sexualActivityDetails?.partnerCount === 'single' ? '#ECEDEE' : '#045468',
+                          writingDirection: 'rtl',
                         }}
                       >
                         شريك واحد
                       </Text>
-                    </RNTouchableOpacity>
-                    <RNTouchableOpacity
+                    </TouchableOpacity>
+                    <TouchableOpacity
                       style={{
                         flex: 1,
                         height: 48,
@@ -865,38 +598,46 @@ export default function Onboarding() {
                         style={{
                           fontFamily: 'ReadexPro-Bold',
                           color: formData.sexualActivityDetails?.partnerCount === 'multiple' ? '#ECEDEE' : '#045468',
+                          writingDirection: 'rtl',
                         }}
                       >
                         أكثر من شريك
                       </Text>
-                    </RNTouchableOpacity>
+                    </TouchableOpacity>
                   </View>
                 </View>
               )}
             </View>
 
-            <RNTouchableOpacity
-              style={{
-                backgroundColor: isSubmitting ? '#666' : '#045468',
-                paddingVertical: 16,
-                borderRadius: 8,
-                alignItems: 'center',
-                marginTop: 24,
-              }}
-              onPress={handleSubmit}
+            <Button
+              label="حفظ البيانات"
+              backgroundColor={isSubmitting ? "#666" : "#045468"}
+              paddingV-16
+              br20
+              marginT-24
+              loading={isSubmitting}
               disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text text70 white style={{ fontFamily: 'ReadexPro-Bold' }}>حفظ البيانات</Text>
-              )}
-            </RNTouchableOpacity>
+              onPress={handleSubmit}
+              labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+            />
           </View>
         </Card>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </RNKeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#202221',
+    paddingTop: 32,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+});
 
  
