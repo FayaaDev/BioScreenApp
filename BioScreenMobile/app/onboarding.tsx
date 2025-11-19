@@ -15,6 +15,78 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { medicalStorage } from '../lib/medical-storage';
 
+// Custom Text wrapper with proper Arabic text rendering
+const ArabicText = ({ children, style, ...props }: any) => (
+  <Text
+    {...props}
+    style={[
+      {
+        lineHeight: style?.fontSize ? style.fontSize * 1.5 : 24,
+        includeFontPadding: false,
+        paddingVertical: 2,
+      },
+      style,
+    ]}
+  >
+    {children}
+  </Text>
+);
+
+// Reusable Arabic Button Component
+const ArabicButton = ({ 
+  label, 
+  isSelected, 
+  onPress, 
+  icon, 
+  disabled = false,
+  style = {}
+}: { 
+  label: string; 
+  isSelected: boolean; 
+  onPress: () => void; 
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  style?: any;
+}) => (
+  <TouchableOpacity
+    style={[{
+      flex: 1,
+      minHeight: 56,
+      borderWidth: 2,
+      borderColor: isSelected ? '#045468' : '#555',
+      backgroundColor: isSelected ? '#045468' : '#2E3130',
+      borderRadius: 20,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      elevation: isSelected ? 4 : 0,
+      shadowColor: isSelected ? '#045468' : 'transparent',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    }, style]}
+    onPress={onPress}
+    disabled={disabled}
+  >
+    {icon}
+    <Text
+      style={{
+        fontFamily: 'ReadexPro-Bold',
+        color: isSelected ? '#fff' : '#888',
+        writingDirection: 'rtl',
+        fontSize: 15,
+        lineHeight: 24,
+        includeFontPadding: false,
+      }}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 interface OnboardingFormData {
   gender: string;
   dateOfBirth: string;
@@ -230,6 +302,8 @@ export default function Onboarding() {
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                         style={{ width: '100%' }}
+                        textColor="#FFFFFF"
+                        themeVariant="dark"
                       />
                       <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
                         <Button
@@ -273,83 +347,43 @@ export default function Onboarding() {
             <View marginB-s4>
               <Text bodySmall dark10 right marginB-s2>الجنس</Text>
               <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    height: 48,
-                    borderWidth: 1,
-                    borderColor: '#045468',
-                    backgroundColor: formData.gender === 'male' ? '#045468' : '#fff',
-                    borderRadius: 20,
-                    paddingVertical: 12,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    gap: 8,
-                  }}
+                <ArabicButton
+                  label="ذكر"
+                  isSelected={formData.gender === 'male'}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'male' });
                     if (errors.gender) {
                       setErrors({ ...errors, gender: undefined });
                     }
                   }}
+                  icon={
+                    <MaterialIcons
+                      name="male"
+                      size={20}
+                      color={formData.gender === 'male' ? '#fff' : '#888'}
+                    />
+                  }
                   disabled={isSubmitting}
-                >
-                  <MaterialIcons
-                    name="male"
-                    size={20}
-                    color={formData.gender === 'male' ? '#fff' : '#045468'}
-                  />
-                  <Text
-                    text70
-                    style={{
-                      fontFamily: 'ReadexPro-Bold',
-                      color: formData.gender === 'male' ? '#fff' : '#045468',
-                      writingDirection: 'rtl',
-                    }}
-                  >
-                    ذكر
-                  </Text>
-                </TouchableOpacity>
+                />
 
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    height: 48,
-                    borderWidth: 1,
-                    borderColor: '#045468',
-                    backgroundColor: formData.gender === 'female' ? '#045468' : '#fff',
-                    borderRadius: 20,
-                    paddingVertical: 12,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    gap: 8,
-                  }}
+                <ArabicButton
+                  label="أنثى"
+                  isSelected={formData.gender === 'female'}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'female' });
                     if (errors.gender) {
                       setErrors({ ...errors, gender: undefined });
                     }
                   }}
+                  icon={
+                    <MaterialIcons
+                      name="female"
+                      size={20}
+                      color={formData.gender === 'female' ? '#fff' : '#888'}
+                    />
+                  }
                   disabled={isSubmitting}
-                >
-                  <MaterialIcons
-                    name="female"
-                    size={20}
-                    color={formData.gender === 'female' ? '#fff' : '#045468'}
-                  />
-                  <Text
-                    text70
-                    style={{
-                      fontFamily: 'ReadexPro-Bold',
-                      color: formData.gender === 'female' ? '#fff' : '#045468',
-                      writingDirection: 'rtl',
-                    }}
-                  >
-                    أنثى
-                  </Text>
-                </TouchableOpacity>
+                />
               </View>
               {errors.gender && (
                 <Text error caption marginT-s1>{errors.gender}</Text>
@@ -358,13 +392,22 @@ export default function Onboarding() {
 
             {/* Medical Survey Section */}
             <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-              <Text h3 zimam-primary center>الاستبيان الطبي</Text>
+              <ArabicText 
+                h3 
+                zimam-primary 
+                center 
+                style={{ 
+                  paddingVertical: 4
+                }}
+              >
+                الاستبيان الطبي
+              </ArabicText>
             </View>
 
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>اختر الحالات الصحية المنطبقة عليك:</Text>
+              <ArabicText bodySmall dark10 right marginB-s2>نمط الحياة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['السكري', 'ارتفاع ضغط الدم', 'الكوليسترول', 'مدخن'].map((condition) => (
+                {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => (
                   <Chip
                     key={condition}
                     label={condition}
@@ -377,17 +420,110 @@ export default function Onboarding() {
                           : [...formData.medicalConditions, condition]
                       });
                     }}
-                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#202221'}
+                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
                     labelStyle={{
-                      fontFamily: 'ReadexPro-Medium',
-                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#045468',
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
                       fontSize: 16,
+                      lineHeight: 24,
+                      includeFontPadding: false,
+                      paddingVertical: 4,
                     }}
                     containerStyle={{
-                      borderWidth: 1,
-                      borderColor: '#045468',
+                      borderWidth: 2,
+                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
                       paddingVertical: 10,
                       paddingHorizontal: 16,
+                      borderRadius: 24,
+                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
+                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                    }}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View marginB-s4>
+              <ArabicText bodySmall dark10 right marginB-s2>الحالات المزمنة</ArabicText>
+              <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => (
+                  <Chip
+                    key={condition}
+                    label={condition}
+                    onPress={() => {
+                      const isSelected = formData.medicalConditions.includes(condition);
+                      setFormData({
+                        ...formData,
+                        medicalConditions: isSelected
+                          ? formData.medicalConditions.filter(c => c !== condition)
+                          : [...formData.medicalConditions, condition]
+                      });
+                    }}
+                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
+                    labelStyle={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
+                      fontSize: 16,
+                      lineHeight: 24,
+                      includeFontPadding: false,
+                      paddingVertical: 4,
+                    }}
+                    containerStyle={{
+                      borderWidth: 2,
+                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                      borderRadius: 24,
+                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
+                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                    }}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View marginB-s4>
+              <ArabicText bodySmall dark10 right marginB-s2>الحالات الأخرى</ArabicText>
+              <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => (
+                  <Chip
+                    key={condition}
+                    label={condition}
+                    onPress={() => {
+                      const isSelected = formData.medicalConditions.includes(condition);
+                      setFormData({
+                        ...formData,
+                        medicalConditions: isSelected
+                          ? formData.medicalConditions.filter(c => c !== condition)
+                          : [...formData.medicalConditions, condition]
+                      });
+                    }}
+                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
+                    labelStyle={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
+                      fontSize: 16,
+                      lineHeight: 24,
+                      includeFontPadding: false,
+                      paddingVertical: 4,
+                    }}
+                    containerStyle={{
+                      borderWidth: 2,
+                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                      borderRadius: 24,
+                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
+                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
                     }}
                   />
                 ))}
@@ -395,7 +531,7 @@ export default function Onboarding() {
             </View>
 
             <View style={{ gap: 16 }}>
-              {formData.medicalConditions.includes('مدخن') && (
+              {formData.medicalConditions.includes('تدخين التبغ') && (
                 <View style={{ gap: 12 }}>
                   <TextField
                     style={{
@@ -508,37 +644,60 @@ export default function Onboarding() {
 
               {/* BMI Display */}
               {formData.height && formData.weight && (
-                <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderRightWidth: 3, borderRightColor: '#045468' }}>
-                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right', writingDirection: 'rtl' }}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right', writingDirection: 'rtl' }}>
+                <View style={{ backgroundColor: '#2E3130', padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: '#4CCCE6', alignItems: 'center' }}>
+                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
+                  <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                     {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                   </Text>
-                  <Text text80 style={{ fontFamily: 'ReadexPro', color: '#ECEDEE', textAlign: 'right', width: '100%', writingDirection: 'rtl' }}>
-                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}</Text>
+                  <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', textAlign: 'center' }}>
+                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
+                  </Text>
                 </View>
               )}
 
               {formData.gender === 'female' && (
-                <View style={{ gap: 8 }}>
+                <View marginB-s4>
                   <Checkbox
                     value={formData.isPregnant}
                     onValueChange={(value) => setFormData({ ...formData, isPregnant: value })}
-                    label="هل أنت حامل؟"
+                    label="  هل أنت حامل؟"
                     color="#045468"
-                    labelStyle={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, writingDirection: 'rtl' }}
-                    containerStyle={{ flexDirection: 'row-reverse', gap: 8, alignItems: 'center' }}
+                    labelStyle={{ 
+                      fontFamily: 'ReadexPro-Medium', 
+                      color: '#ECEDEE', 
+                      fontSize: 16, 
+                      writingDirection: 'rtl',
+                      marginLeft: 0,
+                      marginRight: 8,
+                    }}
+                    containerStyle={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                    }}
                   />
                 </View>
               )}
 
-              <View style={{ gap: 8 }}>
+              <View marginB-s4>
                 <Checkbox
                   value={formData.isSexuallyActive}
                   onValueChange={(value) => setFormData({ ...formData, isSexuallyActive: value })}
-                  label="هل أنت نشط جنسياً؟"
+                  label="  هل أنت نشط جنسياً؟"
                   color="#045468"
-                  labelStyle={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, writingDirection: 'rtl' }}
-                  containerStyle={{ flexDirection: 'row-reverse', gap: 8, alignItems: 'center' }}
+                  labelStyle={{ 
+                    fontFamily: 'ReadexPro-Medium', 
+                    color: '#ECEDEE', 
+                    fontSize: 16, 
+                    writingDirection: 'rtl',
+                    marginLeft: 0,
+                    marginRight: 8,
+                  }}
+                  containerStyle={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                  }}
                 />
               </View>
 
@@ -546,64 +705,26 @@ export default function Onboarding() {
                 <View marginB-s4>
                   <Text bodySmall dark10 right marginB-s2>عدد الشركاء</Text>
                   <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        height: 48,
-                        borderWidth: 1,
-                        borderColor: '#045468',
-                        borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: formData.sexualActivityDetails?.partnerCount === 'single' ? '#045468' : 'transparent',
-                      }}
+                    <ArabicButton
+                      label="شريك واحد"
+                      isSelected={formData.sexualActivityDetails?.partnerCount === 'single'}
                       onPress={() =>
                         setFormData({
                           ...formData,
                           sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'single' },
                         })
                       }
-                    >
-                      <Text
-                        text70
-                        style={{
-                          fontFamily: 'ReadexPro-Bold',
-                          color: formData.sexualActivityDetails?.partnerCount === 'single' ? '#ECEDEE' : '#045468',
-                          writingDirection: 'rtl',
-                        }}
-                      >
-                        شريك واحد
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        height: 48,
-                        borderWidth: 1,
-                        borderColor: '#045468',
-                        borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: formData.sexualActivityDetails?.partnerCount === 'multiple' ? '#045468' : 'transparent',
-                      }}
+                    />
+                    <ArabicButton
+                      label="أكثر من شريك"
+                      isSelected={formData.sexualActivityDetails?.partnerCount === 'multiple'}
                       onPress={() =>
                         setFormData({
                           ...formData,
                           sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'multiple' },
                         })
                       }
-                    >
-                      <Text
-                        text70
-                        style={{
-                          fontFamily: 'ReadexPro-Bold',
-                          color: formData.sexualActivityDetails?.partnerCount === 'multiple' ? '#ECEDEE' : '#045468',
-                          writingDirection: 'rtl',
-                        }}
-                      >
-                        أكثر من شريك
-                      </Text>
-                    </TouchableOpacity>
+                    />
                   </View>
                 </View>
               )}
@@ -613,7 +734,7 @@ export default function Onboarding() {
               label="حفظ البيانات"
               backgroundColor={isSubmitting ? "#666" : "#045468"}
               paddingV-16
-              br20
+              borderRadius={200}
               marginT-24
               loading={isSubmitting}
               disabled={isSubmitting}
@@ -640,4 +761,3 @@ const styles = StyleSheet.create({
   },
 });
 
- 
