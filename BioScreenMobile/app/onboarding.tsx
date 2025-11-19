@@ -21,9 +21,9 @@ const ArabicText = ({ children, style, ...props }: any) => (
     {...props}
     style={[
       {
-        lineHeight: style?.fontSize ? style.fontSize * 1.5 : 24,
+        lineHeight: style?.fontSize ? style.fontSize * 1.6 : 26,
         includeFontPadding: false,
-        paddingVertical: 2,
+        paddingVertical: 4,
       },
       style,
     ]}
@@ -102,6 +102,7 @@ interface OnboardingFormData {
   sexualActivityDetails?: {
     partnerCount: 'single' | 'multiple';
   };
+  saveData: boolean;
 }
 
 interface FormErrors {
@@ -135,9 +136,24 @@ export default function Onboarding() {
     sexualActivityDetails: {
       partnerCount: 'single',
     },
+    saveData: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
+
+  const conditionExplanations: { [key: string]: string } = {
+    'قلة النشاط البدني': 'أمارس أقل من ساعتين ونصف أسبوعيًا من النشاط البدني المعتدل، مثل المشي السريع',
+    'تدخين التبغ': 'أستخدم منتجات التبغ، مثل السجائر أو الشيشة',
+    'مرض ارتفاع ضغط الدم': 'لدي مرض ارتفاع ضغط الدم',
+    'داء السكري': 'لدي مرض السكري من النوع الأول أو الثاني، المعروف أيضًا بداء السكري',
+    'تاريخ لمرض قلبي وعائي': 'أصبت بأحد الأمراض القلبية الوعائية، مثل النوبة القلبية أو الذبحة الصدرية أو السكتة الدماغية',
+    'مرض عضوي مزمن': 'لدي مرض مزمن في القلب أو الرئتين أو الكبد أو الكلى',
+    'قراءات مرتفعة لضغط الدم': 'قراءاتي لضغط الدم أعلى من 130‏/85 ملم زئبق، دون تشخيص بمرض ارتفاع ضغط الدم',
+    'تاريخ عائلي للسكري': 'لدى أحد أفراد عائلتي (الوالدين أو الإخوة) مرض السكري',
+    'تاريخ لسكري الحمل': 'أصبت بمرض سكري الحمل في حمل سابق',
+    'تاريخ جنسي': 'قمت باتصال جنسي خلال علاقة زوجية حالية أو سابقة',
+  };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
@@ -240,6 +256,73 @@ export default function Onboarding() {
     return amount * duration;
   };
 
+  const renderConditionChip = (condition: string) => {
+    const isSelected = formData.medicalConditions.includes(condition);
+    
+    return (
+      <View key={condition} style={{ position: 'relative' }}>
+        <Chip
+          label={condition}
+          onPress={() => {
+            setFormData({
+              ...formData,
+              medicalConditions: isSelected
+                ? formData.medicalConditions.filter(c => c !== condition)
+                : [...formData.medicalConditions, condition]
+            });
+          }}
+          backgroundColor={isSelected ? '#045468' : '#2E3130'}
+          labelStyle={{
+            fontFamily: 'ReadexPro-Bold',
+            color: isSelected ? '#fff' : '#888',
+            fontSize: 16,
+            lineHeight: 24,
+            includeFontPadding: false,
+            paddingVertical: 4,
+            paddingRight: 32, // Make room for info icon
+          }}
+          containerStyle={{
+            borderWidth: 2,
+            borderColor: isSelected ? '#045468' : '#555',
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 24,
+            elevation: isSelected ? 4 : 0,
+            shadowColor: isSelected ? '#045468' : 'transparent',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+        />
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: [{ translateY: -12 }],
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(76,204,230,0.2)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
+          onPress={() => {
+            setSelectedInfoCondition(condition);
+          }}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons
+            name="info-outline"
+            size={16}
+            color={isSelected ? '#fff' : '#4CCCE6'}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <RNKeyboardAvoidingView
       style={styles.container}
@@ -253,11 +336,57 @@ export default function Onboarding() {
           <View center marginB-s6>
             <Text h2 zimam-primary center marginB-s2>مرحباً بك في زِمامـ</Text>
             <Text body grey40 center>
-              زِمامـ بالفحص واكتشف جميع الفحوصات المناسبة لك
+احصل على توصيات صحية وقائية مخصصة لك من خلال الإجابة على بعض الأسئلة السريعة حول جنسك وعمرك وحالتك الصحية
             </Text>
           </View>
 
           <View>
+            <View marginB-s4>
+              <Text bodySmall dark10 right marginB-s2>الجنس</Text>
+              <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
+                <ArabicButton
+                  label="ذكر"
+                  isSelected={formData.gender === 'male'}
+                  onPress={() => {
+                    setFormData({ ...formData, gender: 'male' });
+                    if (errors.gender) {
+                      setErrors({ ...errors, gender: undefined });
+                    }
+                  }}
+                  icon={
+                    <MaterialIcons
+                      name="male"
+                      size={20}
+                      color={formData.gender === 'male' ? '#fff' : '#888'}
+                    />
+                  }
+                  disabled={isSubmitting}
+                />
+
+                <ArabicButton
+                  label="أنثى"
+                  isSelected={formData.gender === 'female'}
+                  onPress={() => {
+                    setFormData({ ...formData, gender: 'female' });
+                    if (errors.gender) {
+                      setErrors({ ...errors, gender: undefined });
+                    }
+                  }}
+                  icon={
+                    <MaterialIcons
+                      name="female"
+                      size={20}
+                      color={formData.gender === 'female' ? '#fff' : '#888'}
+                    />
+                  }
+                  disabled={isSubmitting}
+                />
+              </View>
+              {errors.gender && (
+                <Text error caption marginT-s1>{errors.gender}</Text>
+              )}
+            </View>
+
             <View marginB-s4>
               <Text bodySmall dark10 right marginB-s2>تاريخ الميلاد</Text>
               <TouchableOpacity
@@ -345,50 +474,63 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>الجنس</Text>
-              <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                <ArabicButton
-                  label="ذكر"
-                  isSelected={formData.gender === 'male'}
-                  onPress={() => {
-                    setFormData({ ...formData, gender: 'male' });
-                    if (errors.gender) {
-                      setErrors({ ...errors, gender: undefined });
-                    }
-                  }}
-                  icon={
-                    <MaterialIcons
-                      name="male"
-                      size={20}
-                      color={formData.gender === 'male' ? '#fff' : '#888'}
-                    />
+              <Text bodySmall dark10 right marginB-s2>
+                الطول: {formData.height || '140'} سم
+              </Text>
+              <Slider
+                value={parseFloat(formData.height) || 140}
+                minimumValue={100}
+                maximumValue={250}
+                step={1}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, height: value.toString() });
+                  if (errors.height) {
+                    setErrors({ ...errors, height: undefined });
                   }
-                  disabled={isSubmitting}
-                />
-
-                <ArabicButton
-                  label="أنثى"
-                  isSelected={formData.gender === 'female'}
-                  onPress={() => {
-                    setFormData({ ...formData, gender: 'female' });
-                    if (errors.gender) {
-                      setErrors({ ...errors, gender: undefined });
-                    }
-                  }}
-                  icon={
-                    <MaterialIcons
-                      name="female"
-                      size={20}
-                      color={formData.gender === 'female' ? '#fff' : '#888'}
-                    />
-                  }
-                  disabled={isSubmitting}
-                />
-              </View>
-              {errors.gender && (
-                <Text error caption marginT-s1>{errors.gender}</Text>
-              )}
+                }}
+                thumbTintColor="#045468"
+                minimumTrackTintColor="#045468"
+                maximumTrackTintColor="#555"
+                containerStyle={{ marginBottom: 8 }}
+              />
+              {errors.height && <Text error caption marginT-s1>{errors.height}</Text>}
             </View>
+
+            <View marginB-s4>
+              <Text bodySmall dark10 right marginB-s2>
+                الوزن: {formData.weight || '60'} كجم
+              </Text>
+              <Slider
+                value={parseFloat(formData.weight) || 60}
+                minimumValue={30}
+                maximumValue={200}
+                step={1}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, weight: value.toString() });
+                  if (errors.weight) {
+                    setErrors({ ...errors, weight: undefined });
+                  }
+                }}
+                thumbTintColor="#045468"
+                minimumTrackTintColor="#045468"
+                maximumTrackTintColor="#555"
+                containerStyle={{ marginBottom: 8 }}
+              />
+              {errors.weight && <Text error caption marginT-s1>{errors.weight}</Text>}
+            </View>
+
+            {/* BMI Display */}
+            {formData.height && formData.weight && (
+              <View style={{ backgroundColor: '#2E3130', padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: '#4CCCE6', alignItems: 'center' }}>
+                <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
+                <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
+                  {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
+                </Text>
+                <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', textAlign: 'center' }}>
+                  {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
+                </Text>
+              </View>
+            )}
 
             {/* Medical Survey Section */}
             <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
@@ -402,133 +544,73 @@ export default function Onboarding() {
               >
                 الاستبيان الطبي
               </ArabicText>
+              <Text body grey40 center marginT-s2>
+                اختر ما ينطبق عليك من الحالات التالية، أو اتركها بدون اختيار إذا لم تكن متأكدًا
+              </Text>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall dark10 right marginB-s2>نمط الحياة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => (
-                  <Chip
-                    key={condition}
-                    label={condition}
-                    onPress={() => {
-                      const isSelected = formData.medicalConditions.includes(condition);
-                      setFormData({
-                        ...formData,
-                        medicalConditions: isSelected
-                          ? formData.medicalConditions.filter(c => c !== condition)
-                          : [...formData.medicalConditions, condition]
-                      });
-                    }}
-                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
-                    labelStyle={{
-                      fontFamily: 'ReadexPro-Bold',
-                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
-                      fontSize: 16,
-                      lineHeight: 24,
-                      includeFontPadding: false,
-                      paddingVertical: 4,
-                    }}
-                    containerStyle={{
-                      borderWidth: 2,
-                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 24,
-                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
-                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 4,
-                    }}
-                  />
-                ))}
+                {['قلة النشاط البدني', 'تدخين التبغ'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall dark10 right marginB-s2>الحالات المزمنة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => (
-                  <Chip
-                    key={condition}
-                    label={condition}
-                    onPress={() => {
-                      const isSelected = formData.medicalConditions.includes(condition);
-                      setFormData({
-                        ...formData,
-                        medicalConditions: isSelected
-                          ? formData.medicalConditions.filter(c => c !== condition)
-                          : [...formData.medicalConditions, condition]
-                      });
-                    }}
-                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
-                    labelStyle={{
-                      fontFamily: 'ReadexPro-Bold',
-                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
-                      fontSize: 16,
-                      lineHeight: 24,
-                      includeFontPadding: false,
-                      paddingVertical: 4,
-                    }}
-                    containerStyle={{
-                      borderWidth: 2,
-                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 24,
-                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
-                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 4,
-                    }}
-                  />
-                ))}
+                {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall dark10 right marginB-s2>الحالات الأخرى</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => (
-                  <Chip
-                    key={condition}
-                    label={condition}
-                    onPress={() => {
-                      const isSelected = formData.medicalConditions.includes(condition);
-                      setFormData({
-                        ...formData,
-                        medicalConditions: isSelected
-                          ? formData.medicalConditions.filter(c => c !== condition)
-                          : [...formData.medicalConditions, condition]
-                      });
-                    }}
-                    backgroundColor={formData.medicalConditions.includes(condition) ? '#045468' : '#2E3130'}
-                    labelStyle={{
-                      fontFamily: 'ReadexPro-Bold',
-                      color: formData.medicalConditions.includes(condition) ? '#fff' : '#888',
-                      fontSize: 16,
-                      lineHeight: 24,
-                      includeFontPadding: false,
-                      paddingVertical: 4,
-                    }}
-                    containerStyle={{
-                      borderWidth: 2,
-                      borderColor: formData.medicalConditions.includes(condition) ? '#045468' : '#555',
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 24,
-                      elevation: formData.medicalConditions.includes(condition) ? 4 : 0,
-                      shadowColor: formData.medicalConditions.includes(condition) ? '#045468' : 'transparent',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 4,
-                    }}
-                  />
-                ))}
+                {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map(renderConditionChip)}
+                {formData.gender === 'female' && (
+                  <>
+                    {renderConditionChip('تاريخ لسكري الحمل')}
+                    {renderConditionChip('تاريخ جنسي')}
+                  </>
+                )}
               </View>
             </View>
+
+            {/* Info Modal */}
+            {selectedInfoCondition && (
+              <Modal
+                visible={!!selectedInfoCondition}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setSelectedInfoCondition(null)}
+              >
+                <TouchableOpacity 
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}
+                  activeOpacity={1}
+                  onPress={() => setSelectedInfoCondition(null)}
+                >
+                  <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, width: '85%', maxWidth: 400, borderWidth: 2, borderColor: '#045468' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, gap: 12 }}>
+                      <MaterialIcons name="info" size={28} color="#4CCCE6" />
+                      <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', fontSize: 18, textAlign: 'center', lineHeight: 28 }}>
+                        {selectedInfoCondition}
+                      </Text>
+                    </View>
+                    <Text style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 20 }}>
+                      {conditionExplanations[selectedInfoCondition] || 'لا توجد معلومات متاحة'}
+                    </Text>
+                    <Button
+                      label="فهمت"
+                      backgroundColor="#045468"
+                      paddingV-12
+                      borderRadius={12}
+                      onPress={() => setSelectedInfoCondition(null)}
+                      labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </Modal>
+            )}
 
             <View style={{ gap: 16 }}>
               {formData.medicalConditions.includes('تدخين التبغ') && (
@@ -596,138 +678,35 @@ export default function Onboarding() {
                 </View>
               )}
 
-              <View marginB-s4>
-                <Text bodySmall dark10 right marginB-s2>
-                  الطول: {formData.height || '140'} سم
-                </Text>
-                <Slider
-                  value={parseFloat(formData.height) || 140}
-                  minimumValue={100}
-                  maximumValue={250}
-                  step={1}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, height: value.toString() });
-                    if (errors.height) {
-                      setErrors({ ...errors, height: undefined });
-                    }
-                  }}
-                  thumbTintColor="#045468"
-                  minimumTrackTintColor="#045468"
-                  maximumTrackTintColor="#555"
-                  containerStyle={{ marginBottom: 8 }}
-                />
-                {errors.height && <Text error caption marginT-s1>{errors.height}</Text>}
-              </View>
+           
+            </View>
 
-              <View marginB-s4>
-                <Text bodySmall dark10 right marginB-s2>
-                  الوزن: {formData.weight || '60'} كجم
-                </Text>
-                <Slider
-                  value={parseFloat(formData.weight) || 60}
-                  minimumValue={30}
-                  maximumValue={200}
-                  step={1}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, weight: value.toString() });
-                    if (errors.weight) {
-                      setErrors({ ...errors, weight: undefined });
-                    }
-                  }}
-                  thumbTintColor="#045468"
-                  minimumTrackTintColor="#045468"
-                  maximumTrackTintColor="#555"
-                  containerStyle={{ marginBottom: 8 }}
-                />
-                {errors.weight && <Text error caption marginT-s1>{errors.weight}</Text>}
-              </View>
-
-              {/* BMI Display */}
-              {formData.height && formData.weight && (
-                <View style={{ backgroundColor: '#2E3130', padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: '#4CCCE6', alignItems: 'center' }}>
-                  <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
-                  <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
-                    {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
-                  </Text>
-                  <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', textAlign: 'center' }}>
-                    {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
-                  </Text>
-                </View>
-              )}
-
-              {formData.gender === 'female' && (
-                <View marginB-s4>
-                  <Checkbox
-                    value={formData.isPregnant}
-                    onValueChange={(value) => setFormData({ ...formData, isPregnant: value })}
-                    label="  هل أنت حامل؟"
-                    color="#045468"
-                    labelStyle={{ 
-                      fontFamily: 'ReadexPro-Medium', 
-                      color: '#ECEDEE', 
-                      fontSize: 16, 
-                      writingDirection: 'rtl',
-                      marginLeft: 0,
-                      marginRight: 8,
-                    }}
-                    containerStyle={{ 
-                      flexDirection: 'row', 
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                    }}
-                  />
-                </View>
-              )}
-
-              <View marginB-s4>
-                <Checkbox
-                  value={formData.isSexuallyActive}
-                  onValueChange={(value) => setFormData({ ...formData, isSexuallyActive: value })}
-                  label="  هل أنت نشط جنسياً؟"
-                  color="#045468"
-                  labelStyle={{ 
-                    fontFamily: 'ReadexPro-Medium', 
-                    color: '#ECEDEE', 
-                    fontSize: 16, 
-                    writingDirection: 'rtl',
-                    marginLeft: 0,
-                    marginRight: 8,
-                  }}
-                  containerStyle={{ 
-                    flexDirection: 'row', 
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                  }}
-                />
-              </View>
-
-              {formData.isSexuallyActive && (
-                <View marginB-s4>
-                  <Text bodySmall dark10 right marginB-s2>عدد الشركاء</Text>
-                  <View style={{ gap: 12, flexDirection: 'row-reverse' }}>
-                    <ArabicButton
-                      label="شريك واحد"
-                      isSelected={formData.sexualActivityDetails?.partnerCount === 'single'}
-                      onPress={() =>
-                        setFormData({
-                          ...formData,
-                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'single' },
-                        })
-                      }
-                    />
-                    <ArabicButton
-                      label="أكثر من شريك"
-                      isSelected={formData.sexualActivityDetails?.partnerCount === 'multiple'}
-                      onPress={() =>
-                        setFormData({
-                          ...formData,
-                          sexualActivityDetails: { ...formData.sexualActivityDetails, partnerCount: 'multiple' },
-                        })
-                      }
-                    />
-                  </View>
-                </View>
-              )}
+            <View marginT-s4 marginB-s4>
+              <Checkbox
+                value={formData.saveData}
+                onValueChange={(value) => setFormData({ ...formData, saveData: value })}
+                label="  حفظ البيانات لتخطي هذا النموذج مستقبلاً"
+                color="#045468"
+                labelStyle={{ 
+                  fontFamily: 'ReadexPro-Medium', 
+                  color: '#ECEDEE', 
+                  fontSize: 14, 
+                  writingDirection: 'rtl',
+                  marginLeft: 0,
+                  marginRight: 8,
+                  lineHeight: 22,
+                  paddingVertical: 4,
+                }}
+                containerStyle={{ 
+                  flexDirection: 'row', 
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  paddingVertical: 4,
+                }}
+              />
+              <Text bodySmall grey40 right marginT-s1 style={{ lineHeight: 18, paddingVertical: 2 }}>
+                يمكنك تعديل أو مسح البيانات في أي وقت
+              </Text>
             </View>
 
             <Button
