@@ -99,7 +99,7 @@ interface FamilyMember {
   dateOfBirth: string;
   createdAt: string;
   // Medical survey fields
-  medicalConditions: string[];
+  medicalConditions?: string[];
   smokingDetails?: {
     amount: string;
     duration: string;
@@ -183,14 +183,14 @@ export function FamilyManagement({
 
   const createFamilyMemberMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const newMember: FamilyMember = {
+      const newMember = {
         ...data,
         id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId,
         createdAt: new Date().toISOString(),
       };
-      await medicalStorage.saveFamilyMember(userId, newMember);
-      return newMember;
+      await medicalStorage.saveFamilyMember(userId, newMember as any);
+      return newMember as FamilyMember;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -523,16 +523,16 @@ export function FamilyManagement({
           style={{ maxHeight: 300 }}
           contentContainerStyle={{ gap: 12 }}
         >
-          {!familyMembers || familyMembers.length === 0 ? (
+          {!familyMembers || !Array.isArray(familyMembers) || familyMembers.length === 0 ? (
             <Text center grey40 text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
           ) : (
-            familyMembers.map((member) => (
-              <View key={member.id} style={styles.memberRow}>
+            familyMembers.map((member: FamilyMember) => (
+              <View key={member.id} style={styles.memberRow as any}>
                 <TouchableOpacity
                   style={styles.memberInfo}
                   onPress={() => handleSwitch(member.id)}
                 >
-                  <Text style={styles.memberName}>{member.relationship}</Text>
+                  <Text style={styles.memberName as any}>{member.relationship}</Text>
                   <Text style={styles.memberDetails}>
                     {member.gender === "male"
                       ? t("common.male")
@@ -542,10 +542,10 @@ export function FamilyManagement({
                     {t("family.dateOfBirthLabel")}: {member.dateOfBirth}
                   </Text>
                   {((member.medicalConditions && member.medicalConditions.includes('تدخين التبغ')) || member.isSmoker) && member.smokingDetails && (
-                    <View style={styles.packYearsBox}>
+                    <View style={styles.packYearsBox as any}>
                       <Text
                         style={[
-                          styles.packYearsLabel,
+                          styles.packYearsLabel as any,
                           { textAlign: "left", width: "100%" },
                         ]}
                       >
@@ -553,7 +553,7 @@ export function FamilyManagement({
                       </Text>
                       <Text
                         style={[
-                          styles.packYearsValue,
+                          styles.packYearsValue as any,
                           { textAlign: "left", width: "100%" },
                         ]}
                       >
@@ -562,12 +562,12 @@ export function FamilyManagement({
                     </View>
                   )}
                 </TouchableOpacity>
-                <View style={styles.memberActions}>
+                <View style={styles.memberActions as any}>
                   <TouchableOpacity
                     style={styles.editButton}
                     onPress={() => handleEdit(member)}
                   >
-                    <Text style={styles.editButtonText}>
+                    <Text style={styles.editButtonText as any}>
                       {t("family.edit")}
                     </Text>
                   </TouchableOpacity>
@@ -575,7 +575,7 @@ export function FamilyManagement({
                     style={styles.deleteButton}
                     onPress={() => handleDelete(member.id)}
                   >
-                    <Text style={styles.deleteButtonText}>
+                    <Text style={styles.deleteButtonText as any}>
                       {t("family.delete")}
                     </Text>
                   </TouchableOpacity>
@@ -591,10 +591,10 @@ export function FamilyManagement({
         marginT-s4
         paddingV-s5
         borderRadius={200}
-        style={{ opacity: familyMembers && familyMembers.length >= 5 ? 0.5 : 1 }}
-        disabled={familyMembers && familyMembers.length >= 5}
+        style={{ opacity: Array.isArray(familyMembers) && familyMembers.length >= 5 ? 0.5 : 1 }}
+        disabled={Array.isArray(familyMembers) && familyMembers.length >= 5}
         onPress={() => {
-          if (familyMembers && familyMembers.length >= 5) {
+          if (Array.isArray(familyMembers) && familyMembers.length >= 5) {
             showToast({
               title: t("family.maxLimitReached"),
               description: t("family.maxFamilyMembers"),
@@ -608,7 +608,7 @@ export function FamilyManagement({
         }}
         labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
       />
-      {familyMembers && familyMembers.length >= 5 && (
+      {Array.isArray(familyMembers) && familyMembers.length >= 5 && (
         <Text
           style={{
             color: "#ef4444",
@@ -638,7 +638,7 @@ export function FamilyManagement({
           ]
           }>
             <ScrollView
-              contentContainerStyle={styles.modalContent}
+              contentContainerStyle={styles.modalContent as any}
               showsVerticalScrollIndicator={false}
             >
               <Card padding-s5 backgroundColor="#202221" br40 style={{ width: '100%' }}>

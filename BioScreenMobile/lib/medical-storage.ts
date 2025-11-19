@@ -25,6 +25,8 @@ export interface MedicalProfile {
 export interface FamilyMember extends MedicalProfile {
   id: string;
   userId: string;
+  relationship: string;
+  medicalConditions?: string[];
 }
 
 // Helper functions using AsyncStorage

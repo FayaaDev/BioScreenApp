@@ -85,7 +85,16 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (userId) {
-      await medicalStorage.saveUserProfile(userId, formData);
+      await medicalStorage.saveUserProfile(userId, {
+        ...formData,
+        isDiabetic: false,
+        isHypertensive: false,
+        isCholesterol: false,
+        isSmoker: false,
+        height: "",
+        weight: "",
+        isSexuallyActive: false,
+      });
       setIsEditing(false);
       showToast({ title: t("profile.profileUpdated"), type: "success" });
     }
