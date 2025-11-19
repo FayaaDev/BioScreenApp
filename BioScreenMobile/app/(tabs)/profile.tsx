@@ -370,7 +370,7 @@ export default function Profile() {
             backgroundColor="#045468"
             paddingV-s5
             br20
-            marginB-s2
+            marginB-s3
             labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
             onPress={handleSignOut}
           />
@@ -388,14 +388,15 @@ export default function Profile() {
         <Modal
           visible={showLanguageModal}
           onDismiss={() => setShowLanguageModal(false)}
-          overlayBackgroundColor="rgba(0,0,0,0.2)"
+          overlayBackgroundColor="rgba(0,0,0,0.7)"
         >
-          <Card
-            padding-s6
-            backgroundColor="#2E3130"
-            br40
-            style={{ minWidth: 280 }}
-          >
+          <View flex center>
+            <Card
+              padding-s6
+              backgroundColor="#2E3130"
+              br40
+              style={{ minWidth: 280 }}
+            >
               <Text
                 text70
                 zimam-primary
@@ -463,6 +464,7 @@ export default function Profile() {
                 </Text>
               </TouchableOpacity>
             </Card>
+          </View>
         </Modal>
 
         {/* User Agreement Modal */}

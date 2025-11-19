@@ -320,80 +320,139 @@ export default function HomeScreen() {
         </ScrollView>
       </LinearGradient>
 
-      {/* Test Status Stats - Top Section */}
-      <View padding-s5>
+      {/* Stats Cards */}
+      <View paddingH-s5 marginB-s5>
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
           {t('home.testStatus')}
         </Text>
-        
-        <View row marginB-s3 style={{ justifyContent: 'space-between' }}>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'due' }
-              });
-            }}
+        <View row style={{ justifyContent: 'space-between', gap: 8 }}>
+          <Card 
+            padding-s4 
+            center 
+            backgroundColor="#1A4D5C" 
+            enableShadow 
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#0EB39E' }}>
-                {stats?.dueScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.due')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'overdue' }
-              });
-            }}
+            <Text 
+              style={{ 
+                fontSize: 36, 
+                fontFamily: 'ReadexPro-Bold', 
+                color: '#4CCCE6',
+                marginBottom: 8
+              }}
+            >
+              {stats.completedThisYear}
+            </Text>
+            <Text 
+              style={{ 
+                fontFamily: 'ReadexPro-SemiBold', 
+                textAlign: 'center', 
+                color: '#FFFFFF',
+                fontSize: 10
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.tabs.done')}
+            </Text>
+          </Card>
+
+          <Card 
+            padding-s4 
+            center 
+            backgroundColor="#1A4D5C" 
+            enableShadow 
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#A35829' }}>
-                {stats?.overdueScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.overdue')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'later' }
-              });
-            }}
+            <Text 
+              style={{ 
+                fontSize: 36, 
+                fontFamily: 'ReadexPro-Bold', 
+                color: '#FFFFFF',
+                marginBottom: 8
+              }}
+            >
+              {stats.laterScreenings}
+            </Text>
+            <Text 
+              style={{ 
+                fontFamily: 'ReadexPro-SemiBold', 
+                textAlign: 'center', 
+                color: '#FFFFFF',
+                fontSize: 10
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.tabs.later')}
+            </Text>
+          </Card>
+
+          <Card 
+            padding-s4 
+            center 
+            backgroundColor="#1A4D5C" 
+            enableShadow 
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#fff' }}>
-                {stats?.laterScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.later')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => router.push('/(tabs)/completed-tests')}
+            <Text 
+              style={{ 
+                fontSize: 36, 
+                fontFamily: 'ReadexPro-Bold', 
+                color: '#FF6B6B',
+                marginBottom: 8
+              }}
+            >
+              {stats.overdueScreenings}
+            </Text>
+            <Text 
+              style={{ 
+                fontFamily: 'ReadexPro-SemiBold', 
+                textAlign: 'center', 
+                color: '#FFFFFF',
+                fontSize: 10
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.tabs.overdue')}
+            </Text>
+          </Card>
+
+          <Card 
+            padding-s4 
+            center 
+            backgroundColor="#1A4D5C" 
+            enableShadow 
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>
-                {stats?.completedThisYear || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.done')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
+            <Text 
+              style={{ 
+                fontSize: 36, 
+                fontFamily: 'ReadexPro-Bold', 
+                color: '#4CCCE6',
+                marginBottom: 8
+              }}
+            >
+              {stats.dueScreenings}
+            </Text>
+            <Text 
+              style={{ 
+                fontFamily: 'ReadexPro-SemiBold', 
+                textAlign: 'center', 
+                color: '#FFFFFF',
+                fontSize: 12
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.tabs.due')}
+            </Text>
+          </Card>
         </View>
       </View>
 
