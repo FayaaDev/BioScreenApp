@@ -262,73 +262,86 @@ export default function Profile() {
             </View>
             <View style={{ gap: 8 }}>
               <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.gender")}</Text>
-              {isEditing || true ? (
-                <View row center style={{ gap: 16, marginTop: 12 }}>
-                  <TouchableOpacity
-                    disabled={!isEditing}
-                    onPress={() =>
-                      isEditing && setFormData({ ...formData, gender: "male" })
-                    }
+              <View row center style={{ gap: 16, marginTop: 12 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    minHeight: 56,
+                    borderWidth: 2,
+                    borderColor: formData.gender === "male" ? '#045468' : '#555',
+                    backgroundColor: formData.gender === "male" ? '#045468' : '#2E3130',
+                    borderRadius: 20,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    elevation: formData.gender === "male" ? 4 : 0,
+                    shadowColor: formData.gender === "male" ? '#045468' : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    marginHorizontal: 4,
+                  }}
+                >
+                  <MaterialIcons
+                    name="male"
+                    size={20}
+                    color={formData.gender === "male" ? "#fff" : "#888"}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === "male" ? '#fff' : '#888',
+                      writingDirection: 'rtl',
+                      fontSize: 15,
+                      lineHeight: 24,
+                    }}
                   >
-                    <View
-                      paddingV-s2
-                      paddingH-s4
-                      br20
-                      center
-                      backgroundColor={formData.gender === "male" ? "#045468" : "#202221"}
-                      style={{ minWidth: 0, marginHorizontal: 4 }}
-                    >
-                      <MaterialIcons
-                        name="male"
-                        size={20}
-                        color={formData.gender === "male" ? "#fff" : "#045468"}
-                      />
-                      <Text
-                        text70
-                        marginT-s1
-                        style={{
-                          color: formData.gender === "male" ? "#fff" : "#045468",
-                          fontFamily: 'ReadexPro-Bold'
-                        }}
-                      >
-                        {t("common.male")}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    disabled={!isEditing}
-                    onPress={() =>
-                      isEditing &&
-                      setFormData({ ...formData, gender: "female" })
-                    }
-                  >
-                    <View
-                      paddingV-s2
-                      paddingH-s4
-                      br20
-                      center
-                      backgroundColor={formData.gender === "female" ? "#045468" : "#202221"}
-                      style={{ minWidth: 0, marginHorizontal: 4 }}
-                    >
-                      <MaterialIcons
-                        name="female"
-                        size={20}
-                        color={formData.gender === "female" ? "#fff" : "#045468"}
-                      />
-                      <Text
-                        text70
-                        marginT-s1
-                        style={{
-                          color: formData.gender === "female" ? "#fff" : "#045468",
-                          fontFamily: 'ReadexPro-Bold'
-                        }}
-                      >
-                        {t("common.female")}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                    {t("common.male")}
+                  </Text>
                 </View>
-              ) : null}
+                <View
+                  style={{
+                    flex: 1,
+                    minHeight: 56,
+                    borderWidth: 2,
+                    borderColor: formData.gender === "female" ? '#045468' : '#555',
+                    backgroundColor: formData.gender === "female" ? '#045468' : '#2E3130',
+                    borderRadius: 20,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    elevation: formData.gender === "female" ? 4 : 0,
+                    shadowColor: formData.gender === "female" ? '#045468' : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    marginHorizontal: 4,
+                  }}
+                >
+                  <MaterialIcons
+                    name="female"
+                    size={20}
+                    color={formData.gender === "female" ? "#fff" : "#888"}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === "female" ? '#fff' : '#888',
+                      writingDirection: 'rtl',
+                      fontSize: 15,
+                      lineHeight: 24,
+                    }}
+                  >
+                    {t("common.female")}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
           {isEditing ? (
@@ -369,7 +382,7 @@ export default function Profile() {
             label={t("profile.signOut")}
             backgroundColor="#045468"
             paddingV-s5
-            br20
+            borderRadius={200}
             marginB-s3
             labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
             onPress={handleSignOut}
@@ -378,7 +391,7 @@ export default function Profile() {
             label={t("profile.userAgreement")}
             backgroundColor="#045468"
             paddingV-s5
-            br20
+            borderRadius={200}
             labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
             onPress={() => setShowAgreement(true)}
           />
@@ -472,8 +485,6 @@ export default function Profile() {
           visible={showAgreement}
           onDismiss={() => setShowAgreement(false)}
           overlayBackgroundColor="rgba(0,0,0,0.2)"
-        >
-          onRequestClose={() => setShowAgreement(false)}
         >
           <View flex center padding-s6 backgroundColor="#202221">
             <ScrollView

@@ -437,6 +437,8 @@ export function FamilyManagement({
         label={t("family.addMember")}
         backgroundColor="#045468"
         marginT-s4
+        paddingV-s5
+        borderRadius={200}
         style={{ opacity: familyMembers && familyMembers.length >= 5 ? 0.5 : 1 }}
         disabled={familyMembers && familyMembers.length >= 5}
         onPress={() => {
