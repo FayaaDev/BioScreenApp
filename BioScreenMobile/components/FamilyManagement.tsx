@@ -5,8 +5,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Pressable,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Slider, Chip } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../hooks/useToast";
@@ -17,6 +19,78 @@ import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Custom Text wrapper with proper Arabic text rendering
+const ArabicText = ({ children, style, ...props }: any) => (
+  <Text
+    {...props}
+    style={[
+      {
+        lineHeight: style?.fontSize ? style.fontSize * 1.6 : 26,
+        includeFontPadding: false,
+        paddingVertical: 4,
+      },
+      style,
+    ]}
+  >
+    {children}
+  </Text>
+);
+
+// Reusable Arabic Button Component
+const ArabicButton = ({ 
+  label, 
+  isSelected, 
+  onPress, 
+  icon, 
+  disabled = false,
+  style = {}
+}: { 
+  label: string; 
+  isSelected: boolean; 
+  onPress: () => void; 
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  style?: any;
+}) => (
+  <TouchableOpacity
+    style={[{
+      flex: 1,
+      minHeight: 56,
+      borderWidth: 2,
+      borderColor: isSelected ? '#045468' : '#555',
+      backgroundColor: isSelected ? '#045468' : '#2E3130',
+      borderRadius: 20,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      elevation: isSelected ? 4 : 0,
+      shadowColor: isSelected ? '#045468' : 'transparent',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    }, style]}
+    onPress={onPress}
+    disabled={disabled}
+  >
+    {icon}
+    <Text
+      style={{
+        fontFamily: 'ReadexPro-Bold',
+        color: isSelected ? '#fff' : '#888',
+        writingDirection: 'rtl',
+        fontSize: 15,
+        lineHeight: 24,
+        includeFontPadding: false,
+      }}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 interface FamilyMember {
   id: string;
   userId: string;
@@ -25,10 +99,7 @@ interface FamilyMember {
   dateOfBirth: string;
   createdAt: string;
   // Medical survey fields
-  isDiabetic: boolean;
-  isHypertensive: boolean;
-  isCholesterol: boolean;
-  isSmoker: boolean;
+  medicalConditions: string[];
   smokingDetails?: {
     amount: string;
     duration: string;
@@ -40,6 +111,11 @@ interface FamilyMember {
   sexualActivityDetails?: {
     partnerCount: "single" | "multiple";
   };
+  // Legacy fields for backward compatibility
+  isDiabetic?: boolean;
+  isHypertensive?: boolean;
+  isCholesterol?: boolean;
+  isSmoker?: boolean;
 }
 
 export function FamilyManagement({
@@ -62,10 +138,7 @@ export function FamilyManagement({
     gender: "",
     dateOfBirth: "",
     // Medical survey fields
-    isDiabetic: false,
-    isHypertensive: false,
-    isCholesterol: false,
-    isSmoker: false,
+    medicalConditions: [] as string[],
     smokingDetails: {
       amount: "",
       duration: "",
@@ -84,6 +157,20 @@ export function FamilyManagement({
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
+
+  const conditionExplanations: { [key: string]: string } = {
+    'قلة النشاط البدني': 'أمارس أقل من ساعتين ونصف أسبوعيًا من النشاط البدني المعتدل، مثل المشي السريع',
+    'تدخين التبغ': 'أستخدم منتجات التبغ، مثل السجائر أو الشيشة',
+    'مرض ارتفاع ضغط الدم': 'لدي مرض ارتفاع ضغط الدم',
+    'داء السكري': 'لدي مرض السكري من النوع الأول أو الثاني، المعروف أيضًا بداء السكري',
+    'تاريخ لمرض قلبي وعائي': 'أصبت بأحد الأمراض القلبية الوعائية، مثل النوبة القلبية أو الذبحة الصدرية أو السكتة الدماغية',
+    'مرض عضوي مزمن': 'لدي مرض مزمن في القلب أو الرئتين أو الكبد أو الكلى',
+    'قراءات مرتفعة لضغط الدم': 'قراءاتي لضغط الدم أعلى من 130‏/85 ملم زئبق، دون تشخيص بمرض ارتفاع ضغط الدم',
+    'تاريخ عائلي للسكري': 'لدى أحد أفراد عائلتي (الوالدين أو الإخوة) مرض السكري',
+    'تاريخ لسكري الحمل': 'أصبت بمرض سكري الحمل في حمل سابق',
+    'تاريخ جنسي': 'قمت باتصال جنسي خلال علاقة زوجية حالية أو سابقة',
+  };
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
     queryKey: ["family", userId],
@@ -184,10 +271,7 @@ export function FamilyManagement({
       relationship: "",
       gender: "",
       dateOfBirth: "",
-      isDiabetic: false,
-      isHypertensive: false,
-      isCholesterol: false,
-      isSmoker: false,
+      medicalConditions: [],
       smokingDetails: {
         amount: "",
         duration: "",
@@ -250,59 +334,56 @@ export function FamilyManagement({
       newErrors.weight = t("family.validation.weightInvalid");
     }
 
-    if (formData.isSmoker) {
-      if (!formData.smokingDetails?.amount) {
-        newErrors.smokingAmount = t("family.validation.smokingAmountRequired");
-      } else if (
-        isNaN(parseFloat(formData.smokingDetails.amount)) ||
-        parseFloat(formData.smokingDetails.amount) <= 0
-      ) {
-        newErrors.smokingAmount = t("family.validation.smokingAmountInvalid");
-      }
-
-      if (!formData.smokingDetails?.duration) {
-        newErrors.smokingDuration = t(
-          "family.validation.smokingDurationRequired",
-        );
-      } else if (
-        isNaN(parseFloat(formData.smokingDetails.duration)) ||
-        parseFloat(formData.smokingDetails.duration) <= 0
-      ) {
-        newErrors.smokingDuration = t(
-          "family.validation.smokingDurationInvalid",
-        );
-      }
-    }
-
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
-    if (!validateForm()) {
+    console.log("Form data:", formData);
+    const isValid = validateForm();
+    console.log("Form validation result:", isValid);
+    console.log("Validation errors:", validationErrors);
+    if (!isValid) {
+      console.log("Form validation failed, not submitting");
       return;
     }
+    console.log("Submitting form...");
     if (editingMember) {
+      console.log("Updating member:", editingMember.id);
       updateFamilyMemberMutation.mutate({
         id: editingMember.id,
         data: formData,
       });
     } else {
+      console.log("Creating new member");
       createFamilyMemberMutation.mutate(formData);
     }
   };
 
   const handleEdit = (member: FamilyMember) => {
     setEditingMember(member);
+    
+    // Convert legacy fields to medical conditions array
+    const conditions: string[] = member.medicalConditions || [];
+    if (member.isDiabetic && !conditions.includes('داء السكري')) {
+      conditions.push('داء السكري');
+    }
+    if (member.isHypertensive && !conditions.includes('مرض ارتفاع ضغط الدم')) {
+      conditions.push('مرض ارتفاع ضغط الدم');
+    }
+    if (member.isCholesterol && !conditions.includes('قراءات مرتفعة لضغط الدم')) {
+      conditions.push('قراءات مرتفعة لضغط الدم');
+    }
+    if (member.isSmoker && !conditions.includes('تدخين التبغ')) {
+      conditions.push('تدخين التبغ');
+    }
+    
     setFormData({
       relationship: member.relationship,
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
-      isDiabetic: member.isDiabetic ?? false,
-      isHypertensive: member.isHypertensive ?? false,
-      isCholesterol: member.isCholesterol ?? false,
-      isSmoker: member.isSmoker ?? false,
+      medicalConditions: conditions,
       smokingDetails: member.smokingDetails ?? { amount: "", duration: "" },
       height: member.height ?? "",
       weight: member.weight ?? "",
@@ -361,9 +442,80 @@ export function FamilyManagement({
     return amount * duration;
   };
 
+  const renderConditionChip = (condition: string) => {
+    const isSelected = formData.medicalConditions.includes(condition);
+    
+    return (
+      <View key={condition} style={{ position: 'relative' }}>
+        <Chip
+          label={condition}
+          onPress={() => {
+            console.log('Chip pressed:', condition);
+            setFormData({
+              ...formData,
+              medicalConditions: isSelected
+                ? formData.medicalConditions.filter(c => c !== condition)
+                : [...formData.medicalConditions, condition]
+            });
+          }}
+          backgroundColor={isSelected ? '#045468' : '#2E3130'}
+          labelStyle={{
+            fontFamily: 'ReadexPro-Bold',
+            color: isSelected ? '#fff' : '#888',
+            fontSize: 16,
+            lineHeight: 24,
+            includeFontPadding: false,
+            paddingVertical: 4,
+            paddingRight: 32, // Make room for info icon
+          }}
+          containerStyle={{
+            borderWidth: 2,
+            borderColor: isSelected ? '#045468' : '#555',
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 24,
+            elevation: isSelected ? 4 : 0,
+            shadowColor: isSelected ? '#045468' : 'transparent',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+        />
+        <TouchableOpacity
+          onPressIn={() => console.log('Info button PRESS IN:', condition)}
+          onPressOut={() => console.log('Info button PRESS OUT:', condition)}
+          onPress={() => {
+            console.log('Info button PRESSED!!!:', condition);
+            setSelectedInfoCondition(condition);
+          }}
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: [{ translateY: -12 }],
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(76,204,230,0.2)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons
+            name="info-outline"
+            size={16}
+            color={isSelected ? '#fff' : '#4CCCE6'}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <>
-      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: '#045468' }}>{t("family.title")}</Text>
+      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: '#fff' }}>{t("family.title")}</Text>
       {isLoading ? (
         <ActivityIndicator size="large" color="#4CCCE6" />
       ) : (
@@ -389,7 +541,7 @@ export function FamilyManagement({
                   <Text style={styles.memberDetails}>
                     {t("family.dateOfBirthLabel")}: {member.dateOfBirth}
                   </Text>
-                  {member.isSmoker && member.smokingDetails && (
+                  {((member.medicalConditions && member.medicalConditions.includes('تدخين التبغ')) || member.isSmoker) && member.smokingDetails && (
                     <View style={styles.packYearsBox}>
                       <Text
                         style={[
@@ -487,627 +639,364 @@ export function FamilyManagement({
           }>
             <ScrollView
               contentContainerStyle={styles.modalContent}
-              keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.modalTitle}>
-                {editingMember
-                  ? t("family.editMember")
-                  : t("family.addMember")}
-              </Text>
-              <TextField
-                style={[
-                  styles.input,
-                  { textAlign: "left", writingDirection: "ltr" },
-                  submitAttempted &&
-                    validationErrors.relationship &&
-                    styles.inputError,
-                ]}
-                placeholder={t("family.relationship")}
-                placeholderTextColor="#999"
-                value={formData.relationship}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, relationship: text });
-                  if (validationErrors.relationship) {
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      relationship: "",
-                    }));
-                  }
-                }}
-              />
-              {submitAttempted && validationErrors.relationship && (
-                <Text style={styles.errorText}>
-                  {validationErrors.relationship}
-                </Text>
-              )}
+              <Card padding-s5 backgroundColor="#202221" br40 style={{ width: '100%' }}>
+                <View center marginB-s4>
+                  <Text h3 zimam-primary center marginB-s2>
+                    {editingMember ? t("family.editMember") : t("family.addMember")}
+                  </Text>
+                  <Text body grey40 center>
+                    {t("family.addMemberDescription")}
+                  </Text>
+                </View>
 
-              <View
-                style={{ alignItems: "center", width: "100%", marginTop: 16 }}
-              >
-                <Text
-                  style={[
-                    styles.label,
-                    { textAlign: "center", alignSelf: "center" },
-                  ]}
-                >
-                  {t("profile.gender")}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 8,
-                    justifyContent: "center",
-                  }}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.genderButton,
-                      formData.gender === "male" &&
-                        styles.genderButtonSelected,
-                      submitAttempted &&
-                        validationErrors.gender &&
-                        styles.inputError,
-                    ]}
-                    onPress={() => {
-                      setFormData({ ...formData, gender: "male" });
-                      if (validationErrors.gender) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          gender: "",
-                        }));
-                      }
-                    }}
-                  >
-                    <MaterialIcons
-                      name="male"
-                      size={20}
-                      color={formData.gender === "male" ? "#fff" : "#4CCCE6"}
-                    />
-                    <Text
-                      style={[
-                        styles.genderButtonText,
-                        formData.gender === "male" &&
-                          styles.genderButtonTextSelected,
-                      ]}
-                    >
-                      {t("common.male")}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.genderButton,
-                      formData.gender === "female" &&
-                        styles.genderButtonSelected,
-                      submitAttempted &&
-                        validationErrors.gender &&
-                        styles.inputError,
-                    ]}
-                    onPress={() => {
-                      setFormData({ ...formData, gender: "female" });
-                      if (validationErrors.gender) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          gender: "",
-                        }));
-                      }
-                    }}
-                  >
-                    <MaterialIcons
-                      name="female"
-                      size={20}
-                      color={
-                        formData.gender === "female" ? "#fff" : "#4CCCE6"
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.genderButtonText,
-                        formData.gender === "female" &&
-                          styles.genderButtonTextSelected,
-                      ]}
-                    >
-                      {t("common.female")}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {submitAttempted && validationErrors.gender && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.gender}
-                  </Text>
-                )}
-              </View>
-              <View
-                style={{ alignItems: "center", width: "100%", marginTop: 16 }}
-              >
-                <Text
-                  style={[
-                    styles.label,
-                    { textAlign: "center", alignSelf: "center" },
-                  ]}
-                >
-                  {t("family.dateOfBirthLabel")}
-                </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.datePickerButton,
-                    submitAttempted &&
-                      validationErrors.dateOfBirth &&
-                      styles.inputError,
-                  ]}
-                  onPress={() => {
-                    setTempDate(
-                      formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth)
-                        : new Date(),
-                    );
-                    setShowDatePicker(true);
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: formData.dateOfBirth ? "#374151" : "#888",
-                      textAlign: "left",
-                    }}
-                  >
-                    {formData.dateOfBirth
-                      ? new Date(formData.dateOfBirth).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          },
-                        )
-                      : t("family.selectDateOfBirth")}
-                  </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={tempDate || new Date()}
-                    mode="date"
-                    display="spinner"
-                    maximumDate={new Date()}
-                    minimumDate={
-                      new Date(
-                        new Date().setFullYear(
-                          new Date().getFullYear() - 120,
-                        ),
-                      )
-                    }
-                    onChange={(event, selectedDate) => {
-                      if (selectedDate) {
-                        setFormData({
-                          ...formData,
-                          dateOfBirth: selectedDate
-                            .toISOString()
-                            .split("T")[0],
-                        });
-                        if (validationErrors.dateOfBirth) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            dateOfBirth: "",
-                          }));
+                <View>
+                  {/* Relationship Field */}
+                  <View marginB-s4>
+                    <Text bodySmall dark10 right marginB-s2>العلاقة</Text>
+                    <TextField
+                      style={{
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: validationErrors.relationship ? '#ef4444' : '#555',
+                        borderRadius: 8,
+                        backgroundColor: '#202221',
+                        paddingHorizontal: 16,
+                        fontSize: 16,
+                        color: '#ECEDEE',
+                        fontFamily: 'ReadexPro',
+                        textAlign: 'right',
+                      }}
+                      placeholder={t("family.relationship")}
+                      placeholderTextColor="#888"
+                      value={formData.relationship}
+                      onChangeText={(text) => {
+                        setFormData({ ...formData, relationship: text });
+                        if (validationErrors.relationship) {
+                          setValidationErrors({ ...validationErrors, relationship: '' });
                         }
-                      }
-                      setShowDatePicker(false);
-                      setTempDate(null);
-                    }}
-                    style={{ alignSelf: "flex-end", width: "100%" }}
-                    textColor="#FFFFFF"
+                      }}
+                    />
+                    {submitAttempted && validationErrors.relationship && (
+                      <Text error caption marginT-s1>{validationErrors.relationship}</Text>
+                    )}
+                  </View>
+
+                  {/* Gender */}
+                  <View marginB-s4>
+                    <Text bodySmall dark10 right marginB-s2>الجنس</Text>
+                    <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
+                      <ArabicButton
+                        label={t("common.male")}
+                        isSelected={formData.gender === 'male'}
+                        onPress={() => {
+                          setFormData({ ...formData, gender: 'male' });
+                          if (validationErrors.gender) {
+                            setValidationErrors({ ...validationErrors, gender: '' });
+                          }
+                        }}
+                        icon={
+                          <MaterialIcons
+                            name="male"
+                            size={20}
+                            color={formData.gender === 'male' ? '#fff' : '#888'}
+                          />
+                        }
+                      />
+                      <ArabicButton
+                        label={t("common.female")}
+                        isSelected={formData.gender === 'female'}
+                        onPress={() => {
+                          setFormData({ ...formData, gender: 'female' });
+                          if (validationErrors.gender) {
+                            setValidationErrors({ ...validationErrors, gender: '' });
+                          }
+                        }}
+                        icon={
+                          <MaterialIcons
+                            name="female"
+                            size={20}
+                            color={formData.gender === 'female' ? '#fff' : '#888'}
+                          />
+                        }
+                      />
+                    </View>
+                    {submitAttempted && validationErrors.gender && (
+                      <Text error caption marginT-s1>{validationErrors.gender}</Text>
+                    )}
+                  </View>
+
+                  {/* Date of Birth */}
+                  <View marginB-s4>
+                    <Text bodySmall dark10 right marginB-s2>تاريخ الميلاد</Text>
+                    <TouchableOpacity
+                      style={{
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: validationErrors.dateOfBirth ? '#ef4444' : '#555',
+                        borderRadius: 8,
+                        backgroundColor: '#202221',
+                        justifyContent: 'center',
+                        paddingHorizontal: 16,
+                      }}
+                      onPress={() => {
+                        setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
+                        setShowDatePicker(true);
+                      }}
+                    >
+                      <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
+                        {formData.dateOfBirth
+                          ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : 'اختر تاريخ الميلاد'}
+                      </Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                      <Modal
+                        visible={showDatePicker}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose={() => setShowDatePicker(false)}
+                      >
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                          <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
+                            <DateTimePicker
+                              value={tempDate || new Date()}
+                              mode="date"
+                              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                              onChange={(event, selectedDate) => {
+                                setTempDate(selectedDate || tempDate);
+                              }}
+                              maximumDate={new Date()}
+                              minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                              style={{ width: '100%' }}
+                              textColor="#FFFFFF"
+                              themeVariant="dark"
+                            />
+                            <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
+                              <Button
+                                label="إلغاء"
+                                backgroundColor="#202221"
+                                style={{ flex: 1, paddingVertical: 12 }}
+                                onPress={() => {
+                                  setShowDatePicker(false);
+                                  setTempDate(null);
+                                }}
+                                labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                              />
+                              <Button
+                                label="تأكيد"
+                                backgroundColor="#4CCCE6"
+                                style={{ flex: 1, paddingVertical: 12 }}
+                                onPress={() => {
+                                  if (tempDate) {
+                                    setFormData({
+                                      ...formData,
+                                      dateOfBirth: tempDate.toISOString().split('T')[0],
+                                    });
+                                    if (validationErrors.dateOfBirth) {
+                                      setValidationErrors({ ...validationErrors, dateOfBirth: '' });
+                                    }
+                                  }
+                                  setShowDatePicker(false);
+                                }}
+                                labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                              />
+                            </View>
+                          </View>
+                        </View>
+                      </Modal>
+                    )}
+                    {submitAttempted && validationErrors.dateOfBirth && (
+                      <Text error caption marginT-s1>{validationErrors.dateOfBirth}</Text>
+                    )}
+                  </View>
+
+                  {/* Height */}
+                  <View marginB-s4>
+                    <Text bodySmall dark10 right marginB-s2>
+                      الطول: {formData.height || '140'} سم
+                    </Text>
+                    <Slider
+                      value={parseFloat(formData.height) || 140}
+                      minimumValue={100}
+                      maximumValue={250}
+                      step={1}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, height: value.toString() });
+                        if (validationErrors.height) {
+                          setValidationErrors({ ...validationErrors, height: '' });
+                        }
+                      }}
+                      thumbTintColor={formData.height ? "#045468" : "#555"}
+                      minimumTrackTintColor={formData.height ? "#045468" : "#555"}
+                    maximumTrackTintColor="#555"
+                    containerStyle={{ marginBottom: 8 }}
                   />
-                )}
-                {submitAttempted && validationErrors.dateOfBirth && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.dateOfBirth}
-                  </Text>
-                )}
-              </View>
-              {/* Medical Survey Section */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("family.healthData")}
-                </Text>
-                {/* Height */}
-                <View style={styles.inputContainer}>
-                  <Text
-                    style={[
-                      styles.label,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.height")}
-                  </Text>
-                  <TextField
-                    style={[
-                      styles.input,
-                      { textAlign: "left", writingDirection: "ltr" },
-                      submitAttempted &&
-                        validationErrors.height &&
-                        styles.inputError,
-                    ]}
-                    placeholder={t("family.heightPlaceholder")}
-                    placeholderTextColor="#999"
-                    value={formData.height}
-                    onChangeText={(text) => {
-                      setFormData((prev) => ({ ...prev, height: text }));
-                      if (validationErrors.height) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          height: "",
-                        }));
-                      }
-                    }}
-                    keyboardType="numeric"
-                  />
+                  {validationErrors.height && <Text error caption marginT-s1>{validationErrors.height}</Text>}
                 </View>
-                {submitAttempted && validationErrors.height && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.height}
-                  </Text>
-                )}
+
                 {/* Weight */}
-                <View style={styles.inputContainer}>
-                  <Text style={[styles.label, { textAlign: "left" }]}>
-                    {t("family.weight")}
+                <View marginB-s4>
+                  <Text bodySmall dark10 right marginB-s2>
+                    {t("family.weight")}: {formData.weight || '60'} كجم
                   </Text>
-                  <TextField
-                    style={[
-                      styles.input,
-                      { textAlign: "left", writingDirection: "ltr" },
-                      submitAttempted &&
-                        validationErrors.weight &&
-                        styles.inputError,
-                    ]}
-                    placeholder={t("family.weightPlaceholder")}
-                    placeholderTextColor="#999"
-                    value={formData.weight}
-                    onChangeText={(text) => {
-                      setFormData((prev) => ({ ...prev, weight: text }));
+                  <Slider
+                    value={parseFloat(formData.weight) || 60}
+                    minimumValue={30}
+                    maximumValue={200}
+                    step={1}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, weight: value.toString() });
                       if (validationErrors.weight) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          weight: "",
-                        }));
+                        setValidationErrors({ ...validationErrors, weight: '' });
                       }
                     }}
-                    keyboardType="numeric"
+                    thumbTintColor={formData.weight ? "#045468" : "#555"}
+                    minimumTrackTintColor={formData.weight ? "#045468" : "#555"}
+                    maximumTrackTintColor="#555"
+                    containerStyle={{ marginBottom: 8 }}
                   />
+                  {validationErrors.weight && <Text error caption marginT-s1>{validationErrors.weight}</Text>}
                 </View>
-                {submitAttempted && validationErrors.weight && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.weight}
-                  </Text>
-                )}
+
                 {formData.height &&
                   formData.weight &&
                   calculateBMI(formData.height, formData.weight) && (
-                    <View style={styles.bmiBox}>
-                      <Text
-                        style={[
-                          styles.bmiLabel,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {t("family.bmi")}:
+                    <View style={{
+                      backgroundColor: '#1A4D5C',
+                      borderRadius: 16,
+                      padding: 16,
+                      marginTop: 12,
+                      alignItems: 'center',
+                    }}>
+                      <Text style={{ color: '#4CCCE6', fontFamily: 'ReadexPro-Bold', fontSize: 16, marginBottom: 8 }}>
+                        {t("family.bmi")}
                       </Text>
-                      <Text
-                        style={[
-                          styles.bmiValue,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {calculateBMI(
-                          formData.height,
-                          formData.weight,
-                        )?.toFixed(1)}
+                      <Text style={{ color: '#4CCCE6', fontFamily: 'ReadexPro-Bold', fontSize: 32, marginBottom: 4 }}>
+                        {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
                       </Text>
-                      <Text
-                        style={[
-                          styles.bmiCategoryText,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {getBMICategory(
-                          calculateBMI(formData.height, formData.weight) || 0,
-                        )}
+                      <Text style={{ color: '#ECEDEE', fontSize: 14, fontFamily: 'ReadexPro' }}>
+                        {getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}
                       </Text>
                     </View>
                   )}
-              </View>
 
-              <View style={styles.medicalSurveyContainer}>
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isDiabetic}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isDiabetic: value })
-                    }
-                    label={t("family.medicalSurvey.diabetic")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isHypertensive}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isHypertensive: value })
-                    }
-                    label={t("family.medicalSurvey.hypertensive")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isCholesterol}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isCholesterol: value })
-                    }
-                    label={t("family.medicalSurvey.cholesterol")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isSmoker}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isSmoker: value })
-                    }
-                    label={t("family.medicalSurvey.smoker")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                {formData.isSmoker && (
-                  <View style={styles.smokingDetailsContainer}>
-                    <TextField
-                      style={[
-                        styles.input,
-                        {
-                          textAlign: "left",
-                          writingDirection: "ltr",
-                          alignSelf: "flex-start",
-                        },
-                        submitAttempted &&
-                          validationErrors.smokingAmount &&
-                          styles.inputError,
-                      ]}
-                      placeholder={t("family.medicalSurvey.smokingAmount")}
-                      placeholderTextColor="#999"
-                      value={formData.smokingDetails.amount}
-                      onChangeText={(text) => {
-                        setFormData({
-                          ...formData,
-                          smokingDetails: {
-                            ...formData.smokingDetails,
-                            amount: text,
-                          },
-                        });
-                        if (validationErrors.smokingAmount) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            smokingAmount: "",
-                          }));
-                        }
+                  {/* Medical Survey Section */}
+                  <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#555' }}>
+                    <ArabicText 
+                      h3 
+                      zimam-primary 
+                      center 
+                      style={{ 
+                        paddingVertical: 4
                       }}
-                      keyboardType="numeric"
-                    />
-                    {submitAttempted && validationErrors.smokingAmount && (
-                      <Text style={styles.errorText}>
-                        {validationErrors.smokingAmount}
-                      </Text>
-                    )}
-                    <TextField
-                      style={[
-                        styles.input,
-                        {
-                          textAlign: "left",
-                          writingDirection: "ltr",
-                          alignSelf: "flex-start",
-                        },
-                        submitAttempted &&
-                          validationErrors.smokingDuration &&
-                          styles.inputError,
-                      ]}
-                      placeholder={t("family.medicalSurvey.smokingDuration")}
-                      placeholderTextColor="#999"
-                      value={formData.smokingDetails.duration}
-                      onChangeText={(text) => {
-                        setFormData({
-                          ...formData,
-                          smokingDetails: {
-                            ...formData.smokingDetails,
-                            duration: text,
-                          },
-                        });
-                        if (validationErrors.smokingDuration) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            smokingDuration: "",
-                          }));
-                        }
-                      }}
-                      keyboardType="numeric"
-                    />
-                    {submitAttempted && validationErrors.smokingDuration && (
-                      <Text style={styles.errorText}>
-                        {validationErrors.smokingDuration}
-                      </Text>
-                    )}
-                    {formData.smokingDetails.amount &&
-                      formData.smokingDetails.duration && (
-                        <View style={styles.packYearsBox}>
-                          <Text
-                            style={[
-                              styles.packYearsLabel,
-                              { textAlign: "left", width: "100%" },
-                            ]}
-                          >
-                            {t("family.medicalSurvey.packYears")}:
-                          </Text>
-                          <Text
-                            style={[
-                              styles.packYearsValue,
-                              { textAlign: "left", width: "100%" },
-                            ]}
-                          >
-                            {calculatePackYears(formData.smokingDetails)}
-                          </Text>
-                        </View>
-                      )}
-                  </View>
-                )}
-
-                {formData.gender === "female" && (
-                  <View style={styles.questionContainer}>
-                    <Checkbox
-                      value={formData.isPregnant}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, isPregnant: value })
-                      }
-                      label={t("family.medicalSurvey.pregnant")}
-                      color="#045468"
-                      labelStyle={styles.checkboxLabel}
-                      containerStyle={styles.checkboxContainer}
-                    />
-                  </View>
-                )}
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isSexuallyActive}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isSexuallyActive: value })
-                    }
-                    label={t("family.medicalSurvey.sexuallyActive")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                {formData.isSexuallyActive && (
-                  <View style={styles.partnerCountContainer}>
-                    <Text
-                      style={[
-                        styles.label,
-                        { textAlign: "left", alignSelf: "flex-start" },
-                      ]}
                     >
-                      {t("family.medicalSurvey.partnerCount")}
+                      الاستبيان الطبي
+                    </ArabicText>
+                    <Text body grey40 center marginT-s2>
+                      اختر ما ينطبق على فرد العائلة من الحالات التالية
                     </Text>
-                    <View
-                      style={[
-                        styles.partnerCountButtons,
-                        { flexDirection: "row" },
-                      ]}
-                    >
-                      <TouchableOpacity
-                        style={[
-                          styles.partnerCountButton,
-                          formData.sexualActivityDetails.partnerCount ===
-                            "single" && styles.partnerCountButtonSelected,
-                          submitAttempted &&
-                            validationErrors.sexualActivityDetailsPartnerCount &&
-                            styles.inputError,
-                        ]}
-                        onPress={() =>
-                          setFormData({
-                            ...formData,
-                            sexualActivityDetails: {
-                              ...formData.sexualActivityDetails,
-                              partnerCount: "single",
-                            },
-                          })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.partnerCountButtonText,
-                            formData.sexualActivityDetails.partnerCount ===
-                              "single" &&
-                              styles.partnerCountButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.singlePartner")}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          styles.partnerCountButton,
-                          formData.sexualActivityDetails.partnerCount ===
-                            "multiple" && styles.partnerCountButtonSelected,
-                          submitAttempted &&
-                            validationErrors.sexualActivityDetailsPartnerCount &&
-                            styles.inputError,
-                        ]}
-                        onPress={() =>
-                          setFormData({
-                            ...formData,
-                            sexualActivityDetails: {
-                              ...formData.sexualActivityDetails,
-                              partnerCount: "multiple",
-                            },
-                          })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.partnerCountButtonText,
-                            formData.sexualActivityDetails.partnerCount ===
-                              "multiple" &&
-                              styles.partnerCountButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.multiplePartners")}
-                        </Text>
-                      </TouchableOpacity>
+                  </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall dark10 right marginB-s2>نمط الحياة</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
-                )}
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 12,
-                  marginTop: 16,
-                  justifyContent: "center",
-                  alignSelf: "center",
-                }}
-              >
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleSubmit}
-                >
-                  <Text style={styles.saveButtonText}>
-                    {editingMember ? t("common.save") : t("family.add")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => {
-                    setIsModalOpen(false);
-                    setEditingMember(null);
-                    resetForm();
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>
-                    {t("common.cancel")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall dark10 right marginB-s2>الحالات المزمنة</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => renderConditionChip(condition))}
+                    </View>
+                  </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall dark10 right marginB-s2>الحالات الأخرى</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => renderConditionChip(condition))}
+                      {formData.gender === 'female' && (
+                        <>
+                          {renderConditionChip('تاريخ لسكري الحمل')}
+                          {renderConditionChip('تاريخ جنسي')}
+                        </>
+                      )}
+                    </View>
+                  </View>
+
+              {/* Action Buttons */}
+                  <View row center style={{ gap: 12, marginTop: 24 }}>
+                    <Button
+                      label={editingMember ? t("common.save") : t("family.add")}
+                      backgroundColor="#045468"
+                      style={{ flex: 1 }}
+                      paddingV-16
+                      borderRadius={200}
+                      onPress={handleSubmit}
+                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                    />
+                    <Button
+                      label={t("common.cancel")}
+                      backgroundColor="#ef4444"
+                      style={{ flex: 1 }}
+                      paddingV-16
+                      borderRadius={200}
+                      onPress={() => {
+                        setIsModalOpen(false);
+                        setEditingMember(null);
+                        resetForm();
+                      }}
+                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                    />
+                  </View>
+                </View>
+              </Card>
             </ScrollView>
+
+            {/* Condition Info Modal - Positioned relative to screen, not scroll content */}
+            {selectedInfoCondition && (
+              <View style={{ 
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                zIndex: 9999,
+              }}>
+                <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400, margin: 16 }}>
+                  <TouchableOpacity
+                    style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}
+                    onPress={() => setSelectedInfoCondition(null)}
+                  >
+                    <MaterialIcons name="close" size={24} color="#888" />
+                  </TouchableOpacity>
+                  <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', marginTop: 12 }}>
+                    {selectedInfoCondition}
+                  </Text>
+                  <Text style={{ fontSize: 15, fontFamily: 'ReadexPro', color: '#ECEDEE', lineHeight: 24, textAlign: 'center' }}>
+                    {conditionExplanations[selectedInfoCondition]}
+                  </Text>
+                  <Button
+                    label="فهمت"
+                    backgroundColor="#045468"
+                    paddingV-s4
+                    marginT-s4
+                    onPress={() => setSelectedInfoCondition(null)}
+                    labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                    borderRadius={200}
+                  />
+                </View>
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -1207,15 +1096,12 @@ const styles = {
   modalContainer: {
     flex: 1,
     backgroundColor: "#202221",
+    paddingTop: 32,
   },
   modalContent: {
-    alignItems: "center",
-    gap: 16,
-    paddingTop: 32,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-    width: "100%",
     flexGrow: 1,
+    justifyContent: 'center',
+    padding: 16,
   },
   modalTitle: {
     fontSize: 18,

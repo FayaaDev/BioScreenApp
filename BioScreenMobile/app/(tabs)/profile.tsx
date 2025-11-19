@@ -174,7 +174,7 @@ export default function Profile() {
             style={{
               fontFamily: 'ReadexPro-Bold',
               lineHeight: 30,
-              color: '#045468',
+              color: '#fff',
             }}
           >
             {t("profile.title")}
