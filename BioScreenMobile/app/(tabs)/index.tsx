@@ -254,19 +254,12 @@ export default function HomeScreen() {
   
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: colors.background }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={['#4CCCE6']} // Android
-          tintColor="#4CCCE6" // iOS
-          title={t('common.refreshing')} // iOS
-          titleColor="#4CCCE6" // iOS
-        />
-      }
-    >
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+        style={{ backgroundColor: '#202221' }}
+      >
       {/* Header with Gradient */}
       <LinearGradient
         colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
@@ -451,10 +444,10 @@ export default function HomeScreen() {
         
         <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between' }}>
           <TouchableOpacity 
-            style={{ width: '48%' }}
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="account-group" size={32} color="#4CCCE6" />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
                 {t('home.addFamily')}
@@ -466,10 +459,10 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={{ width: '48%' }}
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/upcoming-tests')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="calendar-check" size={32} color="#4CCCE6" />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
                 {t('home.upcomingTests')}
@@ -481,10 +474,10 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={{ width: '48%' }}
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="clipboard-check" size={32} color="#4CCCE6" />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
                 {t('home.completedTests')}
@@ -496,10 +489,10 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={{ width: '48%' }}
+            style={{ width: '48%', height: 140 }}
             onPress={() => setShowContactModal(true)}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
+            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="email" size={32} color="#4CCCE6" />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>{t('contact.title')}</Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>{t('contact.description')}</Text>

@@ -488,8 +488,8 @@ export default function Onboarding() {
                     setErrors({ ...errors, height: undefined });
                   }
                 }}
-                thumbTintColor="#045468"
-                minimumTrackTintColor="#045468"
+                thumbTintColor={formData.height ? "#045468" : "#555"}
+                minimumTrackTintColor={formData.height ? "#045468" : "#555"}
                 maximumTrackTintColor="#555"
                 containerStyle={{ marginBottom: 8 }}
               />
@@ -511,8 +511,8 @@ export default function Onboarding() {
                     setErrors({ ...errors, weight: undefined });
                   }
                 }}
-                thumbTintColor="#045468"
-                minimumTrackTintColor="#045468"
+                thumbTintColor={formData.weight ? "#045468" : "#555"}
+                minimumTrackTintColor={formData.weight ? "#045468" : "#555"}
                 maximumTrackTintColor="#555"
                 containerStyle={{ marginBottom: 8 }}
               />
@@ -613,72 +613,7 @@ export default function Onboarding() {
             )}
 
             <View style={{ gap: 16 }}>
-              {formData.medicalConditions.includes('تدخين التبغ') && (
-                <View style={{ gap: 12 }}>
-                  <TextField
-                    style={{
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: errors.smokingDetails?.amount ? '#ef4444' : '#555',
-                      borderRadius: 8,
-                      paddingHorizontal: 16,
-                      fontSize: 16,
-                      fontFamily: 'ReadexPro',
-                      backgroundColor: '#202221',
-                      color: '#ECEDEE',
-                      textAlign: 'right',
-                      writingDirection: 'rtl',
-                    }}
-                    placeholder=" كم عدد علب السجائر التي تدخنها يوميا؟"
-                    value={formData.smokingDetails?.amount}
-                    onChangeText={(text) =>
-                      setFormData({
-                        ...formData,
-                        smokingDetails: {
-                          amount: text,
-                          duration: formData.smokingDetails?.duration || '',
-                        },
-                      })
-                    }
-                    placeholderTextColor="#999"
-                  />
-                  <TextField
-                    style={{
-                      height: 48,
-                      borderWidth: 1,
-                      borderColor: errors.smokingDetails?.duration ? '#ef4444' : '#555',
-                      borderRadius: 8,
-                      paddingHorizontal: 16,
-                      fontSize: 16,
-                      fontFamily: 'ReadexPro',
-                      backgroundColor: '#202221',
-                      color: '#ECEDEE',
-                      textAlign: 'right',
-                      writingDirection: 'rtl',
-                    }}
-                    placeholder="منذ متى تدخن؟ (بالسنوات)"
-                    value={formData.smokingDetails?.duration}
-                    onChangeText={(text) =>
-                      setFormData({
-                        ...formData,
-                        smokingDetails: {
-                          amount: formData.smokingDetails?.amount || '',
-                          duration: text,
-                        },
-                      })
-                    }
-                    placeholderTextColor="#999"
-                  />
-                  {formData.smokingDetails?.amount && formData.smokingDetails?.duration && (
-                    <View style={{ backgroundColor: '#2E3130', padding: 12, borderRadius: 8, borderRightWidth: 3, borderRightColor: '#045468' }}>
-                      <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'right', writingDirection: 'rtl' }}>سنوات التدخين (Pack-Years):</Text>
-                      <Text text60 style={{ fontFamily: 'ReadexPro-Bold', color: '#045468', textAlign: 'right', writingDirection: 'rtl' }}>{calculatePackYears(formData.smokingDetails)}</Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-           
+              {/* Removed smoking details fields */}
             </View>
 
             <View marginT-s4 marginB-s4>
