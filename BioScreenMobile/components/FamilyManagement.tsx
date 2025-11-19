@@ -433,15 +433,6 @@ export function FamilyManagement({
     return t("family.bmiCategory.tryAgain");
   };
 
-  const calculatePackYears = (smokingDetails: {
-    amount: string;
-    duration: string;
-  }): number => {
-    const amount = parseFloat(smokingDetails.amount);
-    const duration = parseFloat(smokingDetails.duration);
-    return amount * duration;
-  };
-
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
     
@@ -541,26 +532,6 @@ export function FamilyManagement({
                   <Text style={styles.memberDetails}>
                     {t("family.dateOfBirthLabel")}: {member.dateOfBirth}
                   </Text>
-                  {((member.medicalConditions && member.medicalConditions.includes('تدخين التبغ')) || member.isSmoker) && member.smokingDetails && (
-                    <View style={styles.packYearsBox as any}>
-                      <Text
-                        style={[
-                          styles.packYearsLabel as any,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {t("family.medicalSurvey.packYears")}:
-                      </Text>
-                      <Text
-                        style={[
-                          styles.packYearsValue as any,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {calculatePackYears(member.smokingDetails)}
-                      </Text>
-                    </View>
-                  )}
                 </TouchableOpacity>
                 <View style={styles.memberActions as any}>
                   <TouchableOpacity

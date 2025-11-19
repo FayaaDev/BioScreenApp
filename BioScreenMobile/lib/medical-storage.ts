@@ -25,8 +25,22 @@ export interface MedicalProfile {
 export interface FamilyMember extends MedicalProfile {
   id: string;
   userId: string;
+  name: string;
   relationship: string;
   medicalConditions?: string[];
+}
+
+export interface Screening {
+  id: string;
+  testName: string;
+  category: string;
+  status: 'due' | 'overdue' | 'later' | 'completed';
+  lastCompleted?: string;
+  nextDue?: string;
+  frequency?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Helper functions using AsyncStorage
@@ -42,6 +56,16 @@ const getFamilyMembers = async (userId: string): Promise<FamilyMember[]> => {
 
 const getAllTestKeys = async (userId: string): Promise<string[]> => {
   const data = await AsyncStorage.getItem(`tests_list_${userId}`);
+  return data ? JSON.parse(data) : [];
+};
+
+const getUserScreenings = async (userId: string): Promise<Screening[]> => {
+  const data = await AsyncStorage.getItem(`screenings_${userId}`);
+  return data ? JSON.parse(data) : [];
+};
+
+const getFamilyMemberScreenings = async (userId: string, memberId: string): Promise<Screening[]> => {
+  const data = await AsyncStorage.getItem(`screenings_${userId}_${memberId}`);
   return data ? JSON.parse(data) : [];
 };
 
@@ -139,15 +163,102 @@ export const medicalStorage = {
     return value === 'true';
   },
 
+  // Screenings Management
+  saveUserScreenings: async (userId: string, screenings: Screening[]) => {
+    await AsyncStorage.setItem(`screenings_${userId}`, JSON.stringify(screenings));
+  },
+
+  getUserScreenings,
+
+  saveFamilyMemberScreenings: async (userId: string, memberId: string, screenings: Screening[]) => {
+    await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(screenings));
+  },
+
+  getFamilyMemberScreenings,
+
+  updateScreeningStatus: async (
+    userId: string,
+    screeningId: string,
+    status: 'due' | 'overdue' | 'later' | 'completed',
+    memberId?: string
+  ) => {
+    const screenings = memberId 
+      ? await getFamilyMemberScreenings(userId, memberId)
+      : await getUserScreenings(userId);
+    
+    const index = screenings.findIndex(s => s.id === screeningId);
+    if (index !== -1) {
+      screenings[index] = {
+        ...screenings[index],
+        status,
+        updatedAt: new Date().toISOString(),
+        ...(status === 'completed' && { lastCompleted: new Date().toISOString() })
+      };
+      
+      if (memberId) {
+        await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(screenings));
+      } else {
+        await AsyncStorage.setItem(`screenings_${userId}`, JSON.stringify(screenings));
+      }
+    }
+  },
+
+  addScreening: async (userId: string, screening: Omit<Screening, 'id' | 'createdAt' | 'updatedAt'>, memberId?: string) => {
+    const now = new Date().toISOString();
+    const screeningId = `${userId}_${Date.now()}`;
+    
+    const fullScreening: Screening = {
+      ...screening,
+      id: screeningId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    const screenings = memberId 
+      ? await getFamilyMemberScreenings(userId, memberId)
+      : await getUserScreenings(userId);
+    
+    screenings.push(fullScreening);
+    
+    if (memberId) {
+      await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(screenings));
+    } else {
+      await AsyncStorage.setItem(`screenings_${userId}`, JSON.stringify(screenings));
+    }
+    
+    return fullScreening;
+  },
+
+  deleteScreening: async (userId: string, screeningId: string, memberId?: string) => {
+    const screenings = memberId 
+      ? await getFamilyMemberScreenings(userId, memberId)
+      : await getUserScreenings(userId);
+    
+    const filtered = screenings.filter(s => s.id !== screeningId);
+    
+    if (memberId) {
+      await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(filtered));
+    } else {
+      await AsyncStorage.setItem(`screenings_${userId}`, JSON.stringify(filtered));
+    }
+  },
+
   // Clear all data for a user
   clearUserData: async (userId: string) => {
     await AsyncStorage.removeItem(`user_profile_${userId}`);
     await AsyncStorage.removeItem(`family_members_${userId}`);
     await AsyncStorage.removeItem(`tests_list_${userId}`);
     await AsyncStorage.removeItem(`onboarding_completed_${userId}`);
+    await AsyncStorage.removeItem(`screenings_${userId}`);
     
     const testKeys = await getAllTestKeys(userId);
     await Promise.all(testKeys.map(key => AsyncStorage.removeItem(key)));
+    
+    // Clear family member screenings
+    const members = await getFamilyMembers(userId);
+    await Promise.all(members.map(member => 
+      AsyncStorage.removeItem(`screenings_${userId}_${member.id}`)
+    ));
   },
 
   // Clear all data

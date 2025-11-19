@@ -20,6 +20,7 @@ import { Colors } from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
+import { medicalStorage, Screening, FamilyMember as StoredFamilyMember } from '@/lib/medical-storage';
 
 interface DashboardStats {
   totalScreenings: number;
@@ -85,6 +86,8 @@ export default function HomeScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', content: '' });
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
+  const [screenings, setScreenings] = useState<Screening[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -107,72 +110,56 @@ export default function HomeScreen() {
     loadUser();
   }, []);
 
-  // Fetch user data with screenings
-  const { data: userDataWithScreenings, isLoading, refetch } = useQuery<UserDataResponse>({
-    queryKey: [`/api/users/${userId}`],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}`),
-    enabled: !!userId,
-  });
+  // Load screenings from local storage based on selected person
+  useEffect(() => {
+    const loadScreenings = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
 
-  // Fetch family members data
-  const { data: familyMembersData } = useQuery<FamilyMember[]>({
-    queryKey: ['/api/users', userId, 'family'],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
+      try {
+        setIsLoading(true);
+        let loadedScreenings: Screening[] = [];
+
+        if (selectedPersonId === 'user') {
+          loadedScreenings = await medicalStorage.getUserScreenings(userId);
+        } else {
+          loadedScreenings = await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);
+        }
+
+        setScreenings(loadedScreenings);
+      } catch (error) {
+        console.error('Failed to load screenings:', error);
+        setScreenings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadScreenings();
+  }, [userId, selectedPersonId]);
+
+  // Fetch family members data from local storage
+  const { data: familyMembersData } = useQuery<StoredFamilyMember[]>({
+    queryKey: ['family-members', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return await medicalStorage.getFamilyMembers(userId);
+    },
     enabled: !!userId,
   });
 
   // Validate selected person when family members data changes
   useEffect(() => {
-    if (familyMembersData && selectedPersonId !== "user") {
-      const familyMemberExists = familyMembersData.some(member => member.id.toString() === selectedPersonId);
+    if (familyMembersData && Array.isArray(familyMembersData) && selectedPersonId !== "user") {
+      const familyMemberExists = familyMembersData.some((member: StoredFamilyMember) => member.id.toString() === selectedPersonId);
       if (!familyMemberExists) {
         console.log('Selected family member no longer exists, switching to user');
         setSelectedPersonId("user");
       }
     }
   }, [familyMembersData, selectedPersonId]);
-
-  // Fetch selected person's screenings
-  const { data: selectedPersonData, error: selectedPersonError } = useQuery({
-    queryKey: selectedPersonId === "user" 
-      ? [`/api/users/${userId}`] 
-      : [`/api/family/${selectedPersonId}/screenings`],
-    queryFn: () =>
-      selectedPersonId === "user"
-        ? apiRequest('GET', `/api/users/${userId}`)
-        : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId && (
-      selectedPersonId === "user" || 
-      (familyMembersData && familyMembersData.some(member => member.id.toString() === selectedPersonId))
-    ),
-    retry: (failureCount, error: any) => {
-      // If it's a family member not found error, don't retry
-      if (error?.message?.includes('Family member not found')) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-
-  // Handle family member not found error - reset to user
-  useEffect(() => {
-    if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
-      console.log('Selected family member not found, switching to user');
-      setSelectedPersonId("user");
-    }
-  }, [selectedPersonError]);
-
-  // Extract screenings based on selected person
-  let screenings: any[] = [];
-  if (selectedPersonData) {
-    if (selectedPersonId === "user") {
-      const userResponse = selectedPersonData as UserDataResponse;
-      screenings = userResponse.screenings || [];
-    } else {
-      const familyResponse = selectedPersonData as FamilyMemberResponse;
-      screenings = familyResponse.screenings || [];
-    }
-  }
 
   // Fetch educational content
   const { data: educationalContent = [] } = useQuery({
@@ -183,7 +170,7 @@ export default function HomeScreen() {
   });
 
   // Calculate stats from screenings data using the same logic as upcoming tests
-  const calculateDashboardStats = (screenings: any[]): DashboardStats => {
+  const calculateDashboardStats = (screenings: Screening[]): DashboardStats => {
     const stats = {
       totalScreenings: screenings.length,
       dueScreenings: 0,
@@ -217,13 +204,22 @@ export default function HomeScreen() {
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      if (!userId) return;
+      
+      // Reload screenings from local storage
+      let loadedScreenings: Screening[] = [];
+      if (selectedPersonId === 'user') {
+        loadedScreenings = await medicalStorage.getUserScreenings(userId);
+      } else {
+        loadedScreenings = await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);
+      }
+      setScreenings(loadedScreenings);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [userId, selectedPersonId]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -305,7 +301,7 @@ export default function HomeScreen() {
           >
             <Text style={{ color: '#fff', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{t('common.you')}</Text>
           </TouchableOpacity>
-          {Array.isArray(familyMembersData) && familyMembersData.map((member) => (
+          {Array.isArray(familyMembersData) && familyMembersData.map((member: StoredFamilyMember) => (
             <TouchableOpacity
               key={member.id}
               style={[
