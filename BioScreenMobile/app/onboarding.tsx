@@ -414,7 +414,7 @@ export default function Onboarding() {
                     : 'اختر تاريخ الميلاد'}
                 </Text>
               </TouchableOpacity>
-              {showDatePicker && (
+              {showDatePicker && Platform.OS === 'ios' && (
                 <Modal
                   visible={showDatePicker}
                   transparent={true}
@@ -426,7 +426,7 @@ export default function Onboarding() {
                       <DateTimePicker
                         value={tempDate || new Date()}
                         mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        display="spinner"
                         onChange={handleDateChange}
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
@@ -467,6 +467,30 @@ export default function Onboarding() {
                     </View>
                   </View>
                 </Modal>
+              )}
+              {showDatePicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={tempDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (event.type === 'set' && selectedDate) {
+                      setFormData({
+                        ...formData,
+                        dateOfBirth: selectedDate.toISOString().split('T')[0],
+                      });
+                      if (errors.dateOfBirth) {
+                        setErrors({ ...errors, dateOfBirth: undefined });
+                      }
+                    }
+                  }}
+                  maximumDate={new Date()}
+                  minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                  accentColor="#045468"
+                  textColor="#ECEDEE"
+                  themeVariant="dark"
+                />
               )}
               {errors.dateOfBirth && (
                 <Text error caption marginT-s1>{errors.dateOfBirth}</Text>
