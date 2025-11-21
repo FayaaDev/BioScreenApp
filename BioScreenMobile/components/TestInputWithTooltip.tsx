@@ -38,7 +38,7 @@ export function TestInputWithTooltip({
         backgroundColor="rgba(0,0,0,0.2)"
       >
         <TouchableOpacity onPress={() => setShowTip(true)} style={styles.infoIcon}>
-          <MaterialCommunityIcons name="information-outline" size={20} color="#4CCCE6" />
+          <MaterialCommunityIcons name="information-outline" size={20} color={Colors.primary} />
         </TouchableOpacity>
       </Tooltip>
       <TextInput
@@ -64,24 +64,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginRight: 8,
-    color: '#333',
+    color: Colors.text,
   },
   infoIcon: {
     marginRight: 8,
   },
   tooltipText: {
     fontSize: 14,
-    color: '#333',
+    color: Colors.text,
     maxWidth: 200,
   },
   input: {
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#2E3130',
-    color: '#ECEDEE',
+    backgroundColor: Colors.card,
+    color: Colors.text,
   },
 }); 

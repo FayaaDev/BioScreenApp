@@ -279,7 +279,7 @@ export default function Profile() {
                                 }
                                 setShowDatePicker(false);
                               }}
-                              labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16, color: '#fff' }}
+                              labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16, color: Colors.white }}
                             />
                           </View>
                         </View>
@@ -330,7 +330,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="male"
                     size={20}
-                    color={formData.gender === "male" ? "#fff" : Colors.textSecondary}
+                    color={formData.gender === "male" ? Colors.white : Colors.textSecondary}
                   />
                   <Text
                     style={{
@@ -369,7 +369,7 @@ export default function Profile() {
                   <MaterialIcons
                     name="female"
                     size={20}
-                    color={formData.gender === "female" ? "#fff" : Colors.textSecondary}
+                    color={formData.gender === "female" ? Colors.white : Colors.textSecondary}
                   />
                   <Text
                     style={{
@@ -394,7 +394,7 @@ export default function Profile() {
                 backgroundColor={Colors.primary}
                 paddingV-s5
                 br20
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleSave}
               />
               <Button
@@ -403,7 +403,7 @@ export default function Profile() {
                 backgroundColor={Colors.error}
                 paddingV-s5
                 br20
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleCancel}
               />
             </View>
@@ -426,7 +426,7 @@ export default function Profile() {
             paddingV-s5
             borderRadius={200}
             marginB-s3
-            labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
             onPress={handleSignOut}
           />
           <Button
@@ -434,7 +434,7 @@ export default function Profile() {
             backgroundColor={Colors.primary}
             paddingV-s5
             borderRadius={200}
-            labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
             onPress={() => setShowAgreement(true)}
           />
         </Card>
@@ -467,7 +467,7 @@ export default function Profile() {
                 br20
                 marginB-s3
                 labelStyle={{
-                  color: i18n.language === "ar" ? "#fff" : Colors.primary,
+                  color: i18n.language === "ar" ? Colors.white : Colors.primary,
                   fontWeight: "bold",
                   fontSize: 16,
                   fontFamily: "ReadexPro-Bold",
@@ -489,7 +489,7 @@ export default function Profile() {
                 br20
                 marginB-s1
                 labelStyle={{
-                  color: i18n.language === "en" ? "#fff" : Colors.primary,
+                  color: i18n.language === "en" ? Colors.white : Colors.primary,
                   fontWeight: "bold",
                   fontSize: 16,
                   fontFamily: "ReadexPro-Bold",
@@ -543,7 +543,7 @@ export default function Profile() {
                 paddingH-s8
                 br20
                 marginT-s4
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
+                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
                 onPress={() => setShowAgreement(false)}
               />
             </ScrollView>

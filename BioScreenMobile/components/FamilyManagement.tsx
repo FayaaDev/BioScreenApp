@@ -497,7 +497,7 @@ export function FamilyManagement({
           <MaterialIcons
             name="info-outline"
             size={16}
-            color={isSelected ? '#fff' : Colors.primary}
+            color={isSelected ? Colors.white : Colors.primary}
           />
         </TouchableOpacity>
       </View>
@@ -582,7 +582,7 @@ export function FamilyManagement({
       {Array.isArray(familyMembers) && familyMembers.length >= 5 && (
         <Text
           style={{
-            color: "#ef4444",
+            color: Colors.error,
             marginTop: 8,
             textAlign: "center",
             fontWeight: "bold",
@@ -671,7 +671,7 @@ export function FamilyManagement({
                           <MaterialIcons
                             name="male"
                             size={20}
-                            color={formData.gender === 'male' ? '#fff' : '#888'}
+                            color={formData.gender === 'male' ? Colors.white : '#888'}
                           />
                         }
                       />
@@ -688,7 +688,7 @@ export function FamilyManagement({
                           <MaterialIcons
                             name="female"
                             size={20}
-                            color={formData.gender === 'female' ? '#fff' : '#888'}
+                            color={formData.gender === 'female' ? Colors.white : '#888'}
                           />
                         }
                       />
@@ -802,8 +802,8 @@ export function FamilyManagement({
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                         themeVariant="dark"
-                        positiveButton={{ label: 'موافق', textColor: '#4CCCE6' }}
-                        negativeButton={{ label: 'إلغاء', textColor: '#ef4444' }}
+                        positiveButton={{ label: 'موافق', textcolor: Colors.primary }}
+                        negativeButton={{ label: 'إلغاء', textcolor: Colors.error }}
                       />
                     )}
                     {submitAttempted && validationErrors.dateOfBirth && (
@@ -882,7 +882,7 @@ export function FamilyManagement({
                     )}
 
                   {/* Medical Survey Section */}
-                  <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#555' }}>
+                  <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: Colors.border }}>
                     <ArabicText
                       h3
                       zimam-primary
@@ -1059,7 +1059,7 @@ const styles = {
     paddingHorizontal: 12,
   },
   editButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontFamily: "ReadexPro-Bold",
   },
@@ -1071,7 +1071,7 @@ const styles = {
     marginLeft: 4,
   },
   deleteButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontFamily: "ReadexPro-Bold",
   },
@@ -1083,7 +1083,7 @@ const styles = {
     marginTop: 16,
   },
   addButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",
@@ -1146,7 +1146,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   optionButtonTextSelected: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontFamily: "ReadexPro-Bold",
   },
@@ -1158,7 +1158,7 @@ const styles = {
     paddingHorizontal: 24,
   },
   saveButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",
@@ -1171,7 +1171,7 @@ const styles = {
     paddingHorizontal: 24,
   },
   cancelButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",
@@ -1193,7 +1193,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   genderButtonTextSelected: {
-    color: "#fff",
+    color: Colors.white,
     fontFamily: "ReadexPro-Bold",
   },
   questionContainer: {
@@ -1230,7 +1230,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   yesNoButtonTextSelected: {
-    color: "#fff",
+    color: Colors.white,
     fontFamily: "ReadexPro-Bold",
   },
   sectionTitle: {
@@ -1295,7 +1295,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   partnerCountButtonTextSelected: {
-    color: "#fff",
+    color: Colors.white,
     fontFamily: "ReadexPro-Bold",
   },
   inputContainer: {
@@ -1417,7 +1417,7 @@ const styles = {
     paddingHorizontal: 24,
   },
   confirmButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",
@@ -1429,7 +1429,7 @@ const styles = {
     paddingHorizontal: 24,
   },
   cancelDateButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
     fontFamily: "ReadexPro-Bold",

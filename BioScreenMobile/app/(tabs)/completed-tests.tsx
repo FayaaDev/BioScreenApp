@@ -48,8 +48,8 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   const statusLabelStyle = [
     styles.screeningStatus,
     {
-      color: '#4CCCE6',
-      backgroundColor: '#f0fdf4', // green-50
+      color: Colors.primary,
+      backgroundColor: Colors.success + '10', // green-50
       borderRadius: 8,
       paddingHorizontal: 8,
       paddingVertical: 2,
@@ -227,7 +227,7 @@ export default function CompletedTests() {
   return (
     <ScrollView 
       key={refreshKey}
-      style={{ flex: 1, backgroundColor: '#202221' }} 
+      style={{ flex: 1, backgroundColor: Colors.background }} 
       contentContainerStyle={{ paddingBottom: 32 }} 
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -339,17 +339,17 @@ export default function CompletedTests() {
 }
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#202221' },
+  container: { flex: 1, backgroundColor: Colors.background },
   centered: {
     flex: 1,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    backgroundColor: '#202221',
+    backgroundColor: Colors.background,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#045468',
+    color: Colors.primary,
     fontFamily: 'ReadexPro',
   },
   header: {
@@ -361,7 +361,7 @@ const styles = {
     alignItems: 'flex-start' as const,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: Colors.white,
     fontSize: 22,
     fontWeight: 'bold' as const,
     marginBottom: 2,
@@ -369,7 +369,7 @@ const styles = {
     fontFamily: 'ReadexPro-Bold',
   },
   headerSubtitle: {
-    color: '#FFFFFF',
+    color: Colors.white,
     fontSize: 20,
     fontFamily: 'ReadexPro',
     textAlign: 'left' as const,
@@ -377,13 +377,13 @@ const styles = {
   screeningsList: { flex: 1, padding: 16 },
   emptyText: {
     textAlign: 'center' as const,
-    color: '#94a3b8',
+    color: Colors.textSecondary,
     fontSize: 16,
     marginTop: 32,
     fontFamily: 'ReadexPro',
   },
   screeningCard: {
-    backgroundColor: '#2E3130',
+    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row' as const,
@@ -393,20 +393,20 @@ const styles = {
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold' as const,
-    color: '#fff',
+    color: Colors.white,
     marginBottom: 4,
     fontFamily: 'ReadexPro-Bold',
   },
-  screeningStatus: { fontSize: 14, color: '#fff', fontFamily: 'ReadexPro' },
+  screeningStatus: { fontSize: 14, color: Colors.white, fontFamily: 'ReadexPro' },
   actionButton: {
-    backgroundColor: '#ef4444',
+    backgroundcolor: Colors.error,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
     marginLeft: 4,
   },
   actionButtonText: {
-    color: '#fff',
+    color: Colors.white,
     fontWeight: 'bold' as const,
     fontFamily: 'ReadexPro-Bold',
   },
@@ -415,24 +415,24 @@ const styles = {
     marginBottom: 8,
   },
   familyButton: {
-    backgroundColor: '#2E3130',
+    backgroundColor: Colors.card,
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#045468',
+    bordercolor: Colors.primary,
   },
   familyButtonSelected: {
-    backgroundColor: '#045468',
-    borderColor: '#045468',
+    backgroundcolor: Colors.primary,
+    bordercolor: Colors.primary,
   },
   familyButtonText: {
-    color: '#fff',
+    color: Colors.white,
     fontWeight: 'bold' as const,
     fontFamily: 'ReadexPro-Bold',
   },
   familyButtonSelectedText: {
-    color: '#fff',
+    color: Colors.white,
   },
 };
  

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 export default function BlurTabBarBackground() {
   return (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#171918' }]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.background }]} />
   );
 }
 

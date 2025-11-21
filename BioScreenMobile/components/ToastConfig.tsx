@@ -11,7 +11,7 @@ export const toastConfig = {
       marginT-s4
       style={{
         backgroundColor: Colors.primary,
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -53,7 +53,7 @@ export const toastConfig = {
       marginT-s4
       style={{
         backgroundColor: Colors.error,
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -95,7 +95,7 @@ export const toastConfig = {
       marginT-s4
       style={{
         backgroundColor: Colors.info,
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,

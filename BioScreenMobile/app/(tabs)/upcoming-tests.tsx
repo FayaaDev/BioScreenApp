@@ -66,10 +66,10 @@ const ScreeningCard = ({
   let priorityColor = "";
   if (priority === "strongly_recommended") {
     priorityLabel = t("screening.priority.stronglyRecommended");
-    priorityColor = "#6B7280"; // grey
+    priorityColor = Colors.grey60; // grey
   } else if (priority === "recommended") {
     priorityLabel = t("screening.priority.recommended");
-    priorityColor = "#9CA3AF"; // lighter grey
+    priorityColor = Colors.grey50; // lighter grey
   }
   // Translate and color the status label for each status
   let statusLabel = screening.status;
@@ -83,7 +83,7 @@ const ScreeningCard = ({
       statusLabelStyle = [
         styles.screeningStatus,
         {
-          color: "#FFFFFF",
+          color: Colors.white,
           backgroundColor: "rgba(255, 255, 255, 0.08)",
           borderRadius: 8,
           paddingHorizontal: 8,
@@ -120,7 +120,7 @@ const ScreeningCard = ({
             >
               <Text
                 style={{
-                  color: "#fff",
+                  color: Colors.white,
                   fontSize: 12,
                   fontWeight: "bold",
                   fontFamily: "ReadexPro-Bold",
@@ -181,7 +181,7 @@ const ScreeningCard = ({
             {/* Next appointment date for recreated tests */}
             <Text
               style={{
-                color: "#fff",
+                color: Colors.white,
                 fontSize: 14,
                 marginBottom: 2,
                 textAlign: "left",
@@ -195,7 +195,7 @@ const ScreeningCard = ({
             {typeof screening.screening?.frequencyYears === "number" && (
               <Text
                 style={{
-                  color: "#fff",
+                  color: Colors.white,
                   fontSize: 13,
                   marginTop: 2,
                   marginBottom: 2,
@@ -229,7 +229,7 @@ const ScreeningCard = ({
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: "#FFFFFF",
+        color: Colors.white,
         backgroundColor: "rgba(255, 255, 255, 0.08)",
         borderRadius: 8,
         paddingHorizontal: 8,
@@ -244,7 +244,7 @@ const ScreeningCard = ({
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: "#0EB39E",
+        color: Colors.success,
         backgroundColor: "rgba(14, 179, 158, 0.16)",
         borderRadius: 8,
         paddingHorizontal: 8,
@@ -259,7 +259,7 @@ const ScreeningCard = ({
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: "#A35829",
+        color: Colors.warning,
         backgroundColor: "rgba(163, 88, 41, 0.16)",
         borderRadius: 8,
         paddingHorizontal: 8,
@@ -274,8 +274,8 @@ const ScreeningCard = ({
     statusLabelStyle = [
       styles.screeningStatus,
       {
-        color: "#22c55e", // green-600
-        backgroundColor: "#f0fdf4", // green-50
+        color: Colors.success, // green-600
+        backgroundColor: Colors.success + "10", // green-50
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -327,7 +327,7 @@ const ScreeningCard = ({
         >
           <Text
             style={{
-              color: "#fff",
+              color: Colors.white,
               fontSize: 12,
               fontWeight: "bold",
               fontFamily: "ReadexPro-Bold",
@@ -392,7 +392,7 @@ const ScreeningCard = ({
           typeof screening.screening?.frequencyYears === "number" && (
             <Text
               style={{
-                color: "#fff",
+                color: Colors.white,
                 fontSize: 13,
                 marginTop: 2,
                 marginBottom: 2,
@@ -409,7 +409,7 @@ const ScreeningCard = ({
           userBirthDate && (
             <Text
               style={{
-                color: "#fff",
+                color: Colors.white,
                 fontSize: 14,
                 marginBottom: 2,
                 textAlign: "left",
@@ -425,7 +425,7 @@ const ScreeningCard = ({
           overdueYears > 0 && (
             <Text
               style={{
-                color: "#fff",
+                color: Colors.white,
                 fontSize: 14,
                 marginBottom: 2,
                 textAlign: "left",

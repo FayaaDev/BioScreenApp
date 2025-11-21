@@ -109,7 +109,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
           value={displayValue}
           onChangeText={handleTextChange}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={Colors.textSecondary}
           keyboardType="phone-pad"
           textContentType="telephoneNumber"
           autoComplete="tel"
@@ -136,51 +136,51 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ECEDEE',
+    color: Colors.text,
     marginBottom: 8,
     fontFamily: 'ReadexPro',
     textAlign: "center",
   },
   required: {
-    color: '#ef4444',
+    color: Colors.error,
   },
   phoneInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: Colors.border,
     borderRadius: 8,
-    backgroundColor: '#2E3130',
+    backgroundColor: Colors.card,
     height: 50,
   },
   countryCodeContainer: {
-    backgroundColor: '#202221',
+    backgroundColor: Colors.background,
     paddingHorizontal: 12,
     paddingVertical: 15,
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
     borderRightWidth: 1,
-    borderRightColor: '#555',
+    borderRightColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   countryCodeText: {
     fontSize: 16,
-    color: '#94a3b8',
+    color: Colors.textSecondary,
     fontWeight: '600',
     fontFamily: 'ReadexPro',
   },
   separator: {
     width: 1,
     height: 30,
-    backgroundColor: '#555',
+    backgroundColor: Colors.border,
   },
   phoneInput: {
     flex: 1,
     height: '100%',
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#ECEDEE',
+    color: Colors.text,
     fontFamily: 'ReadexPro',
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
@@ -188,27 +188,27 @@ const styles = StyleSheet.create({
   input: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#2E3130',
-    color: '#ECEDEE',
+    backgroundColor: Colors.card,
+    color: Colors.text,
     fontFamily: 'ReadexPro',
   },
   inputError: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2',
+    bordercolor: Colors.error,
+    backgroundColor: Colors.error + '10',
   },
   errorText: {
-    color: '#ef4444',
+    color: Colors.error,
     fontSize: 14,
     marginTop: 4,
     textAlign: 'right',
     fontFamily: 'ReadexPro',
   },
   helpText: {
-    color: '#6b7280',
+    color: Colors.textSecondary,
     fontSize: 12,
     marginTop: 4,
     textAlign: 'right',

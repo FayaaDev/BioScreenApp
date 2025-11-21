@@ -73,7 +73,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
           <Text 
             body
             flex
-            color="#1F2937"
+            color={Colors.text}
             style={{ fontWeight: 'bold', textAlign: isRTL ? 'right' : 'left' }}
             numberOfLines={1}
           >
@@ -102,7 +102,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
           <Text 
             bodySmall
             flex
-            color="#4B5563"
+            color={Colors.textSecondary}
             style={{ textAlign: isRTL ? 'right' : 'left' }}
             numberOfLines={2}
           >
@@ -111,8 +111,8 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
         </View>
         
         <View row centerV marginB-s1>
-          <MaterialCommunityIcons name="clock-outline" size={14} color="#666" />
-          <Text caption color="#4B5563" marginL-4>
+          <MaterialCommunityIcons name="clock-outline" size={14} color={Colors.textSecondary} />
+          <Text caption color={Colors.textSecondary} marginL-4>
             {screening.status === 'overdue' && userBirthDate
               ? getOverdueTime(userBirthDate, screening.screening?.startAge || 0)
               : getFrequencyText(screening.screening?.frequencyYears || 1)
@@ -123,7 +123,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
         {screening.status === 'later' && screening.screening?.startAge && (
           <Text 
             caption
-            color="#4B5563"
+            color={Colors.textSecondary}
             marginB-s1
             style={{ textAlign: isRTL ? 'right' : 'left' }}
           >
@@ -134,7 +134,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
         {isCompleted && screening.screening?.frequencyYears && screening.screening.frequencyYears > 0 && (
           <Text 
             caption
-            color="#4B5563"
+            color={Colors.textSecondary}
             marginB-s1
             style={{ textAlign: isRTL ? 'right' : 'left' }}
           >
@@ -158,8 +158,8 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
             label={isCompleted ? "غير مكتمل" : t("home.markComplete")}
             size="xSmall"
             outline
-            outlineColor="#555"
-            backgroundColor="#2E3130"
+            outlineColor={Colors.border}
+            backgroundColor={Colors.card}
             color="primary"
             onPress={onMarkCompleted}
           />

@@ -56,21 +56,21 @@ export const Colors = {
   dark: {
     text: getStep(radixScales.sageDark, 12), // Sage 12
     background: getStep(radixScales.sageDark, 3), // Sage 3
-    tint: getStep(radixScales.cyanDark, 9), // Cyan 9
+    tint: getStep(radixScales.cyanDark, 7), // Cyan 7 - Darker blue for dark theme
     icon: getStep(radixScales.sageDark, 11), // Sage 11
     tabIconDefault: getStep(radixScales.sageDark, 11),
-    tabIconSelected: getStep(radixScales.cyanDark, 9),
-    primary: getStep(radixScales.cyanDark, 9),
-    primaryAlpha: getStep(radixScales.cyanDark, 9) + 'E5',
+    tabIconSelected: getStep(radixScales.cyanDark, 7),
+    primary: getStep(radixScales.cyanDark, 7), // Changed from 9 to 7 for darker blue
+    primaryAlpha: getStep(radixScales.cyanDark, 7) + 'E5',
     primaryShades: {
-      main: getStep(radixScales.cyanDark, 9),
-      shade1: getStep(radixScales.cyanDark, 10),
-      shade2: getStep(radixScales.cyanDark, 11),
-      shade3: getStep(radixScales.cyanDark, 12),
-      shade4: getStep(radixScales.cyanDark, 8),
-      shade5: getStep(radixScales.cyanDark, 7),
-      shade6: getStep(radixScales.cyanDark, 6),
-      shade7: getStep(radixScales.cyanDark, 5),
+      main: getStep(radixScales.cyanDark, 7),
+      shade1: getStep(radixScales.cyanDark, 8),
+      shade2: getStep(radixScales.cyanDark, 9),
+      shade3: getStep(radixScales.cyanDark, 10),
+      shade4: getStep(radixScales.cyanDark, 6),
+      shade5: getStep(radixScales.cyanDark, 5),
+      shade6: getStep(radixScales.cyanDark, 4),
+      shade7: getStep(radixScales.cyanDark, 3),
     },
     secondary: getStep(radixScales.sageDark, 3),
     secondaryShades: {
@@ -84,7 +84,7 @@ export const Colors = {
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
-    info: getStep(radixScales.cyanDark, 9),
+    info: getStep(radixScales.cyanDark, 7), // Also updated to match primary
   },
   // Explicit Zimam Themes (for future switching logic)
   zimamLight: {
@@ -125,21 +125,21 @@ export const Colors = {
     // Same as dark above
     text: getStep(radixScales.sageDark, 12),
     background: getStep(radixScales.sageDark, 3),
-    tint: getStep(radixScales.cyanDark, 9),
+    tint: getStep(radixScales.cyanDark, 7), // Cyan 7 - Darker blue for dark theme
     icon: getStep(radixScales.sageDark, 11),
     tabIconDefault: getStep(radixScales.sageDark, 11),
-    tabIconSelected: getStep(radixScales.cyanDark, 9),
-    primary: getStep(radixScales.cyanDark, 9),
-    primaryAlpha: getStep(radixScales.cyanDark, 9) + 'E5',
+    tabIconSelected: getStep(radixScales.cyanDark, 7),
+    primary: getStep(radixScales.cyanDark, 7), // Changed from 9 to 7 for darker blue
+    primaryAlpha: getStep(radixScales.cyanDark, 7) + 'E5',
     primaryShades: {
-      main: getStep(radixScales.cyanDark, 9),
-      shade1: getStep(radixScales.cyanDark, 10),
-      shade2: getStep(radixScales.cyanDark, 11),
-      shade3: getStep(radixScales.cyanDark, 12),
-      shade4: getStep(radixScales.cyanDark, 8),
-      shade5: getStep(radixScales.cyanDark, 7),
-      shade6: getStep(radixScales.cyanDark, 6),
-      shade7: getStep(radixScales.cyanDark, 5),
+      main: getStep(radixScales.cyanDark, 7),
+      shade1: getStep(radixScales.cyanDark, 8),
+      shade2: getStep(radixScales.cyanDark, 9),
+      shade3: getStep(radixScales.cyanDark, 10),
+      shade4: getStep(radixScales.cyanDark, 6),
+      shade5: getStep(radixScales.cyanDark, 5),
+      shade6: getStep(radixScales.cyanDark, 4),
+      shade7: getStep(radixScales.cyanDark, 3),
     },
     secondary: getStep(radixScales.sageDark, 3),
     secondaryShades: {
@@ -153,7 +153,7 @@ export const Colors = {
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
-    info: getStep(radixScales.cyanDark, 9),
+    info: getStep(radixScales.cyanDark, 7), // Updated to match primary
   }
 };
 

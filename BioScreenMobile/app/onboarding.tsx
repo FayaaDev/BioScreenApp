@@ -316,7 +316,7 @@ export default function Onboarding() {
           <MaterialIcons
             name="info-outline"
             size={16}
-            color={isSelected ? '#fff' : Colors.primary}
+            color={isSelected ? Colors.white : Colors.primary}
           />
         </TouchableOpacity>
       </View>
@@ -357,7 +357,7 @@ export default function Onboarding() {
                     <MaterialIcons
                       name="male"
                       size={20}
-                      color={formData.gender === 'male' ? '#fff' : Colors.textSecondary}
+                      color={formData.gender === 'male' ? Colors.white : Colors.textSecondary}
                     />
                   }
                   disabled={isSubmitting}
@@ -376,7 +376,7 @@ export default function Onboarding() {
                     <MaterialIcons
                       name="female"
                       size={20}
-                      color={formData.gender === 'female' ? '#fff' : Colors.textSecondary}
+                      color={formData.gender === 'female' ? Colors.white : Colors.textSecondary}
                     />
                   }
                   disabled={isSubmitting}
