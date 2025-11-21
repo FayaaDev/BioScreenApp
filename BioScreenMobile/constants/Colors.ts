@@ -17,7 +17,69 @@ const radixScales = {
 // Helper to get a specific step from a scale (1-based index)
 const getStep = (scale: string[], step: number) => scale[step - 1];
 
-export const Colors = {
+// Define the theme structure type
+interface ThemeColors {
+  text: string;
+  background: string;
+  tint: string;
+  icon: string;
+  tabIconDefault: string;
+  tabIconSelected: string;
+  primary: string;
+  primaryAlpha: string;
+  primaryShades: {
+    main: string;
+    shade1: string;
+    shade2: string;
+    shade3: string;
+    shade4: string;
+    shade5: string;
+    shade6: string;
+    shade7: string;
+  };
+  secondary: string;
+  secondaryShades: {
+    main: string;
+    shade1: string;
+  };
+  card: string;
+  textSecondary: string;
+  gradientStart: string;
+  gradientEnd: string;
+  success: string;
+  error: string;
+  warning: string;
+  info: string;
+}
+
+export const Colors: {
+  light: ThemeColors;
+  dark: ThemeColors;
+  zimamLight: ThemeColors;
+  zimamDark: ThemeColors;
+  // Direct access properties for backwards compatibility
+  text: string;
+  background: string;
+  tint: string;
+  icon: string;
+  tabIconDefault: string;
+  tabIconSelected: string;
+  primary: string;
+  primaryAlpha: string;
+  primaryShades: ThemeColors['primaryShades'];
+  secondary: string;
+  secondaryShades: ThemeColors['secondaryShades'];
+  card: string;
+  textSecondary: string;
+  gradientStart: string;
+  gradientEnd: string;
+  success: string;
+  error: string;
+  warning: string;
+  info: string;
+  white: string;
+  border: string;
+} = {
   // Legacy Light Theme (mapped to Zimam Light for now)
   light: {
     text: getStep(radixScales.sageLight, 12), // Sage 12
@@ -198,6 +260,7 @@ Object.assign(Colors, {
   warning: defaultTheme.warning,
   info: defaultTheme.info,
   white: '#ffffff',
+  border: '#555555',
 });
 
 // Export as default for convenience

@@ -6,7 +6,7 @@ import {
   I18nManager,
   Dimensions,
 } from 'react-native';
-import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen, Colors } from 'react-native-ui-lib';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import Colors from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
@@ -236,7 +235,7 @@ export default function HomeScreen() {
 
   if (isLoading && !userId) {
     return (
-      <LoaderScreen color={colors.primary} message={t('common.loading')} backgroundColor={colors.background} />
+      <LoaderScreen color={Colors.primary} message={t('common.loading')} backgroundColor={Colors.background} />
     );
   }
 
@@ -258,7 +257,7 @@ export default function HomeScreen() {
       >
       {/* Header with Gradient */}
       <LinearGradient
-        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primaryShades.shade6, Colors.primary]}
+        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
         style={{ 
           paddingHorizontal: 16,
           borderBottomLeftRadius: 16,

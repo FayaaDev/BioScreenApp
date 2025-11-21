@@ -778,7 +778,7 @@ export default function UpcomingTests() {
         colors={
           colorScheme === "dark"
             ? [Colors.background, Colors.card]
-            : [Colors.primaryShades.shade3, Colors.primary]
+            : [Colors.primary, Colors.primary]
         }
         style={[
           styles.header,

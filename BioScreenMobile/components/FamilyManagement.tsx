@@ -802,8 +802,8 @@ export function FamilyManagement({
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                         themeVariant="dark"
-                        positiveButton={{ label: 'موافق', textcolor: Colors.primary }}
-                        negativeButton={{ label: 'إلغاء', textcolor: Colors.error }}
+                        positiveButton={{ label: 'موافق', textColor: Colors.primary }}
+                        negativeButton={{ label: 'إلغاء', textColor: Colors.error }}
                       />
                     )}
                     {submitAttempted && validationErrors.dateOfBirth && (

@@ -3,7 +3,7 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
-import { View, Text, Card, Button, TouchableOpacity, LoaderScreen } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, LoaderScreen, Colors } from 'react-native-ui-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/api';
@@ -16,7 +16,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '../../hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
-import Colors from '../../constants/Colors';
 
 // Types
 type Screening = {
