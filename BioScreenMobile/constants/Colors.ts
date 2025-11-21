@@ -50,6 +50,14 @@ interface ThemeColors {
   error: string;
   warning: string;
   info: string;
+  dashboardCardBackground: string;
+  overlay: string;
+  status: {
+    due: { background: string; text: string; border: string; icon: string };
+    overdue: { background: string; text: string; border: string; icon: string };
+    later: { background: string; text: string; border: string; icon: string };
+    completed: { background: string; text: string; border: string; icon: string };
+  };
 }
 
 export const Colors: {
@@ -79,6 +87,9 @@ export const Colors: {
   info: string;
   white: string;
   border: string;
+  dashboardCardBackground: string;
+  overlay: string;
+  status: ThemeColors['status'];
 } = {
   // Legacy Light Theme (mapped to Zimam Light for now)
   light: {
@@ -113,6 +124,14 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanLight, 9),
+    dashboardCardBackground: getStep(radixScales.cyanLight, 4), // Bright Blue
+    overlay: 'rgba(0,0,0,0.5)',
+    status: {
+      due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
+      overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
+      later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
+      completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
+    }
   },
   // Zimam Dark Theme (Default)
   dark: {
@@ -147,6 +166,14 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanDark, 7), // Also updated to match primary
+    dashboardCardBackground: getStep(radixScales.cyanDark, 5), // Dark Blue
+    overlay: 'rgba(0,0,0,0.7)',
+    status: {
+      due: { background: 'rgba(14, 179, 158, 0.16)', text: '#0EB39E', border: 'rgba(14, 179, 158, 0.3)', icon: '#0EB39E' },
+      overdue: { background: 'rgba(163, 88, 41, 0.16)', text: '#f59e0b', border: 'rgba(163, 88, 41, 0.3)', icon: '#f59e0b' },
+      later: { background: 'rgba(255, 255, 255, 0.08)', text: '#FFFFFF', border: 'rgba(255, 255, 255, 0.16)', icon: '#FFFFFF' },
+      completed: { background: 'rgba(22, 101, 52, 0.2)', text: '#4ade80', border: 'rgba(22, 101, 52, 0.4)', icon: '#4ade80' },
+    }
   },
   // Explicit Zimam Themes (for future switching logic)
   zimamLight: {
@@ -182,6 +209,14 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanLight, 9),
+    dashboardCardBackground: getStep(radixScales.cyanLight, 4),
+    overlay: 'rgba(0,0,0,0.5)',
+    status: {
+      due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
+      overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
+      later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
+      completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
+    }
   },
   zimamDark: {
     // Same as dark above
@@ -216,7 +251,57 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanDark, 7), // Updated to match primary
-  }
+    dashboardCardBackground: getStep(radixScales.cyanDark, 5),
+    overlay: 'rgba(0,0,0,0.7)',
+    status: {
+      due: { background: 'rgba(14, 179, 158, 0.16)', text: '#0EB39E', border: 'rgba(14, 179, 158, 0.3)', icon: '#0EB39E' },
+      overdue: { background: 'rgba(163, 88, 41, 0.16)', text: '#f59e0b', border: 'rgba(163, 88, 41, 0.3)', icon: '#f59e0b' },
+      later: { background: 'rgba(255, 255, 255, 0.08)', text: '#FFFFFF', border: 'rgba(255, 255, 255, 0.16)', icon: '#FFFFFF' },
+      completed: { background: 'rgba(22, 101, 52, 0.2)', text: '#4ade80', border: 'rgba(22, 101, 52, 0.4)', icon: '#4ade80' },
+    }
+  },
+  // Direct access properties (defaulting to light theme initially)
+  text: getStep(radixScales.sageLight, 12),
+  background: getStep(radixScales.sageLight, 3),
+  tint: getStep(radixScales.cyanLight, 9),
+  icon: getStep(radixScales.sageLight, 11),
+  tabIconDefault: getStep(radixScales.sageLight, 11),
+  tabIconSelected: getStep(radixScales.cyanLight, 9),
+  primary: getStep(radixScales.cyanLight, 9),
+  primaryAlpha: getStep(radixScales.cyanLight, 9) + 'E5',
+  primaryShades: {
+    main: getStep(radixScales.cyanLight, 9),
+    shade1: getStep(radixScales.cyanLight, 10),
+    shade2: getStep(radixScales.cyanLight, 11),
+    shade3: getStep(radixScales.cyanLight, 12),
+    shade4: getStep(radixScales.cyanLight, 8),
+    shade5: getStep(radixScales.cyanLight, 7),
+    shade6: getStep(radixScales.cyanLight, 6),
+    shade7: getStep(radixScales.cyanLight, 5),
+  },
+  secondary: getStep(radixScales.sageLight, 3),
+  secondaryShades: {
+    main: getStep(radixScales.sageLight, 3),
+    shade1: getStep(radixScales.sageLight, 4),
+  },
+  card: getStep(radixScales.sageLight, 4),
+  textSecondary: getStep(radixScales.sageLight, 11),
+  gradientStart: getStep(radixScales.cyanLight, 3),
+  gradientEnd: getStep(radixScales.cyanLight, 9),
+  success: '#10b981',
+  error: '#ef4444',
+  warning: '#f59e0b',
+  info: getStep(radixScales.cyanLight, 9),
+  white: '#ffffff',
+  border: '#555555',
+  dashboardCardBackground: getStep(radixScales.cyanLight, 4),
+  overlay: 'rgba(0,0,0,0.5)',
+  status: {
+    due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
+    overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
+    later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
+    completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
+  },
 };
 
 /**
@@ -234,34 +319,7 @@ export function getUILibraryColors() {
 
 export const UILibColors = getUILibraryColors();
 
-// Backwards compatibility - direct access to theme properties
-// Components should use Colors[colorScheme] pattern, but this provides fallback
-const defaultTheme = Colors.light;
 
-// Add direct property access to Colors for backwards compatibility
-Object.assign(Colors, {
-  text: defaultTheme.text,
-  background: defaultTheme.background,
-  tint: defaultTheme.tint,
-  icon: defaultTheme.icon,
-  tabIconDefault: defaultTheme.tabIconDefault,
-  tabIconSelected: defaultTheme.tabIconSelected,
-  primary: defaultTheme.primary,
-  primaryAlpha: defaultTheme.primaryAlpha,
-  primaryShades: defaultTheme.primaryShades,
-  secondary: defaultTheme.secondary,
-  secondaryShades: defaultTheme.secondaryShades,
-  card: defaultTheme.card,
-  textSecondary: defaultTheme.textSecondary,
-  gradientStart: defaultTheme.gradientStart,
-  gradientEnd: defaultTheme.gradientEnd,
-  success: defaultTheme.success,
-  error: defaultTheme.error,
-  warning: defaultTheme.warning,
-  info: defaultTheme.info,
-  white: '#ffffff',
-  border: '#555555',
-});
 
 // Export as default for convenience
 export default Colors;

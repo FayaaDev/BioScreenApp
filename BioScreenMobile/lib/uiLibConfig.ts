@@ -18,7 +18,7 @@ export function configureUILibrary(theme: keyof typeof AppColors = 'dark') {
   }
 
   // Get colors for the requested theme, falling back to dark if not found
-  const currentColors = AppColors[theme] || AppColors.dark;
+  const currentColors: any = AppColors[theme] || AppColors.dark;
 
   // Configure colors to match existing theme
   Colors.loadColors({
@@ -70,6 +70,11 @@ export function configureUILibrary(theme: keyof typeof AppColors = 'dark') {
     error: currentColors.error,
     warning: currentColors.warning,
     info: currentColors.info,
+
+    // Custom semantic colors
+    dashboardCardBackground: currentColors.dashboardCardBackground,
+    overlay: currentColors.overlay,
+    status: currentColors.status,
 
     // Neutral colors for various use cases
     grey10: '#f9fafb',

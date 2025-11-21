@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Colors } from 'react-native-ui-lib';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -35,7 +36,7 @@ export function TestInputWithTooltip({
         placement="top"
         onClose={() => setShowTip(false)}
         showChildInTooltip={false}
-        backgroundColor="rgba(0,0,0,0.2)"
+        backgroundColor={Colors.overlay}
       >
         <TouchableOpacity onPress={() => setShowTip(true)} style={styles.infoIcon}>
           <MaterialCommunityIcons name="information-outline" size={20} color={Colors.primary} />
@@ -84,4 +85,4 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     color: Colors.text,
   },
-}); 
+});

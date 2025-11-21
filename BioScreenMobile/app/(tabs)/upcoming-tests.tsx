@@ -11,7 +11,6 @@ import { apiRequest } from "../../lib/api";
 import { useToast } from "../../hooks/useToast";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import {
-  STATUS_COLORS,
   calculateNextDueDate,
   ScreeningWithDetails,
 } from "../../lib/screening-utils";
@@ -84,7 +83,7 @@ const ScreeningCard = ({
         styles.screeningStatus,
         {
           color: Colors.white,
-          backgroundColor: "rgba(255, 255, 255, 0.08)",
+          backgroundColor: Colors.white + '14',
           borderRadius: 8,
           paddingHorizontal: 8,
           paddingVertical: 2,
@@ -148,7 +147,7 @@ const ScreeningCard = ({
                   placement="top"
                   onClose={() => setShowTip(false)}
                   showChildInTooltip={false}
-                  backgroundColor="rgba(0,0,0,0.2)"
+                  backgroundColor={Colors.overlay}
                 >
                   <TouchableOpacity
                     onPress={() => setShowTip(true)}
@@ -230,7 +229,7 @@ const ScreeningCard = ({
       styles.screeningStatus,
       {
         color: Colors.white,
-        backgroundColor: "rgba(255, 255, 255, 0.08)",
+        backgroundColor: Colors.white + '14',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -245,7 +244,7 @@ const ScreeningCard = ({
       styles.screeningStatus,
       {
         color: Colors.success,
-        backgroundColor: "rgba(14, 179, 158, 0.16)",
+        backgroundColor: Colors.success + '29',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -260,7 +259,7 @@ const ScreeningCard = ({
       styles.screeningStatus,
       {
         color: Colors.warning,
-        backgroundColor: "rgba(163, 88, 41, 0.16)",
+        backgroundColor: Colors.warning + '29',
         borderRadius: 8,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -355,7 +354,7 @@ const ScreeningCard = ({
               placement="top"
               onClose={() => setShowTip(false)}
               showChildInTooltip={false}
-              backgroundColor="rgba(0,0,0,0.2)"
+              backgroundColor={Colors.overlay}
             >
               <TouchableOpacity
                 onPress={() => setShowTip(true)}
@@ -706,14 +705,14 @@ export default function UpcomingTests() {
   // Tabs logic
   const tabOptions = [
     { key: "all", label: t("home.tabs.all"), color: undefined },
-    { key: "due", label: t("home.tabs.due"), color: STATUS_COLORS.due },
+    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
     {
       key: "overdue",
       label: t("home.tabs.overdue"),
-      color: STATUS_COLORS.overdue,
+      color: Colors.status.overdue,
     },
-    { key: "later", label: t("home.tabs.later"), color: STATUS_COLORS.later },
-    //{ key: 'completed', label: t('home.tabs.done'), color: STATUS_COLORS.completed },
+    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
+    //{ key: 'completed', label: t('home.tabs.done'), color: Colors.status.completed },
   ];
 
   let filteredScreenings = screenings;
@@ -941,7 +940,7 @@ const styles = {
     fontWeight: "bold" as const,
     marginBottom: 2,
     fontFamily: "ReadexPro-Bold",
-    color: Colors.white,
+    color: Colors.text,
   },
   headerSubtitle: {
     fontSize: 20,
@@ -959,11 +958,11 @@ const styles = {
   screeningTitle: {
     fontSize: 16,
     fontWeight: "bold" as const,
-    color: Colors.white,
+    color: Colors.text,
     marginBottom: 4,
     fontFamily: "ReadexPro-Bold",
   },
-  screeningStatus: { fontSize: 14, color: Colors.white, fontFamily: "ReadexPro" },
+  screeningStatus: { fontSize: 14, color: Colors.textSecondary, fontFamily: "ReadexPro" },
   actionButton: {
     backgroundColor: Colors.primary,
     borderRadius: 8,
@@ -993,7 +992,7 @@ const styles = {
     borderColor: Colors.primary,
   },
   familyButtonText: {
-    color: Colors.white,
+    color: Colors.text,
     fontWeight: "bold" as const,
     fontFamily: "ReadexPro-Bold",
   },

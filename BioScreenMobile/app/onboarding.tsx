@@ -77,7 +77,7 @@ const ArabicButton = ({
     <Text
       style={{
         fontFamily: 'ReadexPro-Bold',
-        color: isSelected ? '#fff' : Colors.textSecondary,
+        color: isSelected ? Colors.white : Colors.textSecondary,
         writingDirection: 'rtl',
         fontSize: 15,
         lineHeight: 24,
@@ -277,7 +277,7 @@ export default function Onboarding() {
           backgroundColor={isSelected ? Colors.primary : Colors.card}
           labelStyle={{
             fontFamily: 'ReadexPro-Bold',
-            color: isSelected ? '#fff' : Colors.textSecondary,
+            color: isSelected ? Colors.white : Colors.textSecondary,
             fontSize: 16,
             lineHeight: 24,
             includeFontPadding: false,
@@ -306,7 +306,7 @@ export default function Onboarding() {
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : Colors.primary + '33',
+            backgroundColor: isSelected ? Colors.white + '33' : Colors.primary + '33',
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 10,
@@ -424,7 +424,7 @@ export default function Onboarding() {
                   animationType="fade"
                   onRequestClose={() => setShowDatePicker(false)}
                 >
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}>
                     <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                       <DateTimePicker
                         value={tempDate || new Date()}
@@ -625,7 +625,7 @@ export default function Onboarding() {
                 onRequestClose={() => setSelectedInfoCondition(null)}
               >
                 <TouchableOpacity
-                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}
                   activeOpacity={1}
                   onPress={() => setSelectedInfoCondition(null)}
                 >
@@ -696,9 +696,9 @@ export default function Onboarding() {
               labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
             />
           </View>
-        </Card>
-      </ScrollView>
-    </RNKeyboardAvoidingView>
+        </Card >
+      </ScrollView >
+    </RNKeyboardAvoidingView >
   );
 }
 

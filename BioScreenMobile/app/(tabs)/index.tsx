@@ -204,7 +204,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     try {
       if (!userId) return;
-      
+
       // Reload screenings from local storage
       let loadedScreenings: Screening[] = [];
       if (selectedPersonId === 'user') {
@@ -223,7 +223,7 @@ export default function HomeScreen() {
   const getGreeting = () => {
     const hour = new Date().getHours();
     const name = user?.name || '';
-    
+
     if (hour < 12) {
       return name ? t('home.morningGreeting', { name }) : t('home.greeting');
     } else if (hour < 17) {
@@ -246,38 +246,38 @@ export default function HomeScreen() {
   //     Am I right to left or left to right
   //   </Text>
   // </View>
-  
+
   return (
-    <ScrollView 
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
-        style={{ backgroundColor: Colors.background }}
-      >
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+      style={{ backgroundColor: Colors.background }}
+    >
       {/* Header with Gradient */}
       <LinearGradient
         colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
-        style={{ 
+        style={{
           paddingHorizontal: 16,
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
           overflow: 'hidden',
           minHeight: 160,
-          paddingTop: insets.top + 16, 
-          paddingBottom: 16 
+          paddingTop: insets.top + 16,
+          paddingBottom: 16
         }}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
             <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: Colors.white }}>
-              {getGreeting()} 
+              {getGreeting()}
             </Text>
             <Text style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: Colors.white }}>
               {t('home.manageHealth')}
             </Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ padding: 8 }}
             onPress={() => router.push('/profile')}
           >
@@ -321,28 +321,28 @@ export default function HomeScreen() {
           {t('home.testStatus')}
         </Text>
         <View row style={{ justifyContent: 'space-between', gap: 8 }}>
-          <Card 
-            padding-s4 
-            center 
-            backgroundColor={colorScheme === 'dark' ? '#1A4D5C' : '#B3E5F5'}
-            enableShadow 
+          <Card
+            padding-s4
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
             elevation={3}
             style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Text 
-              style={{ 
-                fontSize: 36, 
-                fontFamily: 'ReadexPro-Bold', 
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
                 color: Colors.primary,
                 marginBottom: 8
               }}
             >
               {stats.completedThisYear}
             </Text>
-            <Text 
-              style={{ 
-                fontFamily: 'ReadexPro-SemiBold', 
-                textAlign: 'center', 
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
                 color: Colors.text,
                 fontSize: 10
               }}
@@ -353,28 +353,28 @@ export default function HomeScreen() {
             </Text>
           </Card>
 
-          <Card 
-            padding-s4 
-            center 
-            backgroundColor={colorScheme === 'dark' ? '#1A4D5C' : '#B3E5F5'}
-            enableShadow 
+          <Card
+            padding-s4
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
             elevation={3}
             style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Text 
-              style={{ 
-                fontSize: 36, 
-                fontFamily: 'ReadexPro-Bold', 
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
                 color: Colors.white,
                 marginBottom: 8
               }}
             >
               {stats.laterScreenings}
             </Text>
-            <Text 
-              style={{ 
-                fontFamily: 'ReadexPro-SemiBold', 
-                textAlign: 'center', 
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
                 color: Colors.text,
                 fontSize: 10
               }}
@@ -385,28 +385,28 @@ export default function HomeScreen() {
             </Text>
           </Card>
 
-          <Card 
-            padding-s4 
-            center 
-            backgroundColor={colorScheme === 'dark' ? '#1A4D5C' : '#B3E5F5'}
-            enableShadow 
+          <Card
+            padding-s4
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
             elevation={3}
             style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Text 
-              style={{ 
-                fontSize: 36, 
-                fontFamily: 'ReadexPro-Bold', 
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
                 color: Colors.error,
                 marginBottom: 8
               }}
             >
               {stats.overdueScreenings}
             </Text>
-            <Text 
-              style={{ 
-                fontFamily: 'ReadexPro-SemiBold', 
-                textAlign: 'center', 
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
                 color: Colors.text,
                 fontSize: 10
               }}
@@ -417,28 +417,28 @@ export default function HomeScreen() {
             </Text>
           </Card>
 
-          <Card 
-            padding-s4 
-            center 
-            backgroundColor={colorScheme === 'dark' ? '#1A4D5C' : '#B3E5F5'}
-            enableShadow 
+          <Card
+            padding-s4
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
             elevation={3}
             style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Text 
-              style={{ 
-                fontSize: 36, 
-                fontFamily: 'ReadexPro-Bold', 
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
                 color: Colors.primary,
                 marginBottom: 8
               }}
             >
               {stats.dueScreenings}
             </Text>
-            <Text 
-              style={{ 
-                fontFamily: 'ReadexPro-SemiBold', 
-                textAlign: 'center', 
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
                 color: Colors.text,
                 fontSize: 12
               }}
@@ -456,7 +456,7 @@ export default function HomeScreen() {
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
           {t('home.healthTips')}
         </Text>
-        
+
         {educationalContent.length > 0 ? (
           <View>
             {educationalContent.slice(0, 3).map((content) => (
@@ -479,7 +479,7 @@ export default function HomeScreen() {
           </View>
         ) : (
           <Card padding-s5 backgroundColor={Colors.card} enableShadow elevation={3}>
-            <MaterialCommunityIcons name="information" size={32} color="#4CCCE6" />
+            <MaterialCommunityIcons name="information" size={32} color={Colors.primary} />
             <Text body marginT-s3 marginB-s2 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
               {t('home.defaultTipTitle')}
             </Text>
@@ -495,14 +495,14 @@ export default function HomeScreen() {
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
           {t('home.quickActions')}
         </Text>
-        
+
         <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between', gap: 12 }}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/profile')}
           >
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="account-group" size={32} color="#4CCCE6" />
+              <MaterialCommunityIcons name="account-group" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.addFamily')}
               </Text>
@@ -512,12 +512,12 @@ export default function HomeScreen() {
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/upcoming-tests')}
           >
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="calendar-check" size={32} color="#4CCCE6" />
+              <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.upcomingTests')}
               </Text>
@@ -527,12 +527,12 @@ export default function HomeScreen() {
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="clipboard-check" size={32} color="#4CCCE6" />
+              <MaterialCommunityIcons name="clipboard-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.completedTests')}
               </Text>
@@ -542,12 +542,12 @@ export default function HomeScreen() {
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ width: '48%', height: 140 }}
             onPress={() => setShowContactModal(true)}
           >
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="email" size={32} color="#4CCCE6" />
+              <MaterialCommunityIcons name="email" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>{t('contact.title')}</Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>{t('contact.description')}</Text>
             </Card>
@@ -558,65 +558,65 @@ export default function HomeScreen() {
       {/* Bottom padding for better scrolling */}
       <View style={{ height: 20 }} />
 
-      <Modal 
-        visible={showContactModal} 
+      <Modal
+        visible={showContactModal}
         onDismiss={() => setShowContactModal(false)}
-        overlayBackgroundColor="rgba(0,0,0,0.2)"
+        overlayBackgroundColor={Colors.overlay}
       >
         <Card backgroundColor={Colors.card} padding-s6 style={{ minWidth: 320, width: '90%' }}>
-            <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary }}>{t('contact.title')}</Text>
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.name')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
-              value={contactForm.name}
-              onChangeText={text => setContactForm({ ...contactForm, name: text })}
-              placeholder={t('contact.namePlaceholder')}
-              placeholderTextColor="#94a3b8"
+          <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary }}>{t('contact.title')}</Text>
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.name')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.name}
+            onChangeText={text => setContactForm({ ...contactForm, name: text })}
+            placeholder={t('contact.namePlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.email')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.email}
+            onChangeText={text => setContactForm({ ...contactForm, email: text })}
+            placeholder={t('contact.emailPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.subject')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.subject}
+            onChangeText={text => setContactForm({ ...contactForm, subject: text })}
+            placeholder={t('contact.subjectPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.content')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.content}
+            onChangeText={text => setContactForm({ ...contactForm, content: text })}
+            placeholder={t('contact.contentPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+            multiline
+          />
+          <View row style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
+            <Button
+              label={t('contact.send')}
+              backgroundColor="primary"
+              flex
+              style={{ marginLeft: 8 }}
+              onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
             />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.email')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
-              value={contactForm.email}
-              onChangeText={text => setContactForm({ ...contactForm, email: text })}
-              placeholder={t('contact.emailPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              keyboardType="email-address"
-              autoCapitalize="none"
+            <Button
+              label={t('common.cancel')}
+              backgroundColor={Colors.card}
+              color="primary"
+              flex
+              onPress={() => setShowContactModal(false)}
             />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.subject')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
-              value={contactForm.subject}
-              onChangeText={text => setContactForm({ ...contactForm, subject: text })}
-              placeholder={t('contact.subjectPlaceholder')}
-              placeholderTextColor="#94a3b8"
-            />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.content')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
-              value={contactForm.content}
-              onChangeText={text => setContactForm({ ...contactForm, content: text })}
-              placeholder={t('contact.contentPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              multiline
-            />
-            <View row style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
-              <Button
-                label={t('contact.send')}
-                backgroundColor="primary"
-                flex
-                style={{ marginLeft: 8 }}
-                onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
-              />
-              <Button
-                label={t('common.cancel')}
-                backgroundColor="#202221"
-                color="primary"
-                flex
-                onPress={() => setShowContactModal(false)}
-              />
-            </View>
-          </Card>
+          </View>
+        </Card>
       </Modal>
     </ScrollView>
   );

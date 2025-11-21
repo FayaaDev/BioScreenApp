@@ -60,7 +60,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
   ];
   return (
     <Card
-      backgroundColor="#2E3130"
+      backgroundColor={Colors.card}
       enableShadow
       elevation={3}
       style={[styles.screeningCard, { flexDirection: 'row' }]}
@@ -77,10 +77,10 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate }: {
               placement="top"
               onClose={() => setShowTip(false)}
               showChildInTooltip={false}
-              backgroundColor="rgba(0,0,0,0.2)"
+              backgroundColor={Colors.overlay}
             >
               <TouchableOpacity onPress={() => setShowTip(true)} style={{ marginStart: 8 }}>
-                <MaterialCommunityIcons name="information-outline" size={18} color="#4CCCE6" />
+                <MaterialCommunityIcons name="information-outline" size={18} color={Colors.primary} />
               </TouchableOpacity>
             </Tooltip>
           ) : null}
@@ -212,7 +212,7 @@ export default function CompletedTests() {
   // Loading and error states
   if (!userId || isLoading || isLoadingSelectedPerson) {
     return (
-      <LoaderScreen color="#4CCCE6" message={t('common.loading')} backgroundColor="#202221" />
+      <LoaderScreen color={Colors.primary} message={t('common.loading')} backgroundColor={Colors.background} />
     );
   }
 
@@ -225,24 +225,24 @@ export default function CompletedTests() {
   screenings = [];
 
   return (
-    <ScrollView 
+    <ScrollView
       key={refreshKey}
-      style={{ flex: 1, backgroundColor: Colors.background }} 
-      contentContainerStyle={{ paddingBottom: 32 }} 
+      style={{ flex: 1, backgroundColor: Colors.background }}
+      contentContainerStyle={{ paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#4CCCE6']} // Android
-          tintColor="#4CCCE6" // iOS
+          colors={[Colors.primary]} // Android
+          tintColor={Colors.primary} // iOS
           title={t('common.refreshing')} // iOS
-          titleColor="#4CCCE6" // iOS
+          titleColor={Colors.primary} // iOS
         />
       }
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
+        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
         style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
       >
         <View
@@ -260,9 +260,8 @@ export default function CompletedTests() {
                 : t('home.screeningsFor', { name: currentPersonName })}
             </Text>
             <Text style={styles.headerSubtitle}>
-              {`${t('profile.age')}: ${currentPersonAge} • ${
-                currentPersonGender === 'male' ? t('common.male') : t('common.female')
-              }`}
+              {`${t('profile.age')}: ${currentPersonAge} • ${currentPersonGender === 'male' ? t('common.male') : t('common.female')
+                }`}
             </Text>
           </View>
         </View>
@@ -307,7 +306,7 @@ export default function CompletedTests() {
                 style={[
                   styles.familyButtonText,
                   selectedPersonId === member.id.toString() &&
-                    styles.familyButtonSelectedText,
+                  styles.familyButtonSelectedText,
                 ]}
               >
                 {member.name}
@@ -361,7 +360,7 @@ const styles = {
     alignItems: 'flex-start' as const,
   },
   headerTitle: {
-    color: Colors.white,
+    color: Colors.text,
     fontSize: 22,
     fontWeight: 'bold' as const,
     marginBottom: 2,
@@ -393,13 +392,13 @@ const styles = {
   screeningTitle: {
     fontSize: 16,
     fontWeight: 'bold' as const,
-    color: Colors.white,
+    color: Colors.text,
     marginBottom: 4,
     fontFamily: 'ReadexPro-Bold',
   },
-  screeningStatus: { fontSize: 14, color: Colors.white, fontFamily: 'ReadexPro' },
+  screeningStatus: { fontSize: 14, color: Colors.textSecondary, fontFamily: 'ReadexPro' },
   actionButton: {
-    backgroundcolor: Colors.error,
+    backgroundColor: Colors.error,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -423,11 +422,11 @@ const styles = {
     bordercolor: Colors.primary,
   },
   familyButtonSelected: {
-    backgroundcolor: Colors.primary,
-    bordercolor: Colors.primary,
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   familyButtonText: {
-    color: Colors.white,
+    color: Colors.text,
     fontWeight: 'bold' as const,
     fontFamily: 'ReadexPro-Bold',
   },
@@ -435,4 +434,3 @@ const styles = {
     color: Colors.white,
   },
 };
- 

@@ -79,7 +79,7 @@ const ArabicButton = ({
     <Text
       style={{
         fontFamily: 'ReadexPro-Bold',
-        color: isSelected ? '#fff' : Colors.textSecondary,
+        color: isSelected ? Colors.white : Colors.textSecondary,
         writingDirection: 'rtl',
         fontSize: 15,
         lineHeight: 24,
@@ -487,7 +487,7 @@ export function FamilyManagement({
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : Colors.primary + '33', // 20% opacity
+            backgroundColor: isSelected ? Colors.white + '33' : Colors.primary + '33', // 20% opacity
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 10,
@@ -595,7 +595,7 @@ export function FamilyManagement({
       <Modal
         visible={isModalOpen}
         onDismiss={() => setIsModalOpen(false)}
-        overlayBackgroundColor="rgba(0,0,0,0.5)"
+        overlayBackgroundColor={Colors.overlay}
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -671,7 +671,7 @@ export function FamilyManagement({
                           <MaterialIcons
                             name="male"
                             size={20}
-                            color={formData.gender === 'male' ? Colors.white : '#888'}
+                            color={formData.gender === 'male' ? Colors.white : Colors.textSecondary}
                           />
                         }
                       />
@@ -688,7 +688,7 @@ export function FamilyManagement({
                           <MaterialIcons
                             name="female"
                             size={20}
-                            color={formData.gender === 'female' ? Colors.white : '#888'}
+                            color={formData.gender === 'female' ? Colors.white : Colors.textSecondary}
                           />
                         }
                       />
@@ -733,7 +733,7 @@ export function FamilyManagement({
                         animationType="fade"
                         onRequestClose={() => setShowDatePicker(false)}
                       >
-                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}>
                           <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                             <DateTimePicker
                               value={tempDate || new Date()}

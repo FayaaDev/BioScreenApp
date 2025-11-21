@@ -33,7 +33,7 @@ export default function Profile() {
     gender: "",
   });
   const [showAgreement, setShowAgreement] = useState(false);
-  const isRTL = i18n.language === "ar";
+  const isRTL = i18n.language.startsWith("ar");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -178,25 +178,25 @@ export default function Profile() {
             <TouchableOpacity onPress={handleToggleTheme}>
               <MaterialIcons name={isDark ? "light-mode" : "dark-mode"} size={28} color={Colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsEditing(true)}>
+            <TouchableOpacity onPress={() => router.push("/onboarding")}>
               <MaterialIcons name="edit" size={28} color={Colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
               <MaterialIcons name="language" size={28} color={Colors.primary} />
             </TouchableOpacity>
           </View>
-          <Text
-            text60
-            center
-            marginB-s4
-            style={{
-              fontFamily: 'ReadexPro-Bold',
-              lineHeight: 30,
-              color: Colors.text,
-            }}
-          >
-            {t("profile.title")}
-          </Text>
+          <View style={{ alignItems: 'flex-start', width: '100%', marginBottom: 16 }}>
+            <Text
+              text60
+              style={{
+                fontFamily: 'ReadexPro-Bold',
+                lineHeight: 30,
+                color: Colors.text,
+              }}
+            >
+              {t("profile.title")}
+            </Text>
+          </View>
           <View style={{ gap: 16 }}>
             <View style={{ gap: 8 }}>
               <Text text70 center style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text }}>{t("profile.dateOfBirth")}</Text>
@@ -240,7 +240,7 @@ export default function Profile() {
                       animationType="fade"
                       onRequestClose={() => setShowDatePicker(false)}
                     >
-                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}>
                         <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                           <DateTimePicker
                             value={tempDate || new Date()}
@@ -335,7 +335,7 @@ export default function Profile() {
                   <Text
                     style={{
                       fontFamily: 'ReadexPro-Bold',
-                      color: formData.gender === "male" ? '#fff' : Colors.textSecondary,
+                      color: formData.gender === "male" ? Colors.white : Colors.textSecondary,
                       writingDirection: 'rtl',
                       fontSize: 15,
                       lineHeight: 24,
@@ -374,7 +374,7 @@ export default function Profile() {
                   <Text
                     style={{
                       fontFamily: 'ReadexPro-Bold',
-                      color: formData.gender === "female" ? '#fff' : Colors.textSecondary,
+                      color: formData.gender === "female" ? Colors.white : Colors.textSecondary,
                       writingDirection: 'rtl',
                       fontSize: 15,
                       lineHeight: 24,
@@ -426,7 +426,7 @@ export default function Profile() {
             paddingV-s5
             borderRadius={200}
             marginB-s3
-            labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            labelStyle={{ color: Colors.white, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
             onPress={handleSignOut}
           />
           <Button
@@ -434,7 +434,7 @@ export default function Profile() {
             backgroundColor={Colors.primary}
             paddingV-s5
             borderRadius={200}
-            labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            labelStyle={{ color: Colors.white, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
             onPress={() => setShowAgreement(true)}
           />
         </Card>
@@ -443,7 +443,7 @@ export default function Profile() {
         <Modal
           visible={showLanguageModal}
           onDismiss={() => setShowLanguageModal(false)}
-          overlayBackgroundColor="rgba(0,0,0,0.7)"
+          overlayBackgroundColor={Colors.overlay}
         >
           <View flex center>
             <Card
@@ -524,7 +524,7 @@ export default function Profile() {
         <Modal
           visible={showAgreement}
           onDismiss={() => setShowAgreement(false)}
-          overlayBackgroundColor="rgba(0,0,0,0.2)"
+          overlayBackgroundColor={Colors.overlay}
         >
           <View flex center padding-s6 backgroundColor={Colors.background}>
             <ScrollView

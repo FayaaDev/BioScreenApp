@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoaderScreen } from 'react-native-ui-lib';
+import { LoaderScreen, Colors } from 'react-native-ui-lib';
 
 // RTL initialization is now handled in _layout.tsx after language is loaded
 
@@ -19,6 +19,6 @@ export default function Index() {
   }, []);
 
   return (
-    <LoaderScreen color="#4CCCE6" />
+    <LoaderScreen color={Colors.primary} />
   );
 } 
