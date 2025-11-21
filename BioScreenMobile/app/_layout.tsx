@@ -93,7 +93,7 @@ function RootLayoutContent() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
-          <StatusBar style={isDark ? "light" : "dark"} />
+          <StatusBar style="light" />
           <Toast config={toastConfig} />
         </SelectedPersonProvider>
       </QueryClientProvider>
