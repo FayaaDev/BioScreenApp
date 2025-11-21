@@ -342,7 +342,7 @@ export default function Onboarding() {
 
           <View>
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>الجنس</Text>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>الجنس</Text>
               <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
                 <ArabicButton
                   label="ذكر"
@@ -388,7 +388,7 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>تاريخ الميلاد</Text>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>تاريخ الميلاد</Text>
               <TouchableOpacity
                 style={{
                   height: 48,
@@ -498,7 +498,7 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
                 الطول: {formData.height || '140'} سم
               </Text>
               <Slider
@@ -521,7 +521,7 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text bodySmall dark10 right marginB-s2>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
                 الوزن: {formData.weight || '60'} كجم
               </Text>
               <Slider
@@ -545,7 +545,20 @@ export default function Onboarding() {
 
             {/* BMI Display */}
             {formData.height && formData.weight && (
-              <View style={{ backgroundColor: Colors.card, padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: Colors.primary, alignItems: 'center' }}>
+              <Card
+                backgroundColor={Colors.card}
+                enableShadow
+                elevation={5}
+                style={{
+                  padding: 16,
+                  borderRadius: 12,
+                  borderRightWidth: 4,
+                  borderRightColor: Colors.primary,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: Colors.primary + '20',
+                }}
+              >
                 <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
                 <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                   {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
@@ -553,11 +566,11 @@ export default function Onboarding() {
                 <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, textAlign: 'center' }}>
                   {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
                 </Text>
-              </View>
+              </Card>
             )}
 
             {/* Medical Survey Section */}
-            <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+            <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: Colors.textSecondary + '40' }}>
               <ArabicText
                 h3
                 zimam-primary
@@ -574,21 +587,21 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall dark10 right marginB-s2>نمط الحياة</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>نمط الحياة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['قلة النشاط البدني', 'تدخين التبغ'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall dark10 right marginB-s2>الحالات المزمنة</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات المزمنة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall dark10 right marginB-s2>الحالات الأخرى</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات الأخرى</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map(renderConditionChip)}
                 {formData.gender === 'female' && (
@@ -663,7 +676,7 @@ export default function Onboarding() {
                   paddingVertical: 4,
                 }}
               />
-              <Text bodySmall grey40 right marginT-s1 style={{ lineHeight: 18, paddingVertical: 2 }}>
+              <Text bodySmall right marginT-s1 style={{ color: Colors.textSecondary, lineHeight: 18, paddingVertical: 2 }}>
                 يمكنك تعديل أو مسح البيانات في أي وقت
               </Text>
             </View>

@@ -515,7 +515,7 @@ export function FamilyManagement({
           contentContainerStyle={{ gap: 12 }}
         >
           {!familyMembers || !Array.isArray(familyMembers) || familyMembers.length === 0 ? (
-            <Text center grey40 text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
+            <Text center textSecondary text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
           ) : (
             familyMembers.map((member: FamilyMember) => (
               <View key={member.id} style={styles.memberRow as any}>
@@ -617,7 +617,7 @@ export function FamilyManagement({
                   <Text h3 zimam-primary center marginB-s2>
                     {editingMember ? t("family.editMember") : t("family.addMember")}
                   </Text>
-                  <Text body grey40 center>
+                  <Text body textSecondary center>
                     {t("family.addMemberDescription")}
                   </Text>
                 </View>
@@ -625,7 +625,7 @@ export function FamilyManagement({
                 <View>
                   {/* Relationship Field */}
                   <View marginB-s4>
-                    <Text bodySmall dark10 right marginB-s2>العلاقة</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>العلاقة</Text>
                     <TextField
                       style={{
                         height: 48,
@@ -656,7 +656,7 @@ export function FamilyManagement({
 
                   {/* Gender */}
                   <View marginB-s4>
-                    <Text bodySmall dark10 right marginB-s2>الجنس</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>الجنس</Text>
                     <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
                       <ArabicButton
                         label={t("common.male")}
@@ -700,7 +700,7 @@ export function FamilyManagement({
 
                   {/* Date of Birth */}
                   <View marginB-s4>
-                    <Text bodySmall dark10 right marginB-s2>تاريخ الميلاد</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>تاريخ الميلاد</Text>
                     <TouchableOpacity
                       style={{
                         height: 48,
@@ -813,7 +813,7 @@ export function FamilyManagement({
 
                   {/* Height */}
                   <View marginB-s4>
-                    <Text bodySmall dark10 right marginB-s2>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
                       الطول: {formData.height || '140'} سم
                     </Text>
                     <Slider
@@ -837,7 +837,7 @@ export function FamilyManagement({
 
                   {/* Weight */}
                   <View marginB-s4>
-                    <Text bodySmall dark10 right marginB-s2>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
                       {t("family.weight")}: {formData.weight || '60'} كجم
                     </Text>
                     <Slider
@@ -893,27 +893,27 @@ export function FamilyManagement({
                     >
                       الاستبيان الطبي
                     </ArabicText>
-                    <Text body grey40 center marginT-s2>
+                    <Text body textSecondary center marginT-s2>
                       اختر ما ينطبق على فرد العائلة من الحالات التالية
                     </Text>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall dark10 right marginB-s2>نمط الحياة</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>نمط الحياة</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall dark10 right marginB-s2>الحالات المزمنة</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات المزمنة</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall dark10 right marginB-s2>الحالات الأخرى</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات الأخرى</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => renderConditionChip(condition))}
                       {formData.gender === 'female' && (
