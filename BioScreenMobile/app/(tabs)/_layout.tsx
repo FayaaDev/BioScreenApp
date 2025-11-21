@@ -4,14 +4,14 @@ import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { Colors } from "react-native-ui-lib";
 
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -36,19 +36,20 @@ export default function TabLayout() {
     <Tabs
       key={refreshKey}
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textSecondary,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            backgroundColor: "#171918",
-            borderTopColor: "#171918",
+            backgroundColor: Colors.card,
+            borderTopColor: Colors.card,
           },
           default: {
-            backgroundColor: "#171918",
-            borderTopColor: "#171918",
+            backgroundColor: Colors.card,
+            borderTopColor: Colors.card,
           },
         }),
       }}

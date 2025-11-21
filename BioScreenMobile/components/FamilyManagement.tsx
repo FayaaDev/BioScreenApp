@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Slider, Chip } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Slider, Chip, Colors } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../hooks/useToast";
@@ -37,17 +37,17 @@ const ArabicText = ({ children, style, ...props }: any) => (
 );
 
 // Reusable Arabic Button Component
-const ArabicButton = ({ 
-  label, 
-  isSelected, 
-  onPress, 
-  icon, 
+const ArabicButton = ({
+  label,
+  isSelected,
+  onPress,
+  icon,
   disabled = false,
   style = {}
-}: { 
-  label: string; 
-  isSelected: boolean; 
-  onPress: () => void; 
+}: {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
   icon?: React.ReactNode;
   disabled?: boolean;
   style?: any;
@@ -57,8 +57,8 @@ const ArabicButton = ({
       flex: 1,
       minHeight: 56,
       borderWidth: 2,
-      borderColor: isSelected ? '#045468' : '#555',
-      backgroundColor: isSelected ? '#045468' : '#2E3130',
+      borderColor: isSelected ? Colors.primary : Colors.textSecondary,
+      backgroundColor: isSelected ? Colors.primary : Colors.card,
       borderRadius: 20,
       paddingVertical: 16,
       paddingHorizontal: 16,
@@ -67,7 +67,7 @@ const ArabicButton = ({
       flexDirection: 'row',
       gap: 8,
       elevation: isSelected ? 4 : 0,
-      shadowColor: isSelected ? '#045468' : 'transparent',
+      shadowColor: isSelected ? Colors.primary : 'transparent',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
@@ -79,7 +79,7 @@ const ArabicButton = ({
     <Text
       style={{
         fontFamily: 'ReadexPro-Bold',
-        color: isSelected ? '#fff' : '#888',
+        color: isSelected ? '#fff' : Colors.textSecondary,
         writingDirection: 'rtl',
         fontSize: 15,
         lineHeight: 24,
@@ -126,7 +126,7 @@ export function FamilyManagement({
   onSwitchPerson?: (id: string) => void;
 }) {
   const insets = useSafeAreaInsets();
-  
+
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
@@ -363,7 +363,7 @@ export function FamilyManagement({
 
   const handleEdit = (member: FamilyMember) => {
     setEditingMember(member);
-    
+
     // Convert legacy fields to medical conditions array
     const conditions: string[] = member.medicalConditions || [];
     if (member.isDiabetic && !conditions.includes('داء السكري')) {
@@ -378,7 +378,7 @@ export function FamilyManagement({
     if (member.isSmoker && !conditions.includes('تدخين التبغ')) {
       conditions.push('تدخين التبغ');
     }
-    
+
     setFormData({
       relationship: member.relationship,
       gender: member.gender,
@@ -435,7 +435,7 @@ export function FamilyManagement({
 
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
-    
+
     return (
       <View key={condition} style={{ position: 'relative' }}>
         <Chip
@@ -449,10 +449,10 @@ export function FamilyManagement({
                 : [...formData.medicalConditions, condition]
             });
           }}
-          backgroundColor={isSelected ? '#045468' : '#2E3130'}
+          backgroundColor={isSelected ? Colors.primary : Colors.card}
           labelStyle={{
             fontFamily: 'ReadexPro-Bold',
-            color: isSelected ? '#fff' : '#888',
+            color: isSelected ? '#fff' : Colors.textSecondary,
             fontSize: 16,
             lineHeight: 24,
             includeFontPadding: false,
@@ -461,12 +461,12 @@ export function FamilyManagement({
           }}
           containerStyle={{
             borderWidth: 2,
-            borderColor: isSelected ? '#045468' : '#555',
+            borderColor: isSelected ? Colors.primary : Colors.textSecondary,
             paddingVertical: 10,
             paddingHorizontal: 16,
             borderRadius: 24,
             elevation: isSelected ? 4 : 0,
-            shadowColor: isSelected ? '#045468' : 'transparent',
+            shadowColor: isSelected ? Colors.primary : 'transparent',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
@@ -487,7 +487,7 @@ export function FamilyManagement({
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(76,204,230,0.2)',
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : Colors.primary + '33', // 20% opacity
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 10,
@@ -497,7 +497,7 @@ export function FamilyManagement({
           <MaterialIcons
             name="info-outline"
             size={16}
-            color={isSelected ? '#fff' : '#4CCCE6'}
+            color={isSelected ? '#fff' : Colors.primary}
           />
         </TouchableOpacity>
       </View>
@@ -506,9 +506,9 @@ export function FamilyManagement({
 
   return (
     <>
-      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: '#fff' }}>{t("family.title")}</Text>
+      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: Colors.text }}>{t("family.title")}</Text>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#4CCCE6" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       ) : (
         <ScrollView
           style={{ maxHeight: 300 }}
@@ -558,7 +558,7 @@ export function FamilyManagement({
       )}
       <Button
         label={t("family.addMember")}
-        backgroundColor="#045468"
+        backgroundColor={Colors.primary}
         marginT-s4
         paddingV-s5
         borderRadius={200}
@@ -612,7 +612,7 @@ export function FamilyManagement({
               contentContainerStyle={styles.modalContent as any}
               showsVerticalScrollIndicator={false}
             >
-              <Card padding-s5 backgroundColor="#202221" br40 style={{ width: '100%' }}>
+              <Card padding-s5 backgroundColor={Colors.card} br40 style={{ width: '100%' }}>
                 <View center marginB-s4>
                   <Text h3 zimam-primary center marginB-s2>
                     {editingMember ? t("family.editMember") : t("family.addMember")}
@@ -630,17 +630,17 @@ export function FamilyManagement({
                       style={{
                         height: 48,
                         borderWidth: 1,
-                        borderColor: validationErrors.relationship ? '#ef4444' : '#555',
+                        borderColor: validationErrors.relationship ? Colors.error : Colors.textSecondary,
                         borderRadius: 8,
-                        backgroundColor: '#202221',
+                        backgroundColor: Colors.card,
                         paddingHorizontal: 16,
                         fontSize: 16,
-                        color: '#ECEDEE',
+                        color: Colors.text,
                         fontFamily: 'ReadexPro',
                         textAlign: 'right',
                       }}
                       placeholder={t("family.relationship")}
-                      placeholderTextColor="#888"
+                      placeholderTextColor={Colors.textSecondary}
                       value={formData.relationship}
                       onChangeText={(text) => {
                         setFormData({ ...formData, relationship: text });
@@ -705,9 +705,9 @@ export function FamilyManagement({
                       style={{
                         height: 48,
                         borderWidth: 1,
-                        borderColor: validationErrors.dateOfBirth ? '#ef4444' : '#555',
+                        borderColor: validationErrors.dateOfBirth ? Colors.error : Colors.textSecondary,
                         borderRadius: 8,
-                        backgroundColor: '#202221',
+                        backgroundColor: Colors.card,
                         justifyContent: 'center',
                         paddingHorizontal: 16,
                       }}
@@ -716,17 +716,17 @@ export function FamilyManagement({
                         setShowDatePicker(true);
                       }}
                     >
-                      <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
+                      <Text style={{ color: formData.dateOfBirth ? Colors.text : Colors.textSecondary, textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
                         {formData.dateOfBirth
                           ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
                           : 'اختر تاريخ الميلاد'}
                       </Text>
                     </TouchableOpacity>
-                    {showDatePicker && (
+                    {showDatePicker && Platform.OS === 'ios' && (
                       <Modal
                         visible={showDatePicker}
                         transparent={true}
@@ -734,34 +734,34 @@ export function FamilyManagement({
                         onRequestClose={() => setShowDatePicker(false)}
                       >
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                          <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
+                          <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                             <DateTimePicker
                               value={tempDate || new Date()}
                               mode="date"
-                              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                              display="spinner"
                               onChange={(event, selectedDate) => {
                                 setTempDate(selectedDate || tempDate);
                               }}
                               maximumDate={new Date()}
                               minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                               style={{ width: '100%' }}
-                              textColor="#FFFFFF"
+                              textColor={Colors.text}
                               themeVariant="dark"
                             />
                             <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
                               <Button
                                 label="إلغاء"
-                                backgroundColor="#202221"
+                                backgroundColor={Colors.background}
                                 style={{ flex: 1, paddingVertical: 12 }}
                                 onPress={() => {
                                   setShowDatePicker(false);
                                   setTempDate(null);
                                 }}
-                                labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                                labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
                               />
                               <Button
                                 label="تأكيد"
-                                backgroundColor="#4CCCE6"
+                                backgroundColor={Colors.primary}
                                 style={{ flex: 1, paddingVertical: 12 }}
                                 onPress={() => {
                                   if (tempDate) {
@@ -781,6 +781,30 @@ export function FamilyManagement({
                           </View>
                         </View>
                       </Modal>
+                    )}
+                    {showDatePicker && Platform.OS === 'android' && (
+                      <DateTimePicker
+                        value={tempDate || new Date()}
+                        mode="date"
+                        display="default"
+                        onChange={(event, selectedDate) => {
+                          setShowDatePicker(false);
+                          if (event.type === 'set' && selectedDate) {
+                            setFormData({
+                              ...formData,
+                              dateOfBirth: selectedDate.toISOString().split('T')[0],
+                            });
+                            if (validationErrors.dateOfBirth) {
+                              setValidationErrors({ ...validationErrors, dateOfBirth: '' });
+                            }
+                          }
+                        }}
+                        maximumDate={new Date()}
+                        minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                        themeVariant="dark"
+                        positiveButton={{ label: 'موافق', textColor: '#4CCCE6' }}
+                        negativeButton={{ label: 'إلغاء', textColor: '#ef4444' }}
+                      />
                     )}
                     {submitAttempted && validationErrors.dateOfBirth && (
                       <Text error caption marginT-s1>{validationErrors.dateOfBirth}</Text>
@@ -803,67 +827,67 @@ export function FamilyManagement({
                           setValidationErrors({ ...validationErrors, height: '' });
                         }
                       }}
-                      thumbTintColor={formData.height ? "#045468" : "#555"}
-                      minimumTrackTintColor={formData.height ? "#045468" : "#555"}
-                    maximumTrackTintColor="#555"
-                    containerStyle={{ marginBottom: 8 }}
-                  />
-                  {validationErrors.height && <Text error caption marginT-s1>{validationErrors.height}</Text>}
-                </View>
+                      thumbTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                      minimumTrackTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                      maximumTrackTintColor={Colors.textSecondary}
+                      containerStyle={{ marginBottom: 8 }}
+                    />
+                    {validationErrors.height && <Text error caption marginT-s1>{validationErrors.height}</Text>}
+                  </View>
 
-                {/* Weight */}
-                <View marginB-s4>
-                  <Text bodySmall dark10 right marginB-s2>
-                    {t("family.weight")}: {formData.weight || '60'} كجم
-                  </Text>
-                  <Slider
-                    value={parseFloat(formData.weight) || 60}
-                    minimumValue={30}
-                    maximumValue={200}
-                    step={1}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, weight: value.toString() });
-                      if (validationErrors.weight) {
-                        setValidationErrors({ ...validationErrors, weight: '' });
-                      }
-                    }}
-                    thumbTintColor={formData.weight ? "#045468" : "#555"}
-                    minimumTrackTintColor={formData.weight ? "#045468" : "#555"}
-                    maximumTrackTintColor="#555"
-                    containerStyle={{ marginBottom: 8 }}
-                  />
-                  {validationErrors.weight && <Text error caption marginT-s1>{validationErrors.weight}</Text>}
-                </View>
+                  {/* Weight */}
+                  <View marginB-s4>
+                    <Text bodySmall dark10 right marginB-s2>
+                      {t("family.weight")}: {formData.weight || '60'} كجم
+                    </Text>
+                    <Slider
+                      value={parseFloat(formData.weight) || 60}
+                      minimumValue={30}
+                      maximumValue={200}
+                      step={1}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, weight: value.toString() });
+                        if (validationErrors.weight) {
+                          setValidationErrors({ ...validationErrors, weight: '' });
+                        }
+                      }}
+                      thumbTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                      minimumTrackTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                      maximumTrackTintColor={Colors.textSecondary}
+                      containerStyle={{ marginBottom: 8 }}
+                    />
+                    {validationErrors.weight && <Text error caption marginT-s1>{validationErrors.weight}</Text>}
+                  </View>
 
-                {formData.height &&
-                  formData.weight &&
-                  calculateBMI(formData.height, formData.weight) && (
-                    <View style={{
-                      backgroundColor: '#1A4D5C',
-                      borderRadius: 16,
-                      padding: 16,
-                      marginTop: 12,
-                      alignItems: 'center',
-                    }}>
-                      <Text style={{ color: '#4CCCE6', fontFamily: 'ReadexPro-Bold', fontSize: 16, marginBottom: 8 }}>
-                        {t("family.bmi")}
-                      </Text>
-                      <Text style={{ color: '#4CCCE6', fontFamily: 'ReadexPro-Bold', fontSize: 32, marginBottom: 4 }}>
-                        {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
-                      </Text>
-                      <Text style={{ color: '#ECEDEE', fontSize: 14, fontFamily: 'ReadexPro' }}>
-                        {getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}
-                      </Text>
-                    </View>
-                  )}
+                  {formData.height &&
+                    formData.weight &&
+                    calculateBMI(formData.height, formData.weight) && (
+                      <View style={{
+                        backgroundColor: Colors.card,
+                        borderRadius: 16,
+                        padding: 16,
+                        marginTop: 12,
+                        alignItems: 'center',
+                      }}>
+                        <Text style={{ color: Colors.primary, fontFamily: 'ReadexPro-Bold', fontSize: 16, marginBottom: 8 }}>
+                          {t("family.bmi")}
+                        </Text>
+                        <Text style={{ color: Colors.primary, fontFamily: 'ReadexPro-Bold', fontSize: 32, marginBottom: 4 }}>
+                          {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
+                        </Text>
+                        <Text style={{ color: Colors.text, fontSize: 14, fontFamily: 'ReadexPro' }}>
+                          {getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}
+                        </Text>
+                      </View>
+                    )}
 
                   {/* Medical Survey Section */}
                   <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#555' }}>
-                    <ArabicText 
-                      h3 
-                      zimam-primary 
-                      center 
-                      style={{ 
+                    <ArabicText
+                      h3
+                      zimam-primary
+                      center
+                      style={{
                         paddingVertical: 4
                       }}
                     >
@@ -901,11 +925,11 @@ export function FamilyManagement({
                     </View>
                   </View>
 
-              {/* Action Buttons */}
+                  {/* Action Buttons */}
                   <View row center style={{ gap: 12, marginTop: 24 }}>
                     <Button
                       label={editingMember ? t("common.save") : t("family.add")}
-                      backgroundColor="#045468"
+                      backgroundColor={Colors.primary}
                       style={{ flex: 1 }}
                       paddingV-16
                       borderRadius={200}
@@ -914,7 +938,7 @@ export function FamilyManagement({
                     />
                     <Button
                       label={t("common.cancel")}
-                      backgroundColor="#ef4444"
+                      backgroundColor={Colors.error}
                       style={{ flex: 1 }}
                       paddingV-16
                       borderRadius={200}
@@ -932,7 +956,7 @@ export function FamilyManagement({
 
             {/* Condition Info Modal - Positioned relative to screen, not scroll content */}
             {selectedInfoCondition && (
-              <View style={{ 
+              <View style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -943,22 +967,22 @@ export function FamilyManagement({
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 zIndex: 9999,
               }}>
-                <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400, margin: 16 }}>
+                <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400, margin: 16 }}>
                   <TouchableOpacity
                     style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}
                     onPress={() => setSelectedInfoCondition(null)}
                   >
-                    <MaterialIcons name="close" size={24} color="#888" />
+                    <MaterialIcons name="close" size={24} color={Colors.textSecondary} />
                   </TouchableOpacity>
-                  <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', marginBottom: 16, textAlign: 'center', marginTop: 12 }}>
+                  <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.primary, marginBottom: 16, textAlign: 'center', marginTop: 12 }}>
                     {selectedInfoCondition}
                   </Text>
-                  <Text style={{ fontSize: 15, fontFamily: 'ReadexPro', color: '#ECEDEE', lineHeight: 24, textAlign: 'center' }}>
+                  <Text style={{ fontSize: 15, fontFamily: 'ReadexPro', color: Colors.text, lineHeight: 24, textAlign: 'center' }}>
                     {conditionExplanations[selectedInfoCondition]}
                   </Text>
                   <Button
                     label="فهمت"
-                    backgroundColor="#045468"
+                    backgroundColor={Colors.primary}
                     paddingV-s4
                     marginT-s4
                     onPress={() => setSelectedInfoCondition(null)}
@@ -977,7 +1001,7 @@ export function FamilyManagement({
 
 const styles = {
   card: {
-    backgroundColor: "#2E3130",
+    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -990,14 +1014,14 @@ const styles = {
   title: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#4CCCE6",
+    color: Colors.primary,
     marginBottom: 12,
     textAlign: "center",
     fontFamily: "ReadexPro-Bold",
   },
   emptyText: {
     textAlign: "center",
-    color: "#94a3b8",
+    color: Colors.textSecondary,
     fontSize: 16,
     marginTop: 32,
     fontFamily: "ReadexPro",
@@ -1005,7 +1029,7 @@ const styles = {
   memberRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#202221",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 12,
     gap: 8,
@@ -1016,12 +1040,12 @@ const styles = {
   memberName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#4CCCE6",
+    color: Colors.primary,
     fontFamily: "ReadexPro-Bold",
   },
   memberDetails: {
     fontSize: 14,
-    color: "#94a3b8",
+    color: Colors.textSecondary,
     fontFamily: "ReadexPro",
   },
   memberActions: {
@@ -1029,7 +1053,7 @@ const styles = {
     gap: 8,
   },
   editButton: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -1040,7 +1064,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   deleteButton: {
-    backgroundColor: "#444947",
+    backgroundColor: Colors.textSecondary,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -1052,7 +1076,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   addButton: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
     borderRadius: 8,
     alignItems: "center",
     paddingVertical: 12,
@@ -1066,7 +1090,7 @@ const styles = {
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "#202221",
+    backgroundColor: Colors.background,
     paddingTop: 32,
   },
   modalContent: {
@@ -1077,7 +1101,7 @@ const styles = {
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#4CCCE6",
+    color: Colors.primary,
     marginBottom: 12,
     textAlign: "center",
     fontFamily: "ReadexPro-Bold",
@@ -1085,12 +1109,12 @@ const styles = {
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: "#555",
+    borderColor: Colors.textSecondary,
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    backgroundColor: "#2E3130",
-    color: "#ECEDEE",
+    backgroundColor: Colors.card,
+    color: Colors.text,
     // width: "100%",
     width: 250,
     marginBottom: 8,
@@ -1098,7 +1122,7 @@ const styles = {
   },
   label: {
     fontSize: 16,
-    color: "#ECEDEE",
+    color: Colors.text,
     fontWeight: "500",
     marginBottom: 4,
     alignSelf: "flex-start",
@@ -1106,7 +1130,7 @@ const styles = {
     fontFamily: "ReadexPro-Medium",
   },
   optionButton: {
-    backgroundColor: "#202221",
+    backgroundColor: Colors.card,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -1114,10 +1138,10 @@ const styles = {
     marginBottom: 4,
   },
   optionButtonSelected: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
   },
   optionButtonText: {
-    color: "#045468",
+    color: Colors.primary,
     fontWeight: "bold",
     fontFamily: "ReadexPro-Bold",
   },
@@ -1127,7 +1151,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   saveButton: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
     borderRadius: 8,
     alignItems: "center",
     paddingVertical: 12,
@@ -1140,7 +1164,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   cancelButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: Colors.error,
     borderRadius: 8,
     alignItems: "center",
     paddingVertical: 12,
@@ -1153,7 +1177,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   genderButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -1161,10 +1185,10 @@ const styles = {
     marginBottom: 4,
   },
   genderButtonSelected: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
   },
   genderButtonText: {
-    color: "#045468",
+    color: Colors.primary,
     fontWeight: "bold",
     fontFamily: "ReadexPro-Bold",
   },
@@ -1178,7 +1202,7 @@ const styles = {
   },
   questionLabel: {
     fontSize: 16,
-    color: "#ECEDEE",
+    color: Colors.text,
     fontWeight: "500",
     marginBottom: 4,
     fontFamily: "ReadexPro-Medium",
@@ -1191,18 +1215,18 @@ const styles = {
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderColor: "#045468",
+    borderColor: Colors.primary,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
   },
   yesNoButtonSelected: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
   },
   yesNoButtonText: {
     fontSize: 16,
-    color: "#045468",
+    color: Colors.primary,
     fontFamily: "ReadexPro-Bold",
   },
   yesNoButtonTextSelected: {
@@ -1212,7 +1236,7 @@ const styles = {
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#4CCCE6",
+    color: Colors.primary,
     textAlign: "center",
     alignSelf: "center",
     fontFamily: "ReadexPro-Bold",
@@ -1230,14 +1254,14 @@ const styles = {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: "#045468",
+    borderColor: Colors.primary,
     borderRadius: 4,
     alignItems: "center",
     justifyContent: "center",
   },
   checkboxLabel: {
     fontSize: 16,
-    color: "#ECEDEE",
+    color: Colors.text,
     fontFamily: "ReadexPro",
   },
   smokingDetailsContainer: {
@@ -1256,18 +1280,18 @@ const styles = {
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: "#045468",
+    borderColor: Colors.primary,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
   },
   partnerCountButtonSelected: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
   },
   partnerCountButtonText: {
     fontSize: 14,
-    color: "#045468",
+    color: Colors.primary,
     fontFamily: "ReadexPro-Bold",
   },
   partnerCountButtonTextSelected: {
@@ -1281,28 +1305,28 @@ const styles = {
     width: "100%",
   },
   bmiBox: {
-    backgroundColor: "#e6faed",
+    backgroundColor: Colors.background,
     borderRadius: 10,
     padding: 16,
     marginTop: 12,
     alignItems: "flex-start",
   },
   bmiLabel: {
-    color: "#009966",
+    color: Colors.success,
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 4,
     fontFamily: "ReadexPro-Bold",
   },
   bmiValue: {
-    color: "#009966",
+    color: Colors.success,
     fontWeight: "bold",
     fontSize: 28,
     marginBottom: 4,
     fontFamily: "ReadexPro-Bold",
   },
   bmiCategoryText: {
-    color: "#666",
+    color: Colors.textSecondary,
     fontSize: 16,
     fontFamily: "ReadexPro",
   },
@@ -1311,38 +1335,38 @@ const styles = {
     width: "100%",
   },
   packYearsText: {
-    color: "#666",
+    color: Colors.textSecondary,
     fontSize: 14,
     marginTop: 4,
     fontFamily: "ReadexPro",
   },
   packYearsBox: {
-    backgroundColor: "#fffbe6",
+    backgroundColor: Colors.background,
     borderRadius: 10,
     padding: 16,
     marginTop: 12,
     alignItems: "flex-start",
   },
   packYearsLabel: {
-    color: "#bfa100",
+    color: Colors.warning,
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 4,
     fontFamily: "ReadexPro-Bold",
   },
   packYearsValue: {
-    color: "#bfa100",
+    color: Colors.warning,
     fontWeight: "bold",
     fontSize: 28,
     marginBottom: 4,
     fontFamily: "ReadexPro-Bold",
   },
   inputError: {
-    borderColor: "#ef4444",
+    borderColor: Colors.error,
     borderWidth: 1,
   },
   errorText: {
-    color: "#ef4444",
+    color: Colors.error,
     fontSize: 12,
     marginTop: -4,
     marginBottom: 8,
@@ -1351,7 +1375,7 @@ const styles = {
     fontFamily: "ReadexPro",
   },
   warningText: {
-    color: "#f59e0b",
+    color: Colors.warning,
     fontSize: 12,
     marginTop: -4,
     marginBottom: 8,
@@ -1362,14 +1386,14 @@ const styles = {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.background,
     alignSelf: "flex-end",
     marginTop: 4,
     marginBottom: 4,
     width: "100%",
   },
   datePickerModal: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
@@ -1387,7 +1411,7 @@ const styles = {
     marginTop: 16,
   },
   confirmButton: {
-    backgroundColor: "#045468",
+    backgroundColor: Colors.primary,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,
@@ -1399,7 +1423,7 @@ const styles = {
     fontFamily: "ReadexPro-Bold",
   },
   cancelDateButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: Colors.error,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,

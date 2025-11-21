@@ -1,16 +1,16 @@
 import React from 'react';
-import { View, Text } from 'react-native-ui-lib';
+import { View, Text, Colors } from 'react-native-ui-lib';
 import { I18nManager } from 'react-native';
 
 export const toastConfig = {
   success: ({ text1, text2, props }: any) => (
-    <View 
+    <View
       br40
       padding-s4
       marginH-s4
       marginT-s4
-      backgroundColor="primary"
       style={{
+        backgroundColor: Colors.primary,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -19,10 +19,10 @@ export const toastConfig = {
         ...props?.style
       }}
     >
-      <Text 
+      <Text
         body
         color="white"
-        style={{ 
+        style={{
           fontWeight: '600',
           textAlign: I18nManager.isRTL ? 'right' : 'left',
           ...props?.text1Style
@@ -31,11 +31,11 @@ export const toastConfig = {
         {text1}
       </Text>
       {text2 && (
-        <Text 
+        <Text
           bodySmall
           color="white"
           marginT-4
-          style={{ 
+          style={{
             textAlign: I18nManager.isRTL ? 'right' : 'left',
             ...props?.text2Style
           }}
@@ -46,13 +46,13 @@ export const toastConfig = {
     </View>
   ),
   error: ({ text1, text2, props }: any) => (
-    <View 
+    <View
       br40
       padding-s4
       marginH-s4
       marginT-s4
-      backgroundColor="error"
       style={{
+        backgroundColor: Colors.error,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -61,10 +61,10 @@ export const toastConfig = {
         ...props?.style
       }}
     >
-      <Text 
+      <Text
         body
         color="white"
-        style={{ 
+        style={{
           fontWeight: '600',
           textAlign: I18nManager.isRTL ? 'right' : 'left',
           ...props?.text1Style
@@ -73,11 +73,11 @@ export const toastConfig = {
         {text1}
       </Text>
       {text2 && (
-        <Text 
+        <Text
           bodySmall
           color="white"
           marginT-4
-          style={{ 
+          style={{
             textAlign: I18nManager.isRTL ? 'right' : 'left',
             ...props?.text2Style
           }}
@@ -88,13 +88,13 @@ export const toastConfig = {
     </View>
   ),
   info: ({ text1, text2, props }: any) => (
-    <View 
+    <View
       br40
       padding-s4
       marginH-s4
       marginT-s4
-      backgroundColor="info"
       style={{
+        backgroundColor: Colors.info,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -103,10 +103,10 @@ export const toastConfig = {
         ...props?.style
       }}
     >
-      <Text 
+      <Text
         body
         color="white"
-        style={{ 
+        style={{
           fontWeight: '600',
           textAlign: I18nManager.isRTL ? 'right' : 'left',
           ...props?.text1Style
@@ -115,11 +115,11 @@ export const toastConfig = {
         {text1}
       </Text>
       {text2 && (
-        <Text 
+        <Text
           bodySmall
           color="white"
           marginT-4
-          style={{ 
+          style={{
             textAlign: I18nManager.isRTL ? 'right' : 'left',
             ...props?.text2Style
           }}

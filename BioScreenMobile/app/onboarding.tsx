@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
-import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker, Colors } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
 import { useToast } from '../hooks/useToast';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -33,17 +33,17 @@ const ArabicText = ({ children, style, ...props }: any) => (
 );
 
 // Reusable Arabic Button Component
-const ArabicButton = ({ 
-  label, 
-  isSelected, 
-  onPress, 
-  icon, 
+const ArabicButton = ({
+  label,
+  isSelected,
+  onPress,
+  icon,
   disabled = false,
   style = {}
-}: { 
-  label: string; 
-  isSelected: boolean; 
-  onPress: () => void; 
+}: {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
   icon?: React.ReactNode;
   disabled?: boolean;
   style?: any;
@@ -53,8 +53,8 @@ const ArabicButton = ({
       flex: 1,
       minHeight: 56,
       borderWidth: 2,
-      borderColor: isSelected ? '#045468' : '#555',
-      backgroundColor: isSelected ? '#045468' : '#2E3130',
+      borderColor: isSelected ? Colors.primary : Colors.textSecondary,
+      backgroundColor: isSelected ? Colors.primary : Colors.card,
       borderRadius: 20,
       paddingVertical: 16,
       paddingHorizontal: 16,
@@ -63,7 +63,7 @@ const ArabicButton = ({
       flexDirection: 'row',
       gap: 8,
       elevation: isSelected ? 4 : 0,
-      shadowColor: isSelected ? '#045468' : 'transparent',
+      shadowColor: isSelected ? Colors.primary : 'transparent',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
@@ -75,7 +75,7 @@ const ArabicButton = ({
     <Text
       style={{
         fontFamily: 'ReadexPro-Bold',
-        color: isSelected ? '#fff' : '#888',
+        color: isSelected ? '#fff' : Colors.textSecondary,
         writingDirection: 'rtl',
         fontSize: 15,
         lineHeight: 24,
@@ -185,7 +185,7 @@ export default function Onboarding() {
         description: 'تم حفظ بياناتك بنجاح',
         type: 'success',
       });
-      
+
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Error saving onboarding data:', error);
@@ -258,7 +258,7 @@ export default function Onboarding() {
 
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
-    
+
     return (
       <View key={condition} style={{ position: 'relative' }}>
         <Chip
@@ -271,10 +271,10 @@ export default function Onboarding() {
                 : [...formData.medicalConditions, condition]
             });
           }}
-          backgroundColor={isSelected ? '#045468' : '#2E3130'}
+          backgroundColor={isSelected ? Colors.primary : Colors.card}
           labelStyle={{
             fontFamily: 'ReadexPro-Bold',
-            color: isSelected ? '#fff' : '#888',
+            color: isSelected ? '#fff' : Colors.textSecondary,
             fontSize: 16,
             lineHeight: 24,
             includeFontPadding: false,
@@ -283,12 +283,12 @@ export default function Onboarding() {
           }}
           containerStyle={{
             borderWidth: 2,
-            borderColor: isSelected ? '#045468' : '#555',
+            borderColor: isSelected ? Colors.primary : Colors.textSecondary,
             paddingVertical: 10,
             paddingHorizontal: 16,
             borderRadius: 24,
             elevation: isSelected ? 4 : 0,
-            shadowColor: isSelected ? '#045468' : 'transparent',
+            shadowColor: isSelected ? Colors.primary : 'transparent',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
@@ -303,7 +303,7 @@ export default function Onboarding() {
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(76,204,230,0.2)',
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : Colors.primary + '33',
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 10,
@@ -316,7 +316,7 @@ export default function Onboarding() {
           <MaterialIcons
             name="info-outline"
             size={16}
-            color={isSelected ? '#fff' : '#4CCCE6'}
+            color={isSelected ? '#fff' : Colors.primary}
           />
         </TouchableOpacity>
       </View>
@@ -332,11 +332,11 @@ export default function Onboarding() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Card padding-s5 backgroundColor="#202221" br40>
+        <Card padding-s5 backgroundColor={Colors.card} br40>
           <View center marginB-s6>
             <Text h2 zimam-primary center marginB-s2>مرحباً بك في زِمامـ</Text>
-            <Text body grey40 center>
-احصل على توصيات صحية وقائية مخصصة لك من خلال الإجابة على بعض الأسئلة السريعة حول جنسك وعمرك وحالتك الصحية
+            <Text body color={Colors.textSecondary} center>
+              احصل على توصيات صحية وقائية مخصصة لك من خلال الإجابة على بعض الأسئلة السريعة حول جنسك وعمرك وحالتك الصحية
             </Text>
           </View>
 
@@ -357,7 +357,7 @@ export default function Onboarding() {
                     <MaterialIcons
                       name="male"
                       size={20}
-                      color={formData.gender === 'male' ? '#fff' : '#888'}
+                      color={formData.gender === 'male' ? '#fff' : Colors.textSecondary}
                     />
                   }
                   disabled={isSubmitting}
@@ -376,7 +376,7 @@ export default function Onboarding() {
                     <MaterialIcons
                       name="female"
                       size={20}
-                      color={formData.gender === 'female' ? '#fff' : '#888'}
+                      color={formData.gender === 'female' ? '#fff' : Colors.textSecondary}
                     />
                   }
                   disabled={isSubmitting}
@@ -393,9 +393,9 @@ export default function Onboarding() {
                 style={{
                   height: 48,
                   borderWidth: 1,
-                  borderColor: errors.dateOfBirth ? '#ef4444' : '#555',
+                  borderColor: errors.dateOfBirth ? Colors.error : Colors.textSecondary,
                   borderRadius: 8,
-                  backgroundColor: '#202221',
+                  backgroundColor: Colors.card,
                   justifyContent: 'center',
                   paddingHorizontal: 16,
                 }}
@@ -404,13 +404,13 @@ export default function Onboarding() {
                   setShowDatePicker(true);
                 }}
               >
-                <Text style={{ color: formData.dateOfBirth ? '#ECEDEE' : '#888', textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
+                <Text style={{ color: formData.dateOfBirth ? Colors.text : Colors.textSecondary, textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
                   {formData.dateOfBirth
                     ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
                     : 'اختر تاريخ الميلاد'}
                 </Text>
               </TouchableOpacity>
@@ -422,7 +422,7 @@ export default function Onboarding() {
                   onRequestClose={() => setShowDatePicker(false)}
                 >
                   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                    <View style={{ backgroundColor: '#2E3130', borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
+                    <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
                       <DateTimePicker
                         value={tempDate || new Date()}
                         mode="date"
@@ -430,24 +430,24 @@ export default function Onboarding() {
                         onChange={handleDateChange}
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
-                        style={{ width: '100%' }}
-                        textColor="#FFFFFF"
+                        style={{ width: '100%', height: 180 }}
+                        textColor={Colors.text}
                         themeVariant="dark"
                       />
                       <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
                         <Button
                           label="إلغاء"
-                          backgroundColor="#202221"
+                          backgroundColor={Colors.background}
                           style={{ flex: 1, paddingVertical: 12 }}
                           onPress={() => {
                             setShowDatePicker(false);
                             setTempDate(null);
                           }}
-                          labelStyle={{ color: '#4CCCE6', fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                          labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
                         />
                         <Button
                           label="تأكيد"
-                          backgroundColor="#4CCCE6"
+                          backgroundColor={Colors.primary}
                           style={{ flex: 1, paddingVertical: 12 }}
                           onPress={() => {
                             if (tempDate) {
@@ -487,8 +487,8 @@ export default function Onboarding() {
                   }}
                   maximumDate={new Date()}
                   minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
-                  accentColor="#045468"
-                  textColor="#ECEDEE"
+                  positiveButton={{ label: 'موافق', textColor: Colors.primary }}
+                  negativeButton={{ label: 'إلغاء', textColor: Colors.error }}
                   themeVariant="dark"
                 />
               )}
@@ -512,9 +512,9 @@ export default function Onboarding() {
                     setErrors({ ...errors, height: undefined });
                   }
                 }}
-                thumbTintColor={formData.height ? "#045468" : "#555"}
-                minimumTrackTintColor={formData.height ? "#045468" : "#555"}
-                maximumTrackTintColor="#555"
+                thumbTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                minimumTrackTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                maximumTrackTintColor={Colors.textSecondary}
                 containerStyle={{ marginBottom: 8 }}
               />
               {errors.height && <Text error caption marginT-s1>{errors.height}</Text>}
@@ -535,9 +535,9 @@ export default function Onboarding() {
                     setErrors({ ...errors, weight: undefined });
                   }
                 }}
-                thumbTintColor={formData.weight ? "#045468" : "#555"}
-                minimumTrackTintColor={formData.weight ? "#045468" : "#555"}
-                maximumTrackTintColor="#555"
+                thumbTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                minimumTrackTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                maximumTrackTintColor={Colors.textSecondary}
                 containerStyle={{ marginBottom: 8 }}
               />
               {errors.weight && <Text error caption marginT-s1>{errors.weight}</Text>}
@@ -545,12 +545,12 @@ export default function Onboarding() {
 
             {/* BMI Display */}
             {formData.height && formData.weight && (
-              <View style={{ backgroundColor: '#2E3130', padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: '#4CCCE6', alignItems: 'center' }}>
-                <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: '#999', textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
-                <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
+              <View style={{ backgroundColor: Colors.card, padding: 16, borderRadius: 12, borderRightWidth: 4, borderRightColor: Colors.primary, alignItems: 'center' }}>
+                <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
+                <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                   {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                 </Text>
-                <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', textAlign: 'center' }}>
+                <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, textAlign: 'center' }}>
                   {getBMICategory(calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)))}
                 </Text>
               </View>
@@ -558,17 +558,17 @@ export default function Onboarding() {
 
             {/* Medical Survey Section */}
             <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-              <ArabicText 
-                h3 
-                zimam-primary 
-                center 
-                style={{ 
+              <ArabicText
+                h3
+                zimam-primary
+                center
+                style={{
                   paddingVertical: 4
                 }}
               >
                 الاستبيان الطبي
               </ArabicText>
-              <Text body grey40 center marginT-s2>
+              <Text body color={Colors.textSecondary} center marginT-s2>
                 اختر ما ينطبق عليك من الحالات التالية، أو اتركها بدون اختيار إذا لم تكن متأكدًا
               </Text>
             </View>
@@ -608,24 +608,24 @@ export default function Onboarding() {
                 animationType="fade"
                 onRequestClose={() => setSelectedInfoCondition(null)}
               >
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}
                   activeOpacity={1}
                   onPress={() => setSelectedInfoCondition(null)}
                 >
-                  <View style={{ backgroundColor: '#2E3130', borderRadius: 16, padding: 24, width: '85%', maxWidth: 400, borderWidth: 2, borderColor: '#045468' }}>
+                  <View style={{ backgroundColor: Colors.card, borderRadius: 16, padding: 24, width: '85%', maxWidth: 400, borderWidth: 2, borderColor: Colors.primary }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, gap: 12 }}>
-                      <MaterialIcons name="info" size={28} color="#4CCCE6" />
-                      <Text style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6', fontSize: 18, textAlign: 'center', lineHeight: 28 }}>
+                      <MaterialIcons name="info" size={28} color={Colors.primary} />
+                      <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, fontSize: 18, textAlign: 'center', lineHeight: 28 }}>
                         {selectedInfoCondition}
                       </Text>
                     </View>
-                    <Text style={{ fontFamily: 'ReadexPro-Medium', color: '#ECEDEE', fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 20 }}>
+                    <Text style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 20 }}>
                       {conditionExplanations[selectedInfoCondition] || 'لا توجد معلومات متاحة'}
                     </Text>
                     <Button
                       label="فهمت"
-                      backgroundColor="#045468"
+                      backgroundColor={Colors.primary}
                       paddingV-12
                       borderRadius={12}
                       onPress={() => setSelectedInfoCondition(null)}
@@ -645,19 +645,19 @@ export default function Onboarding() {
                 value={formData.saveData}
                 onValueChange={(value) => setFormData({ ...formData, saveData: value })}
                 label="  حفظ البيانات لتخطي هذا النموذج مستقبلاً"
-                color="#045468"
-                labelStyle={{ 
-                  fontFamily: 'ReadexPro-Medium', 
-                  color: '#ECEDEE', 
-                  fontSize: 14, 
+                color={Colors.primary}
+                labelStyle={{
+                  fontFamily: 'ReadexPro-Medium',
+                  color: Colors.text,
+                  fontSize: 14,
                   writingDirection: 'rtl',
                   marginLeft: 0,
                   marginRight: 8,
                   lineHeight: 22,
                   paddingVertical: 4,
                 }}
-                containerStyle={{ 
-                  flexDirection: 'row', 
+                containerStyle={{
+                  flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'flex-start',
                   paddingVertical: 4,
@@ -670,7 +670,7 @@ export default function Onboarding() {
 
             <Button
               label="حفظ البيانات"
-              backgroundColor={isSubmitting ? "#666" : "#045468"}
+              backgroundColor={isSubmitting ? Colors.textSecondary : Colors.primary}
               paddingV-16
               borderRadius={200}
               marginT-24
@@ -689,7 +689,7 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#202221',
+    backgroundColor: Colors.background,
     paddingTop: 32,
   },
   scrollContent: {
