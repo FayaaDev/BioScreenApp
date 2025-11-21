@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '../../hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
+import Colors from '../../constants/Colors';
 
 // Types
 type Screening = {

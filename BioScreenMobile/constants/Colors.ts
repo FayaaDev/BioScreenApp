@@ -172,3 +172,36 @@ export function getUILibraryColors() {
 
 export const UILibColors = getUILibraryColors();
 
+// Backwards compatibility - direct access to theme properties
+// Components should use Colors[colorScheme] pattern, but this provides fallback
+const defaultTheme = Colors.light;
+
+// Add direct property access to Colors for backwards compatibility
+Object.assign(Colors, {
+  text: defaultTheme.text,
+  background: defaultTheme.background,
+  tint: defaultTheme.tint,
+  icon: defaultTheme.icon,
+  tabIconDefault: defaultTheme.tabIconDefault,
+  tabIconSelected: defaultTheme.tabIconSelected,
+  primary: defaultTheme.primary,
+  primaryAlpha: defaultTheme.primaryAlpha,
+  primaryShades: defaultTheme.primaryShades,
+  secondary: defaultTheme.secondary,
+  secondaryShades: defaultTheme.secondaryShades,
+  card: defaultTheme.card,
+  textSecondary: defaultTheme.textSecondary,
+  gradientStart: defaultTheme.gradientStart,
+  gradientEnd: defaultTheme.gradientEnd,
+  success: defaultTheme.success,
+  error: defaultTheme.error,
+  warning: defaultTheme.warning,
+  info: defaultTheme.info,
+  white: '#ffffff',
+});
+
+// Export as default for convenience
+export default Colors;
+
+
+

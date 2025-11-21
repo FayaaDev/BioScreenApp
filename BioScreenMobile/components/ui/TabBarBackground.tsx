@@ -1,7 +1,10 @@
 import { View, StyleSheet } from 'react-native';
+import Colors from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
 
 export default function TabBarBackground() {
-  return <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.background }]} />;
+  const colorScheme = useColorScheme();
+  return <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors[colorScheme ?? 'light'].background }]} />;
 }
 
 export function useBottomTabOverflow() {

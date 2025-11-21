@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
+import Colors from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';

@@ -7,13 +7,15 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
-import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker, Colors } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
 import { useToast } from '../hooks/useToast';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { medicalStorage } from '../lib/medical-storage';
+import Colors from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 // Custom Text wrapper with proper Arabic text rendering
 const ArabicText = ({ children, style, ...props }: any) => (
@@ -117,6 +119,7 @@ interface FormErrors {
 }
 
 export default function Onboarding() {
+  const colorScheme = useColorScheme() ?? 'light';
   const router = useRouter();
   const { showToast } = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
