@@ -647,13 +647,13 @@ export default function UpcomingTests() {
   // Tabs logic
   const tabOptions = [
     { key: "all", label: t("home.tabs.all"), color: undefined },
-    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
+    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
     {
       key: "overdue",
       label: t("home.tabs.overdue"),
       color: Colors.status.overdue,
     },
-    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
+    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
   ];
 
   let filteredScreenings = screenings;

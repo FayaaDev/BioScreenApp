@@ -363,7 +363,8 @@ export default function HomeScreen() {
         </Text>
         <View row style={{ justifyContent: 'space-between', gap: 8 }}>
           <Card
-            padding-s4
+            paddingV-s4
+            paddingH-s1
             center
             backgroundColor={Colors.dashboardCardBackground}
             enableShadow
@@ -385,7 +386,7 @@ export default function HomeScreen() {
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
                 color: Colors.white,
-                fontSize: 10
+                fontSize: 9
               }}
               numberOfLines={1}
               ellipsizeMode="tail"
@@ -395,7 +396,8 @@ export default function HomeScreen() {
           </Card>
 
           <Card
-            padding-s4
+            paddingV-s4
+            paddingH-s1
             center
             backgroundColor={Colors.dashboardCardBackground}
             enableShadow
@@ -417,7 +419,7 @@ export default function HomeScreen() {
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
                 color: Colors.white,
-                fontSize: 10
+                fontSize: 9
               }}
               numberOfLines={1}
               ellipsizeMode="tail"
@@ -427,7 +429,8 @@ export default function HomeScreen() {
           </Card>
 
           <Card
-            padding-s4
+            paddingV-s4
+            paddingH-s1
             center
             backgroundColor={Colors.dashboardCardBackground}
             enableShadow
@@ -449,7 +452,7 @@ export default function HomeScreen() {
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
                 color: Colors.white,
-                fontSize: 10
+                fontSize: 9
               }}
               numberOfLines={1}
               ellipsizeMode="tail"
@@ -459,7 +462,8 @@ export default function HomeScreen() {
           </Card>
 
           <Card
-            padding-s4
+            paddingV-s4
+            paddingH-s1
             center
             backgroundColor={Colors.dashboardCardBackground}
             enableShadow
@@ -481,7 +485,7 @@ export default function HomeScreen() {
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
                 color: Colors.white,
-                fontSize: 12
+                fontSize: 9
               }}
               numberOfLines={1}
               ellipsizeMode="tail"

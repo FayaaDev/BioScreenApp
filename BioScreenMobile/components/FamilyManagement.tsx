@@ -1346,23 +1346,28 @@ export function FamilyManagement({
                   {formData.height &&
                     formData.weight &&
                     calculateBMI(formData.height, formData.weight) && (
-                      <View style={{
-                        backgroundColor: Colors.card,
-                        borderRadius: 16,
-                        padding: 16,
-                        marginTop: 12,
-                        alignItems: 'center',
-                      }}>
-                        <Text style={{ color: Colors.primary, fontFamily: 'ReadexPro-Bold', fontSize: 16, marginBottom: 8 }}>
-                          {t("family.bmi")}
-                        </Text>
-                        <Text style={{ color: Colors.primary, fontFamily: 'ReadexPro-Bold', fontSize: 32, marginBottom: 4 }}>
+                      <Card
+                        backgroundColor={Colors.card}
+                        enableShadow
+                        elevation={5}
+                        style={{
+                          padding: 16,
+                          borderRadius: 12,
+                          borderRightWidth: 4,
+                          borderRightColor: Colors.primary,
+                          alignItems: 'center',
+                          borderWidth: 1,
+                          borderColor: Colors.primary + '20',
+                        }}
+                      >
+                        <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI)</Text>
+                        <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                           {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
                         </Text>
-                        <Text style={{ color: Colors.text, fontSize: 14, fontFamily: 'ReadexPro' }}>
+                        <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, textAlign: 'center' }}>
                           {getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}
                         </Text>
-                      </View>
+                      </Card>
                     )}
 
                   {/* Medical Survey Section */}
