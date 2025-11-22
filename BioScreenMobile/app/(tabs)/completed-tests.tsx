@@ -348,6 +348,22 @@ export default function CompletedTests() {
     );
   }
 
+  const getConditionTranslationKey = (condition: string): string => {
+    const map: { [key: string]: string } = {
+      'قلة النشاط البدني': 'physicalInactivity',
+      'تدخين التبغ': 'tobaccoSmoking',
+      'مرض ارتفاع ضغط الدم': 'hypertension',
+      'داء السكري': 'diabetes',
+      'تاريخ لمرض قلبي وعائي': 'cardiovascularHistory',
+      'مرض عضوي مزمن': 'chronicOrganDisease',
+      'قراءات مرتفعة لضغط الدم': 'highBloodPressureReadings',
+      'تاريخ عائلي للسكري': 'familyDiabetesHistory',
+      'تاريخ لسكري الحمل': 'gestationalDiabetesHistory',
+      'تاريخ جنسي': 'sexualHistory'
+    };
+    return map[condition] || condition;
+  };
+
   return (
     <ScrollView
       key={refreshKey}
@@ -366,56 +382,79 @@ export default function CompletedTests() {
       }
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
-        style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 16 }]}
+        colors={
+          colorScheme === "dark"
+            ? [Colors.background, Colors.card]
+            : [Colors.primary, Colors.primary]
+        }
+        style={[
+          styles.header,
+          { paddingTop: insets.top + 16, paddingBottom: 16 },
+        ]}
       >
         <View style={{ width: '100%' }}>
-          <Text style={[styles.headerTitle, { textAlign: "left", marginBottom: 12 }]}>
-            {selectedPersonId === 'user'
-              ? t('completed.title')
-              : t('home.screeningsFor', { name: currentPersonName })}
-          </Text>
-
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-start' }}>
-            {/* Gender */}
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
-                {t("profile.gender")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{currentPersonGender === "male" ? t("common.male") : t("common.female")}</Text>
+          <View style={{ width: '100%', gap: 12 }}>
+            {/* Gender Row */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                {t("profile.gender")}:
               </Text>
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 14 }}>
+                  {currentPersonGender === "male" ? t("common.male") : t("common.female")}
+                </Text>
+              </View>
             </View>
 
-            {/* Age */}
+            {/* Age Row */}
             {currentPersonAge && (
-              <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
-                  {t("profile.age")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{currentPersonAge} {t("common.years")}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                  {t("profile.age")}:
                 </Text>
+                <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
+                  <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 14 }}>
+                    {currentPersonAge} {t("common.years")}
+                  </Text>
+                </View>
               </View>
             )}
 
-            {/* BMI */}
+            {/* BMI Row */}
             {bmi && (
-              <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
-                  {t("family.bmi")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{bmi} ({getBMICategory(bmi)})</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                  {t("family.bmi")}:
                 </Text>
+                <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
+                  <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 14 }}>
+                    {bmi} ({getBMICategory(bmi)})
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Medical Conditions Row */}
+            {currentPerson.medicalConditions && currentPerson.medicalConditions.length > 0 && (
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14, marginTop: 6 }}>
+                  {t("family.medicalConditions")}:
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', flex: 1, marginLeft: 16 }}>
+                  {currentPerson.medicalConditions.map((condition: string, index: number) => {
+                    const translationKey = getConditionTranslationKey(condition);
+                    return (
+                      <View key={index} style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}>
+                        <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>
+                          {t(`family.conditions.${translationKey}`, { defaultValue: condition })}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
             )}
           </View>
-
-          {/* Medical Conditions */}
-          {currentPerson.medicalConditions && currentPerson.medicalConditions.length > 0 && (
-            <View style={{ marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13, alignSelf: 'center' }}>
-                {t("family.medicalConditions")}:
-              </Text>
-              {currentPerson.medicalConditions.map((condition: string, index: number) => (
-                <View key={index} style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}>
-                  <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>{condition}</Text>
-                </View>
-              ))}
-            </View>
-          )}
         </View>
         {/* Family selector */}
         <ScrollView
@@ -425,24 +464,24 @@ export default function CompletedTests() {
           contentContainerStyle={{
             gap: 8,
             paddingHorizontal: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
           }}
         >
           <TouchableOpacity
             style={[
               styles.familyButton,
-              selectedPersonId === 'user' && styles.familyButtonSelected,
+              selectedPersonId === "user" && styles.familyButtonSelected,
             ]}
-            onPress={() => setSelectedPersonId('user')}
+            onPress={() => setSelectedPersonId("user")}
           >
             <Text
               style={[
                 styles.familyButtonText,
-                selectedPersonId === 'user' && styles.familyButtonSelectedText,
+                selectedPersonId === "user" && styles.familyButtonSelectedText,
               ]}
             >
-              {t('common.you')}
+              {t("common.you")}
             </Text>
           </TouchableOpacity>
           {familyMembers.map((member: any) => (
@@ -450,7 +489,8 @@ export default function CompletedTests() {
               key={member.id}
               style={[
                 styles.familyButton,
-                selectedPersonId === member.id.toString() && styles.familyButtonSelected,
+                selectedPersonId === member.id.toString() &&
+                styles.familyButtonSelected,
               ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
@@ -461,7 +501,7 @@ export default function CompletedTests() {
                   styles.familyButtonSelectedText,
                 ]}
               >
-                {member.name}
+                {member.relationship ? t(`family.relationships.${member.relationship}`, { defaultValue: member.relationship }) : (member.name || "Member")}
               </Text>
             </TouchableOpacity>
           ))}

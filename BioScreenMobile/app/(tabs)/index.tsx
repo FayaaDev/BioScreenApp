@@ -90,24 +90,35 @@ export default function HomeScreen() {
 
   const colors = Colors[colorScheme ?? 'light'];
 
-  // Load user data from AsyncStorage
+  // Load userId from AsyncStorage
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('healthscreen_user');
-        const userIdData = await AsyncStorage.getItem('healthscreen_user_id');
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-        if (userIdData) {
-          setUserId(userIdData);
-        }
-      } catch (error) {
-        console.error('Failed to load user data:', error);
+    AsyncStorage.getItem("local_user_id").then((id) => {
+      if (id) {
+        setUserId(id);
+      } else {
+        // Create a new local user ID if it doesn't exist
+        const newUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        AsyncStorage.setItem("local_user_id", newUserId);
+        setUserId(newUserId);
       }
-    };
-    loadUser();
+    });
   }, []);
+
+  // Fetch user profile
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      return await medicalStorage.getUserProfile(userId);
+    },
+    enabled: !!userId,
+  });
+
+  useEffect(() => {
+    if (userProfile) {
+      setUser(userProfile as User);
+    }
+  }, [userProfile]);
 
   // Load screenings from local storage based on selected person
   useEffect(() => {
@@ -337,7 +348,9 @@ export default function HomeScreen() {
                 color: selectedPersonId === member.id.toString() ? Colors.primary : Colors.white,
                 fontWeight: 'bold',
                 fontFamily: 'ReadexPro-Bold'
-              }}>{member.name}</Text>
+              }}>
+                {member.relationship ? t(`family.relationships.${member.relationship}`, { defaultValue: member.relationship }) : (member.name || "Member")}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>

@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SelectedPerson {
-  id: number;
+  id: string;
   name: string;
   dateOfBirth?: string;
   gender?: string;
@@ -17,9 +17,9 @@ interface SelectedPersonContextType {
 
 export const SelectedPersonContext = createContext<SelectedPersonContextType>({
   selectedPersonId: 'user',
-  setSelectedPersonId: (id: string) => {},
+  setSelectedPersonId: (id: string) => { },
   selectedPerson: null,
-  setSelectedPerson: (person: SelectedPerson | null) => {},
+  setSelectedPerson: (person: SelectedPerson | null) => { },
 });
 
 export const SelectedPersonProvider = ({ children }: { children: React.ReactNode }) => {
@@ -31,22 +31,15 @@ export const SelectedPersonProvider = ({ children }: { children: React.ReactNode
       try {
         const id = await AsyncStorage.getItem('selectedPersonId');
         if (id) {
-          // Only set if it's "user" or a valid number
-          if (id === "user" || !isNaN(parseInt(id))) {
-            setSelectedPersonId(id);
-          } else {
-            // Invalid saved value, default to "user"
-            console.log('Invalid selectedPersonId found in storage, defaulting to user');
-            setSelectedPersonId('user');
-            await AsyncStorage.setItem('selectedPersonId', 'user');
-          }
+          // Allow any non-empty string ID
+          setSelectedPersonId(id);
         }
       } catch (error) {
         console.error('Failed to load selectedPersonId from AsyncStorage:', error);
         setSelectedPersonId('user');
       }
     };
-    
+
     loadSelectedPerson();
   }, []);
 
@@ -55,11 +48,11 @@ export const SelectedPersonProvider = ({ children }: { children: React.ReactNode
   }, [selectedPersonId]);
 
   return (
-    <SelectedPersonContext.Provider value={{ 
-      selectedPersonId, 
-      setSelectedPersonId, 
-      selectedPerson, 
-      setSelectedPerson 
+    <SelectedPersonContext.Provider value={{
+      selectedPersonId,
+      setSelectedPersonId,
+      selectedPerson,
+      setSelectedPerson
     }}>
       {children}
     </SelectedPersonContext.Provider>
@@ -72,4 +65,4 @@ export const useSelectedPerson = () => {
     throw new Error('useSelectedPerson must be used within a SelectedPersonProvider');
   }
   return context;
-}; 
+};
