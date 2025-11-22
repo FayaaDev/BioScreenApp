@@ -1422,8 +1422,10 @@ export function FamilyManagement({
                     />
                     <Button
                       label={t("common.cancel")}
-                      backgroundColor={Colors.error}
-                      style={{ flex: 1 }}
+                      backgroundColor="transparent"
+                      outline
+                      outlineColor={Colors.error}
+                      style={{ flex: 1, borderWidth: 1, borderColor: Colors.error }}
                       paddingV-16
                       borderRadius={200}
                       onPress={() => {
@@ -1431,7 +1433,7 @@ export function FamilyManagement({
                         setEditingMember(null);
                         resetForm();
                       }}
-                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16, color: Colors.error }}
                     />
                   </View>
                 </View>

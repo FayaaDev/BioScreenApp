@@ -400,11 +400,14 @@ export default function Profile() {
               <Button
                 flex
                 label={t("common.cancel")}
-                backgroundColor={Colors.error}
+                backgroundColor="transparent"
+                outline
+                outlineColor={Colors.error}
                 paddingV-s5
                 br20
-                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+                labelStyle={{ color: Colors.error, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleCancel}
+                style={{ borderWidth: 1, borderColor: Colors.error }}
               />
             </View>
           ) : null}
@@ -422,12 +425,15 @@ export default function Profile() {
         <Card padding-s5 backgroundColor={Colors.card} br40 marginB-s4>
           <Button
             label={t("profile.signOut")}
-            backgroundColor={Colors.primary}
+            backgroundColor="transparent"
+            outline
+            outlineColor={Colors.error}
             paddingV-s5
             borderRadius={200}
             marginB-s3
-            labelStyle={{ color: Colors.white, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
+            labelStyle={{ color: Colors.error, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
             onPress={handleSignOut}
+            style={{ borderWidth: 1, borderColor: Colors.error }}
           />
           <Button
             label={t("profile.userAgreement")}
