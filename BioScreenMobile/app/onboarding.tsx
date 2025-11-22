@@ -14,7 +14,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { medicalStorage } from '../lib/medical-storage';
-import Colors from '../constants/Colors';
+import { Colors } from 'react-native-ui-lib';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
 
@@ -149,31 +149,31 @@ export default function Onboarding() {
 
   const getConditionTranslationKey = (condition: string): string => {
     const map: { [key: string]: string } = {
-      'قلة النشاط البدني': 'physicalInactivity',
-      'تدخين التبغ': 'tobaccoSmoking',
-      'مرض ارتفاع ضغط الدم': 'hypertension',
-      'داء السكري': 'diabetes',
-      'تاريخ لمرض قلبي وعائي': 'cardiovascularHistory',
-      'مرض عضوي مزمن': 'chronicOrganDisease',
-      'قراءات مرتفعة لضغط الدم': 'highBloodPressureReadings',
-      'تاريخ عائلي للسكري': 'familyDiabetesHistory',
-      'تاريخ لسكري الحمل': 'gestationalDiabetesHistory',
-      'تاريخ جنسي': 'sexualHistory'
+      'physicalInactivity': 'physicalInactivity',
+      'tobaccoSmoking': 'tobaccoSmoking',
+      'hypertension': 'hypertension',
+      'diabetes': 'diabetes',
+      'cardiovascularHistory': 'cardiovascularHistory',
+      'chronicOrganDisease': 'chronicOrganDisease',
+      'highBloodPressureReadings': 'highBloodPressureReadings',
+      'familyDiabetesHistory': 'familyDiabetesHistory',
+      'gestationalDiabetesHistory': 'gestationalDiabetesHistory',
+      'sexualHistory': 'sexualHistory'
     };
     return map[condition] || condition;
   };
 
   const conditionExplanations: { [key: string]: string } = {
-    'قلة النشاط البدني': t('family.explanations.physicalInactivity'),
-    'تدخين التبغ': t('family.explanations.tobaccoSmoking'),
-    'مرض ارتفاع ضغط الدم': t('family.explanations.hypertension'),
-    'داء السكري': t('family.explanations.diabetes'),
-    'تاريخ لمرض قلبي وعائي': t('family.explanations.cardiovascularHistory'),
-    'مرض عضوي مزمن': t('family.explanations.chronicOrganDisease'),
-    'قراءات مرتفعة لضغط الدم': t('family.explanations.highBloodPressureReadings'),
-    'تاريخ عائلي للسكري': t('family.explanations.familyDiabetesHistory'),
-    'تاريخ لسكري الحمل': t('family.explanations.gestationalDiabetesHistory'),
-    'تاريخ جنسي': t('family.explanations.sexualHistory'),
+    'physicalInactivity': t('family.explanations.physicalInactivity'),
+    'tobaccoSmoking': t('family.explanations.tobaccoSmoking'),
+    'hypertension': t('family.explanations.hypertension'),
+    'diabetes': t('family.explanations.diabetes'),
+    'cardiovascularHistory': t('family.explanations.cardiovascularHistory'),
+    'chronicOrganDisease': t('family.explanations.chronicOrganDisease'),
+    'highBloodPressureReadings': t('family.explanations.highBloodPressureReadings'),
+    'familyDiabetesHistory': t('family.explanations.familyDiabetesHistory'),
+    'gestationalDiabetesHistory': t('family.explanations.gestationalDiabetesHistory'),
+    'sexualHistory': t('family.explanations.sexualHistory'),
   };
 
   const handleSubmit = async () => {
@@ -185,20 +185,6 @@ export default function Onboarding() {
     try {
       // Get or create local user ID
       let userId = await AsyncStorage.getItem('local_user_id');
-      if (!userId) {
-        userId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        await AsyncStorage.setItem('local_user_id', userId);
-      }
-
-      // Save medical profile to local storage
-      const profileData = {
-        ...formData,
-        isDiabetic: formData.medicalConditions.includes('السكري'),
-        isHypertensive: formData.medicalConditions.includes('ارتفاع ضغط الدم'),
-        isCholesterol: formData.medicalConditions.includes('الكوليسترول'),
-        isSmoker: formData.medicalConditions.includes('مدخن'),
-      };
-      medicalStorage.saveUserProfile(userId, profileData);
       medicalStorage.setOnboardingComplete(userId, true);
 
       showToast({
@@ -224,22 +210,22 @@ export default function Onboarding() {
     const newErrors: FormErrors = {};
 
     if (!formData.gender) {
-      newErrors.gender = 'الرجاء اختيار الجنس';
+      newErrors.gender = t('onboarding.validation.gender');
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = 'الرجاء إدخال تاريخ الميلاد';
+      newErrors.dateOfBirth = t('onboarding.validation.dateOfBirth');
     }
 
     if (!formData.height) {
-      newErrors.height = 'الرجاء إدخال الطول';
+      newErrors.height = t('onboarding.validation.height');
     }
 
     if (!formData.weight) {
-      newErrors.weight = 'الرجاء إدخال الوزن';
+      newErrors.weight = t('onboarding.validation.weight');
     }
 
-    if (formData.medicalConditions.includes('مدخن') && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
+    if (formData.medicalConditions.includes('tobaccoSmoking') && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
       newErrors.smokingDetails = {
         amount: !formData.smokingDetails?.amount ? 'الرجاء تحديد كمية التدخين' : undefined,
         duration: !formData.smokingDetails?.duration ? 'الرجاء تحديد مدة التدخين' : undefined,
@@ -262,13 +248,13 @@ export default function Onboarding() {
   };
 
   const getBMICategory = (bmi: number): string => {
-    if (bmi < 18.4) return 'نقص في الوزن';
-    if (18.5 <= bmi && bmi < 24.9) return 'وزنك طبيعي';
-    if (25 <= bmi && bmi < 29.9) return 'مرحلة ماقبل السمنة';
-    if (30 <= bmi && bmi < 34.9) return 'سمنة درجة أولى';
-    if (35 <= bmi && bmi < 39.9) return 'سمنة درجة ثانية';
-    if (bmi > 40) return 'سمنة مفرطة درجة ثالثة';
-    return 'حاول مرة أخرى';
+    if (bmi < 18.4) return t('onboarding.bmiCategories.underweight');
+    if (18.5 <= bmi && bmi < 24.9) return t('onboarding.bmiCategories.normal');
+    if (25 <= bmi && bmi < 29.9) return t('onboarding.bmiCategories.preObesity');
+    if (30 <= bmi && bmi < 34.9) return t('onboarding.bmiCategories.obesity1');
+    if (35 <= bmi && bmi < 39.9) return t('onboarding.bmiCategories.obesity2');
+    if (bmi > 40) return t('onboarding.bmiCategories.obesity3');
+    return t('onboarding.bmiCategories.tryAgain');
   };
 
   const calculatePackYears = (smokingDetails: { amount: string; duration: string }): number => {
@@ -279,7 +265,7 @@ export default function Onboarding() {
 
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
-    const translationKey = getConditionTranslationKey(condition);
+    const translationKey = condition;
 
     return (
       <View key={condition} style={{ position: 'relative' }}>
@@ -433,7 +419,7 @@ export default function Onboarding() {
                       month: 'long',
                       day: 'numeric',
                     })
-                    : 'اختر تاريخ الميلاد'}
+                    : t('onboarding.selectDate')}
                 </Text>
               </TouchableOpacity>
               {showDatePicker && Platform.OS === 'ios' && (
@@ -521,7 +507,7 @@ export default function Onboarding() {
 
             <View marginB-s4>
               <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                الطول: {formData.height || '140'} سم
+                {t('onboarding.height')}: {formData.height || '140'} cm
               </Text>
               <Slider
                 value={parseFloat(formData.height) || 140}
@@ -544,7 +530,7 @@ export default function Onboarding() {
 
             <View marginB-s4>
               <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                الوزن: {formData.weight || '60'} كجم
+                {t('onboarding.weight')}: {formData.weight || '60'} kg
               </Text>
               <Slider
                 value={parseFloat(formData.weight) || 60}
@@ -604,32 +590,32 @@ export default function Onboarding() {
                 الاستبيان الطبي
               </ArabicText>
               <Text body color={Colors.textSecondary} center marginT-s2>
-                اختر ما ينطبق عليك من الحالات التالية، أو اتركها بدون اختيار إذا لم تكن متأكدًا
+                {t('onboarding.medicalSurveyDesc')}
               </Text>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>نمط الحياة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['قلة النشاط البدني', 'تدخين التبغ'].map(renderConditionChip)}
+                {['physicalInactivity', 'tobaccoSmoking'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات المزمنة</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map(renderConditionChip)}
+                {['hypertension', 'diabetes', 'cardiovascularHistory', 'chronicOrganDisease'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
               <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات الأخرى</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map(renderConditionChip)}
+                {['highBloodPressureReadings', 'familyDiabetesHistory'].map(renderConditionChip)}
                 {formData.gender === 'female' && (
                   <>
-                    {renderConditionChip('تاريخ لسكري الحمل')}
-                    {renderConditionChip('تاريخ جنسي')}
+                    {renderConditionChip('gestationalDiabetesHistory')}
+                    {renderConditionChip('sexualHistory')}
                   </>
                 )}
               </View>

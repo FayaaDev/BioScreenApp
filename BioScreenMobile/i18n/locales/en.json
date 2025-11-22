@@ -14,7 +14,8 @@
     "male": "Male",
     "female": "Female",
     "age": "Age",
-    "you": "You"
+    "you": "You",
+    "years": "years"
   },
   "language": {
     "switchTo": "العربية",
@@ -46,7 +47,34 @@
     "userAgreement": "User Agreement",
     "userAgreementTitle": "User Agreement for Medical Screening App",
     "validationRequired": "This field is required",
-    "validationEmail": "Please enter a valid email address"
+    "validationEmail": "Please enter a valid email address",
+    "selectDate": "Select Date of Birth",
+    "height": "Height",
+    "weight": "Weight",
+    "medicalSurvey": "Medical Survey",
+    "medicalSurveyDesc": "Select all that apply, or leave unselected if unsure",
+    "lifestyle": "Lifestyle",
+    "chronicConditions": "Chronic Conditions",
+    "otherConditions": "Other Conditions",
+    "saveData": "Save data to skip this form in the future",
+    "saveDataDesc": "You can edit or delete data at any time",
+    "saveButton": "Save Data",
+    "bmi": "Body Mass Index (BMI)",
+    "bmiCategories": {
+      "underweight": "Underweight",
+      "normal": "Normal Weight",
+      "preObesity": "Pre-Obesity",
+      "obesity1": "Obesity Class I",
+      "obesity2": "Obesity Class II",
+      "obesity3": "Obesity Class III",
+      "tryAgain": "Try Again"
+    },
+    "validation": {
+      "gender": "Please select gender",
+      "dateOfBirth": "Please enter date of birth",
+      "height": "Please enter height",
+      "weight": "Please enter weight"
+    }
   },
   "home": {
     "greeting": "Hello!",

@@ -5,6 +5,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { View, Text, Card, Button, TouchableOpacity, LoaderScreen, Colors } from 'react-native-ui-lib';
+// import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/api";
@@ -77,7 +78,7 @@ const ScreeningCard = ({
   let statusLabelStyle = [styles.screeningStatus];
   if (screening.status === "later" || screening.status === "laterRecreated") {
     if (screening.status === "laterRecreated" && screening.nextDue) {
-      statusLabel = t("home.later");
+      statusLabel = t("home.statusTabs.later");
       const nextAppointmentText = t("screening.NextOPD", {
         date: new Date(screening.nextDue).toLocaleDateString("en-GB"),
       });
@@ -225,7 +226,7 @@ const ScreeningCard = ({
         </Card>
       );
     } else {
-      statusLabel = t("home.later");
+      statusLabel = t("home.statusTabs.later");
     }
     statusLabelStyle = [
       styles.screeningStatus,
@@ -241,7 +242,7 @@ const ScreeningCard = ({
       } as any,
     ];
   } else if (screening.status === "due") {
-    statusLabel = t("home.tabs.due");
+    statusLabel = t("home.statusTabs.due");
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -256,7 +257,7 @@ const ScreeningCard = ({
       } as any,
     ];
   } else if (screening.status === "overdue") {
-    statusLabel = t("home.tabs.overdue");
+    statusLabel = t("home.statusTabs.overdue");
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -271,7 +272,7 @@ const ScreeningCard = ({
       } as any,
     ];
   } else if (screening.status === "completed") {
-    statusLabel = t("home.tabs.done");
+    statusLabel = t("home.statusTabs.done");
     statusLabelStyle = [
       styles.screeningStatus,
       {
@@ -646,14 +647,14 @@ export default function UpcomingTests() {
 
   // Tabs logic
   const tabOptions = [
-    { key: "all", label: t("home.tabs.all"), color: undefined },
-    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
+    { key: "all", label: t("home.statusTabs.all"), color: undefined },
+    { key: "later", label: t("home.statusTabs.later"), color: (Colors as any).status?.later },
     {
       key: "overdue",
-      label: t("home.tabs.overdue"),
-      color: Colors.status.overdue,
+      label: t("home.statusTabs.overdue"),
+      color: (Colors as any).status?.overdue,
     },
-    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
+    { key: "due", label: t("home.statusTabs.due"), color: (Colors as any).status?.due },
   ];
 
   let filteredScreenings = screenings;
@@ -936,7 +937,7 @@ export default function UpcomingTests() {
             </View>
 
             {/* Age Row */}
-            {currentPersonAge && (
+            {currentPersonAge !== "" && (
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {t("profile.age")}:

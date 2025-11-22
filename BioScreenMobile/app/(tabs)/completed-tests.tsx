@@ -47,7 +47,7 @@ const ScreeningCard = ({ screening, isRTL, userBirthDate, styles }: {
   const [showTip, setShowTip] = useState(false);
   const { t } = useTranslation();
   // Always show 'Done' with green pill in Completed Tests
-  const statusLabel = t('home.tabs.done');
+  const statusLabel = t('home.statusTabs.done');
   const statusLabelStyle = [
     styles.screeningStatus,
     {
@@ -407,7 +407,7 @@ export default function CompletedTests() {
             </View>
 
             {/* Age Row */}
-            {currentPersonAge && (
+            {currentPersonAge !== "" && (
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {t("profile.age")}:
