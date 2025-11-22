@@ -127,6 +127,446 @@ export function FamilyManagement({
 }) {
   const insets = useSafeAreaInsets();
 
+  const styles = {
+    card: {
+      backgroundColor: Colors.card,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      marginBottom: 12,
+      textAlign: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    emptyText: {
+      textAlign: "center",
+      color: Colors.textSecondary,
+      fontSize: 16,
+      marginTop: 32,
+      fontFamily: "ReadexPro",
+    },
+    memberRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: Colors.background,
+      borderRadius: 16,
+      padding: 12,
+      gap: 12,
+      borderWidth: 1,
+      borderColor: Colors.textSecondary + '20',
+      marginBottom: 8,
+    },
+    memberInfo: {
+      flex: 1,
+    },
+    memberName: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    memberDetails: {
+      fontSize: 14,
+      color: Colors.textSecondary,
+      fontFamily: "ReadexPro",
+    },
+    memberActions: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    editButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+    },
+    editButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    deleteButton: {
+      backgroundColor: Colors.textSecondary,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginLeft: 4,
+    },
+    deleteButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    addButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      marginTop: 16,
+    },
+    addButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: Colors.background,
+      paddingTop: 32,
+    },
+    modalContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: Colors.primary,
+      marginBottom: 12,
+      textAlign: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    input: {
+      height: 48,
+      borderWidth: 1,
+      borderColor: Colors.textSecondary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      fontSize: 16,
+      backgroundColor: Colors.card,
+      color: Colors.text,
+      // width: "100%",
+      width: 250,
+      marginBottom: 8,
+      fontFamily: "ReadexPro",
+    },
+    label: {
+      fontSize: 16,
+      color: Colors.text,
+      fontWeight: "500",
+      marginBottom: 4,
+      alignSelf: "flex-start",
+      textAlign: "left",
+      fontFamily: "ReadexPro-Medium",
+    },
+    optionButton: {
+      backgroundColor: Colors.card,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      marginHorizontal: 4,
+      marginBottom: 4,
+    },
+    optionButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    optionButtonText: {
+      color: Colors.primary,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    optionButtonTextSelected: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    saveButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+    },
+    saveButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    cancelButton: {
+      backgroundColor: Colors.error,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+    },
+    cancelButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    genderButton: {
+      backgroundColor: Colors.background,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      marginHorizontal: 4,
+      marginBottom: 4,
+    },
+    genderButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    genderButtonText: {
+      color: Colors.primary,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    genderButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    questionContainer: {
+      gap: 8,
+      width: "100%",
+    },
+    questionLabel: {
+      fontSize: 16,
+      color: Colors.text,
+      fontWeight: "500",
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Medium",
+    },
+    yesNoContainer: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    yesNoButton: {
+      flex: 1,
+      height: 48,
+      borderWidth: 1,
+      borderColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.card,
+    },
+    yesNoButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    yesNoButtonText: {
+      fontSize: 16,
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    yesNoButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      textAlign: "center",
+      alignSelf: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    medicalSurveyContainer: {
+      gap: 16,
+      width: "100%",
+    },
+    checkboxContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderWidth: 2,
+      borderColor: Colors.primary,
+      borderRadius: 4,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    checkboxLabel: {
+      fontSize: 16,
+      color: Colors.text,
+      fontFamily: "ReadexPro",
+    },
+    smokingDetailsContainer: {
+      gap: 8,
+      marginLeft: 32,
+    },
+    partnerCountContainer: {
+      marginLeft: 32,
+      gap: 8,
+    },
+    partnerCountButtons: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    partnerCountButton: {
+      flex: 1,
+      height: 40,
+      borderWidth: 1,
+      borderColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.card,
+    },
+    partnerCountButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    partnerCountButtonText: {
+      fontSize: 14,
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    partnerCountButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    inputContainer: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+    },
+    bmiBox: {
+      backgroundColor: Colors.background,
+      borderRadius: 10,
+      padding: 16,
+      marginTop: 12,
+      alignItems: "flex-start",
+    },
+    bmiLabel: {
+      color: Colors.success,
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    bmiValue: {
+      color: Colors.success,
+      fontWeight: "bold",
+      fontSize: 28,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    bmiCategoryText: {
+      color: Colors.textSecondary,
+      fontSize: 16,
+      fontFamily: "ReadexPro",
+    },
+    section: {
+      marginTop: 24,
+      width: "100%",
+    },
+    packYearsText: {
+      color: Colors.textSecondary,
+      fontSize: 14,
+      marginTop: 4,
+      fontFamily: "ReadexPro",
+    },
+    packYearsBox: {
+      backgroundColor: Colors.background,
+      borderRadius: 10,
+      padding: 16,
+      marginTop: 12,
+      alignItems: "flex-start",
+    },
+    packYearsLabel: {
+      color: Colors.warning,
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    packYearsValue: {
+      color: Colors.warning,
+      fontWeight: "bold",
+      fontSize: 28,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    inputError: {
+      borderColor: Colors.error,
+      borderWidth: 1,
+    },
+    errorText: {
+      color: Colors.error,
+      fontSize: 12,
+      marginTop: -4,
+      marginBottom: 8,
+      textAlign: "left",
+      alignSelf: "flex-start",
+      fontFamily: "ReadexPro",
+    },
+    warningText: {
+      color: Colors.warning,
+      fontSize: 12,
+      marginTop: -4,
+      marginBottom: 8,
+      fontWeight: "500",
+      fontFamily: "ReadexPro-Medium",
+    },
+    datePickerButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      backgroundColor: Colors.background,
+      alignSelf: "flex-end",
+      marginTop: 4,
+      marginBottom: 4,
+      width: "100%",
+    },
+    datePickerModal: {
+      backgroundColor: Colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 8,
+      width: "100%",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    datePickerActions: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 12,
+      marginTop: 16,
+    },
+    confirmButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 24,
+    },
+    confirmButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    cancelDateButton: {
+      backgroundColor: Colors.error,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 24,
+    },
+    cancelDateButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+  };
+
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
@@ -519,36 +959,63 @@ export function FamilyManagement({
           ) : (
             familyMembers.map((member: FamilyMember) => (
               <View key={member.id} style={styles.memberRow as any}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: member.gender === 'male' ? Colors.primary + '20' : Colors.primary + '20',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: isRTL ? 0 : 12,
+                  marginLeft: isRTL ? 12 : 0,
+                }}>
+                  <MaterialIcons
+                    name={member.gender === 'male' ? "male" : "female"}
+                    size={28}
+                    color={Colors.primary}
+                  />
+                </View>
+
                 <TouchableOpacity
                   style={styles.memberInfo}
                   onPress={() => handleSwitch(member.id)}
                 >
                   <Text style={styles.memberName as any}>{member.relationship}</Text>
-                  <Text style={styles.memberDetails}>
-                    {member.gender === "male"
-                      ? t("common.male")
-                      : t("common.female")}
-                  </Text>
-                  <Text style={styles.memberDetails}>
-                    {t("family.dateOfBirthLabel")}: {member.dateOfBirth}
-                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                    <Text style={styles.memberDetails}>
+                      {member.gender === "male" ? t("common.male") : t("common.female")}
+                    </Text>
+                    <Text style={styles.memberDetails}>•</Text>
+                    <Text style={styles.memberDetails}>
+                      {member.dateOfBirth}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
+
                 <View style={styles.memberActions as any}>
                   <TouchableOpacity
-                    style={styles.editButton}
+                    style={{
+                      padding: 8,
+                      backgroundColor: Colors.card,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: Colors.primary + '40',
+                    }}
                     onPress={() => handleEdit(member)}
                   >
-                    <Text style={styles.editButtonText as any}>
-                      {t("family.edit")}
-                    </Text>
+                    <MaterialIcons name="edit" size={20} color={Colors.primary} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={{
+                      padding: 8,
+                      backgroundColor: Colors.error + '10',
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: Colors.error + '40',
+                    }}
                     onPress={() => handleDelete(member.id)}
                   >
-                    <Text style={styles.deleteButtonText as any}>
-                      {t("family.delete")}
-                    </Text>
+                    <MaterialIcons name="delete-outline" size={20} color={Colors.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -999,439 +1466,4 @@ export function FamilyManagement({
   );
 }
 
-const styles = {
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 12,
-    textAlign: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: Colors.textSecondary,
-    fontSize: 16,
-    marginTop: 32,
-    fontFamily: "ReadexPro",
-  },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    padding: 12,
-    gap: 8,
-  },
-  memberInfo: {
-    flex: 1,
-  },
-  memberName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: Colors.primary,
-    fontFamily: "ReadexPro-Bold",
-  },
-  memberDetails: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    fontFamily: "ReadexPro",
-  },
-  memberActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  editButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  editButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  deleteButton: {
-    backgroundColor: Colors.textSecondary,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 4,
-  },
-  deleteButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  addButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    marginTop: 16,
-  },
-  addButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    paddingTop: 32,
-  },
-  modalContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 12,
-    textAlign: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: Colors.textSecondary,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: Colors.card,
-    color: Colors.text,
-    // width: "100%",
-    width: 250,
-    marginBottom: 8,
-    fontFamily: "ReadexPro",
-  },
-  label: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: "500",
-    marginBottom: 4,
-    alignSelf: "flex-start",
-    textAlign: "left",
-    fontFamily: "ReadexPro-Medium",
-  },
-  optionButton: {
-    backgroundColor: Colors.card,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    marginBottom: 4,
-  },
-  optionButtonSelected: {
-    backgroundColor: Colors.primary,
-  },
-  optionButtonText: {
-    color: Colors.primary,
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  optionButtonTextSelected: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  saveButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  saveButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  cancelButton: {
-    backgroundColor: Colors.error,
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  cancelButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  genderButton: {
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    marginBottom: 4,
-  },
-  genderButtonSelected: {
-    backgroundColor: Colors.primary,
-  },
-  genderButtonText: {
-    color: Colors.primary,
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  genderButtonTextSelected: {
-    color: Colors.white,
-    fontFamily: "ReadexPro-Bold",
-  },
-  questionContainer: {
-    gap: 8,
-    width: "100%",
-  },
-  questionLabel: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: "500",
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Medium",
-  },
-  yesNoContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  yesNoButton: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.card,
-  },
-  yesNoButtonSelected: {
-    backgroundColor: Colors.primary,
-  },
-  yesNoButtonText: {
-    fontSize: 16,
-    color: Colors.primary,
-    fontFamily: "ReadexPro-Bold",
-  },
-  yesNoButtonTextSelected: {
-    color: Colors.white,
-    fontFamily: "ReadexPro-Bold",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: Colors.primary,
-    textAlign: "center",
-    alignSelf: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  medicalSurveyContainer: {
-    gap: 16,
-    width: "100%",
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    color: Colors.text,
-    fontFamily: "ReadexPro",
-  },
-  smokingDetailsContainer: {
-    gap: 8,
-    marginLeft: 32,
-  },
-  partnerCountContainer: {
-    marginLeft: 32,
-    gap: 8,
-  },
-  partnerCountButtons: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  partnerCountButton: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.card,
-  },
-  partnerCountButtonSelected: {
-    backgroundColor: Colors.primary,
-  },
-  partnerCountButtonText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontFamily: "ReadexPro-Bold",
-  },
-  partnerCountButtonTextSelected: {
-    color: Colors.white,
-    fontFamily: "ReadexPro-Bold",
-  },
-  inputContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  bmiBox: {
-    backgroundColor: Colors.background,
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 12,
-    alignItems: "flex-start",
-  },
-  bmiLabel: {
-    color: Colors.success,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  bmiValue: {
-    color: Colors.success,
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  bmiCategoryText: {
-    color: Colors.textSecondary,
-    fontSize: 16,
-    fontFamily: "ReadexPro",
-  },
-  section: {
-    marginTop: 24,
-    width: "100%",
-  },
-  packYearsText: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-    marginTop: 4,
-    fontFamily: "ReadexPro",
-  },
-  packYearsBox: {
-    backgroundColor: Colors.background,
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 12,
-    alignItems: "flex-start",
-  },
-  packYearsLabel: {
-    color: Colors.warning,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  packYearsValue: {
-    color: Colors.warning,
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  inputError: {
-    borderColor: Colors.error,
-    borderWidth: 1,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 12,
-    marginTop: -4,
-    marginBottom: 8,
-    textAlign: "left",
-    alignSelf: "flex-start",
-    fontFamily: "ReadexPro",
-  },
-  warningText: {
-    color: Colors.warning,
-    fontSize: 12,
-    marginTop: -4,
-    marginBottom: 8,
-    fontWeight: "500",
-    fontFamily: "ReadexPro-Medium",
-  },
-  datePickerButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.background,
-    alignSelf: "flex-end",
-    marginTop: 4,
-    marginBottom: 4,
-    width: "100%",
-  },
-  datePickerModal: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  datePickerActions: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 16,
-  },
-  confirmButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  confirmButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  cancelDateButton: {
-    backgroundColor: Colors.error,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  cancelDateButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-};
+

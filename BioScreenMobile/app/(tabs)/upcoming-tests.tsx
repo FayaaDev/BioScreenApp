@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "../../hooks/useColorScheme";
-// import { ScreeningCard } from '../../components/ScreeningCard'; // Placeholder below
+import { medicalStorage } from "../../lib/medical-storage";
 
 type UserDataResponse = {
   user: { name?: string; dateOfBirth: string; gender: string };
@@ -51,12 +51,14 @@ const ScreeningCard = ({
   onMarkCompleted,
   isRTL,
   userBirthDate,
+  styles,
 }: {
   screening: ScreeningWithDetails;
   onSchedule: () => void;
   onMarkCompleted: () => void;
   isRTL: boolean;
   userBirthDate: string;
+  styles: any;
 }) => {
   const [showTip, setShowTip] = useState(false);
   const { t } = useTranslation();
@@ -548,42 +550,124 @@ export default function UpcomingTests() {
     });
   }, []);
 
-  // Since we're now using local storage only, skip API calls
-  const userData = null;
-  const isLoading = false;
-  const error = null;
-  const familyMembersData = [];
-  const selectedPersonData = null;
-  const isLoadingSelectedPerson = false;
-  const selectedPersonError = null;
+  // Fetch user profile and family members
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      return await medicalStorage.getUserProfile(userId);
+    },
+    enabled: !!userId,
+  });
 
-  // Handle family member not found error - reset to user
-  useEffect(() => {
-    if (
-      selectedPersonError &&
-      selectedPersonError.message?.includes("Family member not found")
-    ) {
-      console.log("Selected family member not found, switching to user");
-      setSelectedPersonId("user");
-      AsyncStorage.setItem("selectedPersonId", "user");
-    }
-  }, [selectedPersonError]);
+  const { data: familyMembersList } = useQuery({
+    queryKey: ["familyMembers", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return await medicalStorage.getFamilyMembers(userId);
+    },
+    enabled: !!userId,
+  });
 
-  // Validate selected person when family members data changes
-  useEffect(() => {
-    if (Array.isArray(familyMembersData) && selectedPersonId !== "user") {
-      const familyMemberExists = familyMembersData.some(
-        (member: any) => member.id.toString() === selectedPersonId,
-      );
-      if (!familyMemberExists) {
-        console.log(
-          "Selected family member no longer exists, switching to user",
-        );
-        setSelectedPersonId("user");
-        AsyncStorage.setItem("selectedPersonId", "user");
+  // Fetch screenings
+  const { data: screeningsData } = useQuery({
+    queryKey: ["screenings", userId, selectedPersonId],
+    queryFn: async () => {
+      if (!userId) return [];
+      if (selectedPersonId === "user") {
+        return await medicalStorage.getUserScreenings(userId);
+      } else {
+        return await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);
       }
+    },
+    enabled: !!userId,
+  });
+
+  // Determine current person data
+  let currentPerson: any = {
+    name: t("common.you"),
+    dateOfBirth: "",
+    gender: "",
+    height: "",
+    weight: "",
+    medicalConditions: [],
+  };
+
+  if (selectedPersonId === "user" && userProfile) {
+    currentPerson = {
+      ...userProfile,
+      name: t("common.you"),
+    };
+  } else if (selectedPersonId !== "user" && familyMembersList) {
+    const member = familyMembersList.find((m) => m.id === selectedPersonId);
+    if (member) {
+      currentPerson = member;
     }
-  }, [familyMembersData, selectedPersonId]);
+  }
+
+  const familyMembers = familyMembersList || [];
+  const screenings: any[] = screeningsData || [];
+
+  const currentPersonAge = currentPerson.dateOfBirth
+    ? calculateAge(currentPerson.dateOfBirth)
+    : "";
+  const currentPersonName = currentPerson.name || t("common.you");
+  const currentPersonGender = currentPerson.gender || "";
+
+  // Calculate BMI
+  const calculateBMI = (height: string, weight: string) => {
+    const h = parseFloat(height) / 100;
+    const w = parseFloat(weight);
+    if (!h || !w) return null;
+    return (w / (h * h)).toFixed(1);
+  };
+
+  const bmi = calculateBMI(currentPerson.height, currentPerson.weight);
+
+  const getBMICategory = (bmiValue: string) => {
+    const bmi = parseFloat(bmiValue);
+    if (bmi < 18.5) return t("family.bmiCategory.underweight");
+    if (bmi < 25) return t("family.bmiCategory.normal");
+    if (bmi < 30) return t("family.bmiCategory.overweight");
+    // Use obese1 as generic obese since 'obese' key is missing
+    return t("family.bmiCategory.obese1");
+  };
+
+  const stats = calculateScreeningStats(screenings);
+
+  // Tabs logic
+  const tabOptions = [
+    { key: "all", label: t("home.tabs.all"), color: undefined },
+    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
+    {
+      key: "overdue",
+      label: t("home.tabs.overdue"),
+      color: Colors.status.overdue,
+    },
+    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
+  ];
+
+  let filteredScreenings = screenings;
+  if (activeTab === "all") {
+    filteredScreenings = screenings.filter((s) => {
+      if (s.status !== "completed") return true;
+      return s.screening?.frequencyYears > 0 && s.nextDue;
+    });
+    filteredScreenings = sortScreenings(filteredScreenings);
+  } else if (activeTab !== "all") {
+    filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
+  }
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await queryClient.invalidateQueries();
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [queryClient]);
 
   // Mutations
   const markCompletedMutation = useMutation({
@@ -658,108 +742,134 @@ export default function UpcomingTests() {
     }
   };
 
-  // Data normalization
-  let familyMembers: any[] = Array.isArray(familyMembersData)
-    ? familyMembersData
-    : [];
-  let currentPerson: { name?: string; dateOfBirth: string; gender: string } = {
-    dateOfBirth: "",
-    gender: "",
-  };
-  let screenings: ScreeningWithDetails[] = [];
-
-  if (
-    selectedPersonData &&
-    typeof selectedPersonData === "object" &&
-    selectedPersonData !== null
-  ) {
-    if (
-      selectedPersonId === "user" &&
-      "user" in selectedPersonData &&
-      "screenings" in selectedPersonData
-    ) {
-      const userResponse = selectedPersonData as UserDataResponse;
-      currentPerson = userResponse.user;
-      screenings = userResponse.screenings;
-    } else if (
-      "familyMember" in selectedPersonData &&
-      "screenings" in selectedPersonData
-    ) {
-      const familyResponse = selectedPersonData as FamilyMemberResponse;
-      currentPerson = {
-        name: familyResponse.familyMember.name,
-        dateOfBirth: familyResponse.familyMember.dateOfBirth,
-        gender: familyResponse.familyMember.gender,
-      };
-      screenings = familyResponse.screenings;
-    }
-  }
-
-  const currentPersonAge = currentPerson.dateOfBirth
-    ? calculateAge(currentPerson.dateOfBirth)
-    : "";
-  const currentPersonName = currentPerson.name || t("common.you");
-  const currentPersonGender = currentPerson.gender || "";
-  const stats = calculateScreeningStats(screenings);
-
-  // Tabs logic
-  const tabOptions = [
-    { key: "all", label: t("home.tabs.all"), color: undefined },
-    { key: "due", label: t("home.tabs.due"), color: Colors.status.due },
-    {
-      key: "overdue",
-      label: t("home.tabs.overdue"),
-      color: Colors.status.overdue,
+  const styles = {
+    centered: {
+      flex: 1,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      backgroundColor: Colors.background,
     },
-    { key: "later", label: t("home.tabs.later"), color: Colors.status.later },
-    //{ key: 'completed', label: t('home.tabs.done'), color: Colors.status.completed },
-  ];
-
-  let filteredScreenings = screenings;
-  if (activeTab === "all") {
-    // Only filter out completed screenings that are not repeatable
-    filteredScreenings = screenings.filter((s) => {
-      // Keep the screening if it's not completed
-      if (s.status !== "completed") return true;
-      // For completed screenings, only keep them if they are repeatable and have a next due date
-      return s.screening.frequencyYears > 0 && s.nextDue;
-    });
-    filteredScreenings = sortScreenings(filteredScreenings);
-  } else if (activeTab !== "all") {
-    filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
-  }
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await queryClient.invalidateQueries();
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [queryClient]);
+    loadingText: {
+      marginTop: 12,
+      fontSize: 16,
+      color: Colors.primary,
+      fontFamily: "ReadexPro",
+    },
+    header: {
+      paddingHorizontal: 16,
+      borderBottomLeftRadius: 16,
+      borderBottomRightRadius: 16,
+      overflow: "hidden" as const,
+      minHeight: 160,
+      alignItems: "flex-start" as const,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontWeight: "bold" as const,
+      marginBottom: 2,
+      fontFamily: "ReadexPro-Bold",
+      color: Colors.white,
+    },
+    headerSubtitle: {
+      fontSize: 20,
+      fontFamily: "ReadexPro",
+      color: Colors.white,
+    },
+    screeningCard: {
+      backgroundColor: Colors.card,
+      borderRadius: 12,
+      padding: 16,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      elevation: 2,
+    },
+    screeningTitle: {
+      fontSize: 16,
+      fontWeight: "bold" as const,
+      color: Colors.text,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    screeningStatus: { fontSize: 14, color: Colors.textSecondary, fontFamily: "ReadexPro" },
+    actionButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginLeft: 4,
+    },
+    actionButtonText: {
+      color: Colors.white,
+      fontWeight: "bold" as const,
+      fontFamily: "ReadexPro-Bold",
+    },
+    familySelector: {
+      marginTop: 8,
+      marginBottom: 8,
+    },
+    familyButton: {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: 20,
+      paddingVertical: 8,
+      paddingHorizontal: 20,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    familyButtonSelected: {
+      backgroundColor: Colors.white,
+      borderColor: Colors.white,
+    },
+    familyButtonText: {
+      color: Colors.white,
+      fontWeight: "bold" as const,
+      fontFamily: "ReadexPro-Bold",
+    },
+    familyButtonSelectedText: {
+      color: Colors.primary,
+      fontWeight: "bold" as const,
+      fontFamily: "ReadexPro-Bold",
+    },
+    tabsRow: {
+      flexDirection: "row" as const,
+      justifyContent: "space-around" as const,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
+    tabButton: {
+      flex: 1,
+      alignItems: "center" as const,
+      paddingVertical: 8,
+      borderRadius: 16,
+      marginHorizontal: 4,
+      backgroundColor: Colors.card,
+    },
+    tabButtonText: {
+      color: Colors.text,
+      fontFamily: "ReadexPro",
+      fontSize: 14,
+    },
+    screeningsList: {
+      flex: 1,
+    },
+    emptyText: {
+      color: Colors.text,
+      textAlign: "center" as const,
+      fontFamily: "ReadexPro",
+      marginTop: 16,
+    },
+  };
 
   // Loading and error states
-  if (!userId || isLoading || isLoadingSelectedPerson) {
+  if (!userId) {
     return (
       <LoaderScreen color={Colors.primary} message={t("common.loading")} backgroundColor={Colors.background} />
     );
   }
 
-  // For now, show empty screenings list since we're using local storage
-  currentPerson = {
-    dateOfBirth: "2000-01-01",
-    gender: "male",
-    name: currentPersonName,
-  };
-  screenings = [];
-
   return (
     <ScrollView
       key={refreshKey}
       style={{ flex: 1, backgroundColor: Colors.background }}
-      // style={{ flex: 1, backgroundColor: 'green' }}
       contentContainerStyle={{ paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -784,18 +894,49 @@ export default function UpcomingTests() {
           { paddingTop: insets.top + 16, paddingBottom: 16 },
         ]}
       >
-        <View>
-          <Text style={[styles.headerTitle, { textAlign: "left" }]}>
-            {selectedPersonId === "user"
-              ? t("home.hello", { name: currentPersonName })
-              : t("home.screeningsFor", { name: currentPersonName })}
-          </Text>
-          <Text style={[styles.headerSubtitle, { textAlign: "left" }]}>
-            {`${t("profile.age")}: ${currentPersonAge} • ${currentPersonGender === "male"
-              ? t("common.male")
-              : t("common.female")
-              }`}
-          </Text>
+        <View style={{ width: '100%' }}>
+          {/* Removed the Hello/Greeting Title as requested */}
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-start' }}>
+            {/* Gender */}
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
+                {t("profile.gender")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{currentPersonGender === "male" ? t("common.male") : t("common.female")}</Text>
+              </Text>
+            </View>
+
+            {/* Age */}
+            {currentPersonAge && (
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
+                  {t("profile.age")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{currentPersonAge} {t("common.years")}</Text>
+                </Text>
+              </View>
+            )}
+
+            {/* BMI */}
+            {bmi && (
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13 }}>
+                  {t("family.bmi")}: <Text style={{ fontFamily: 'ReadexPro-Bold' }}>{bmi} ({getBMICategory(bmi)})</Text>
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Medical Conditions */}
+          {currentPerson.medicalConditions && currentPerson.medicalConditions.length > 0 && (
+            <View style={{ marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 13, alignSelf: 'center' }}>
+                {t("family.medicalConditions", { defaultValue: "Medical Conditions" })}:
+              </Text>
+              {currentPerson.medicalConditions.map((condition: string, index: number) => (
+                <View key={index} style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}>
+                  <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>{condition}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
         {/* Family selector */}
         <ScrollView
@@ -842,7 +983,7 @@ export default function UpcomingTests() {
                   styles.familyButtonSelectedText,
                 ]}
               >
-                {member.name}
+                {member.name || "Member"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -898,136 +1039,19 @@ export default function UpcomingTests() {
                 key={
                   screening.id !== 0
                     ? screening.id
-                    : `${screening.screening.name}-${index}`
+                    : `${screening.screening?.name || 'screening'}-${index}`
                 }
                 screening={screening}
                 onSchedule={() => handleScheduleScreening(screening)}
                 onMarkCompleted={() => handleMarkCompleted(screening)}
                 isRTL={true}
                 userBirthDate={currentPerson.dateOfBirth}
+                styles={styles}
               />
             ))
           )}
         </ScrollView>
       </View>
-    </ScrollView >
+    </ScrollView>
   );
 }
-
-const styles = {
-  centered: {
-    flex: 1,
-    justifyContent: "center" as const,
-    alignItems: "center" as const,
-    backgroundColor: Colors.background,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: Colors.primary,
-    fontFamily: "ReadexPro",
-  },
-  header: {
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    overflow: "hidden" as const,
-    minHeight: 160,
-    alignItems: "flex-start" as const,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold" as const,
-    marginBottom: 2,
-    fontFamily: "ReadexPro-Bold",
-    color: Colors.text,
-  },
-  headerSubtitle: {
-    fontSize: 20,
-    fontFamily: "ReadexPro",
-    color: Colors.white,
-  },
-  screeningCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    elevation: 2,
-  },
-  screeningTitle: {
-    fontSize: 16,
-    fontWeight: "bold" as const,
-    color: Colors.text,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  screeningStatus: { fontSize: 14, color: Colors.textSecondary, fontFamily: "ReadexPro" },
-  actionButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 4,
-  },
-  actionButtonText: {
-    color: Colors.white,
-    fontWeight: "bold" as const,
-    fontFamily: "ReadexPro-Bold",
-  },
-  familySelector: {
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  familyButton: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  familyButtonSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  familyButtonText: {
-    color: Colors.text,
-    fontWeight: "bold" as const,
-    fontFamily: "ReadexPro-Bold",
-  },
-  familyButtonSelectedText: {
-    color: Colors.white,
-    fontWeight: "bold" as const,
-    fontFamily: "ReadexPro-Bold",
-  },
-  tabsRow: {
-    flexDirection: "row" as const,
-    justifyContent: "space-around" as const,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: "center" as const,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginHorizontal: 4,
-    backgroundColor: Colors.card,
-  },
-  tabButtonText: {
-    color: Colors.text,
-    fontFamily: "ReadexPro",
-    fontSize: 14,
-  },
-  screeningsList: {
-    flex: 1,
-  },
-  emptyText: {
-    color: Colors.text,
-    textAlign: "center" as const,
-    fontFamily: "ReadexPro",
-    marginTop: 16,
-  },
-};
-

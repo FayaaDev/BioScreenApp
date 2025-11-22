@@ -75,6 +75,8 @@ export function configureUILibrary(theme: keyof typeof AppColors = 'dark') {
     dashboardCardBackground: currentColors.dashboardCardBackground,
     overlay: currentColors.overlay,
     status: currentColors.status,
+    dashboardStatus: currentColors.dashboardStatus,
+    tabBarBackground: currentColors.tabBarBackground,
 
     // Neutral colors for various use cases
     grey10: '#f9fafb',

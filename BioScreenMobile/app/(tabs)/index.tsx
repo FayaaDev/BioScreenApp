@@ -293,23 +293,51 @@ export default function HomeScreen() {
         >
           <TouchableOpacity
             style={[
-              { backgroundColor: Colors.card, borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: Colors.primary },
-              selectedPersonId === 'user' && { backgroundColor: Colors.primary, borderColor: Colors.primary }
+              {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 20,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.3)'
+              },
+              selectedPersonId === 'user' && {
+                backgroundColor: Colors.white,
+                borderColor: Colors.white
+              }
             ]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={{ color: Colors.white, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{t('common.you')}</Text>
+            <Text style={{
+              color: selectedPersonId === 'user' ? Colors.primary : Colors.white,
+              fontWeight: 'bold',
+              fontFamily: 'ReadexPro-Bold'
+            }}>{t('common.you')}</Text>
           </TouchableOpacity>
           {Array.isArray(familyMembersData) && familyMembersData.map((member: StoredFamilyMember) => (
             <TouchableOpacity
               key={member.id}
               style={[
-                { backgroundColor: Colors.card, borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: Colors.primary },
-                selectedPersonId === member.id.toString() && { backgroundColor: Colors.primary, borderColor: Colors.primary }
+                {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: 20,
+                  paddingVertical: 8,
+                  paddingHorizontal: 20,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)'
+                },
+                selectedPersonId === member.id.toString() && {
+                  backgroundColor: Colors.white,
+                  borderColor: Colors.white
+                }
               ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={{ color: Colors.white, fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{member.name}</Text>
+              <Text style={{
+                color: selectedPersonId === member.id.toString() ? Colors.primary : Colors.white,
+                fontWeight: 'bold',
+                fontFamily: 'ReadexPro-Bold'
+              }}>{member.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -333,7 +361,7 @@ export default function HomeScreen() {
               style={{
                 fontSize: 36,
                 fontFamily: 'ReadexPro-Bold',
-                color: Colors.primary,
+                color: Colors.dashboardStatus.completed,
                 marginBottom: 8
               }}
             >
@@ -343,7 +371,7 @@ export default function HomeScreen() {
               style={{
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
-                color: Colors.text,
+                color: Colors.white,
                 fontSize: 10
               }}
               numberOfLines={1}
@@ -365,7 +393,7 @@ export default function HomeScreen() {
               style={{
                 fontSize: 36,
                 fontFamily: 'ReadexPro-Bold',
-                color: Colors.white,
+                color: Colors.dashboardStatus.later,
                 marginBottom: 8
               }}
             >
@@ -375,7 +403,7 @@ export default function HomeScreen() {
               style={{
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
-                color: Colors.text,
+                color: Colors.white,
                 fontSize: 10
               }}
               numberOfLines={1}
@@ -397,7 +425,7 @@ export default function HomeScreen() {
               style={{
                 fontSize: 36,
                 fontFamily: 'ReadexPro-Bold',
-                color: Colors.error,
+                color: Colors.dashboardStatus.overdue,
                 marginBottom: 8
               }}
             >
@@ -407,7 +435,7 @@ export default function HomeScreen() {
               style={{
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
-                color: Colors.text,
+                color: Colors.white,
                 fontSize: 10
               }}
               numberOfLines={1}
@@ -429,7 +457,7 @@ export default function HomeScreen() {
               style={{
                 fontSize: 36,
                 fontFamily: 'ReadexPro-Bold',
-                color: Colors.primary,
+                color: Colors.dashboardStatus.due,
                 marginBottom: 8
               }}
             >
@@ -439,7 +467,7 @@ export default function HomeScreen() {
               style={{
                 fontFamily: 'ReadexPro-SemiBold',
                 textAlign: 'center',
-                color: Colors.text,
+                color: Colors.white,
                 fontSize: 12
               }}
               numberOfLines={1}

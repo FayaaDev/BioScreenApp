@@ -58,6 +58,13 @@ interface ThemeColors {
     later: { background: string; text: string; border: string; icon: string };
     completed: { background: string; text: string; border: string; icon: string };
   };
+  tabBarBackground: string;
+  dashboardStatus: {
+    due: string;
+    overdue: string;
+    later: string;
+    completed: string;
+  };
 }
 
 export const Colors: {
@@ -90,6 +97,8 @@ export const Colors: {
   dashboardCardBackground: string;
   overlay: string;
   status: ThemeColors['status'];
+  tabBarBackground: string;
+  dashboardStatus: ThemeColors['dashboardStatus'];
 } = {
   // Legacy Light Theme (mapped to Zimam Light for now)
   light: {
@@ -124,14 +133,21 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanLight, 9),
-    dashboardCardBackground: getStep(radixScales.cyanLight, 4), // Bright Blue
+    dashboardCardBackground: getStep(radixScales.cyanLight, 9), // Bright Blue (Primary)
     overlay: 'rgba(0,0,0,0.5)',
     status: {
       due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
       overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
       later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
       completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
-    }
+    },
+    tabBarBackground: getStep(radixScales.sageLight, 4),
+    dashboardStatus: {
+      due: '#0c4a6e', // Dark Blue
+      overdue: '#7f1d1d', // Dark Red
+      later: '#ffffff', // White
+      completed: '#134e4a', // Dark Teal/Green
+    },
   },
   // Zimam Dark Theme (Default)
   dark: {
@@ -173,7 +189,14 @@ export const Colors: {
       overdue: { background: 'rgba(163, 88, 41, 0.16)', text: '#f59e0b', border: 'rgba(163, 88, 41, 0.3)', icon: '#f59e0b' },
       later: { background: 'rgba(255, 255, 255, 0.08)', text: '#FFFFFF', border: 'rgba(255, 255, 255, 0.16)', icon: '#FFFFFF' },
       completed: { background: 'rgba(22, 101, 52, 0.2)', text: '#4ade80', border: 'rgba(22, 101, 52, 0.4)', icon: '#4ade80' },
-    }
+    },
+    tabBarBackground: getStep(radixScales.cyanDark, 1),
+    dashboardStatus: {
+      due: '#22d3ee', // Light Blue
+      overdue: '#ef4444', // Light Red
+      later: '#ffffff', // White
+      completed: '#4ade80', // Light Green
+    },
   },
   // Explicit Zimam Themes (for future switching logic)
   zimamLight: {
@@ -209,14 +232,21 @@ export const Colors: {
     error: '#ef4444',
     warning: '#f59e0b',
     info: getStep(radixScales.cyanLight, 9),
-    dashboardCardBackground: getStep(radixScales.cyanLight, 4),
+    dashboardCardBackground: getStep(radixScales.cyanLight, 9),
     overlay: 'rgba(0,0,0,0.5)',
     status: {
       due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
       overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
       later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
       completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
-    }
+    },
+    tabBarBackground: getStep(radixScales.sageLight, 4),
+    dashboardStatus: {
+      due: '#0c4a6e', // Dark Blue
+      overdue: '#7f1d1d', // Dark Red
+      later: '#ffffff', // White
+      completed: '#134e4a', // Dark Teal/Green
+    },
   },
   zimamDark: {
     // Same as dark above
@@ -258,7 +288,14 @@ export const Colors: {
       overdue: { background: 'rgba(163, 88, 41, 0.16)', text: '#f59e0b', border: 'rgba(163, 88, 41, 0.3)', icon: '#f59e0b' },
       later: { background: 'rgba(255, 255, 255, 0.08)', text: '#FFFFFF', border: 'rgba(255, 255, 255, 0.16)', icon: '#FFFFFF' },
       completed: { background: 'rgba(22, 101, 52, 0.2)', text: '#4ade80', border: 'rgba(22, 101, 52, 0.4)', icon: '#4ade80' },
-    }
+    },
+    tabBarBackground: getStep(radixScales.cyanDark, 1),
+    dashboardStatus: {
+      due: '#22d3ee', // Light Blue
+      overdue: '#ef4444', // Light Red
+      later: '#ffffff', // White
+      completed: '#4ade80', // Light Green
+    },
   },
   // Direct access properties (defaulting to light theme initially)
   text: getStep(radixScales.sageLight, 12),
@@ -294,13 +331,20 @@ export const Colors: {
   info: getStep(radixScales.cyanLight, 9),
   white: '#ffffff',
   border: '#555555',
-  dashboardCardBackground: getStep(radixScales.cyanLight, 4),
+  dashboardCardBackground: getStep(radixScales.cyanLight, 9),
   overlay: 'rgba(0,0,0,0.5)',
   status: {
     due: { background: '#E3F7F4', text: '#0EB39E', border: '#A1E4DC', icon: '#0EB39E' },
     overdue: { background: '#F4E6DD', text: '#A35829', border: '#E3C8B4', icon: '#A35829' },
     later: { background: 'rgba(0, 0, 0, 0.05)', text: getStep(radixScales.sageLight, 11), border: 'rgba(0, 0, 0, 0.1)', icon: getStep(radixScales.sageLight, 11) },
     completed: { background: '#f0fdf4', text: '#166534', border: '#bbf7d0', icon: '#166534' },
+  },
+  tabBarBackground: getStep(radixScales.sageLight, 4),
+  dashboardStatus: {
+    due: '#0c4a6e',
+    overdue: '#7f1d1d',
+    later: '#ffffff',
+    completed: '#134e4a',
   },
 };
 
@@ -323,6 +367,3 @@ export const UILibColors = getUILibraryColors();
 
 // Export as default for convenience
 export default Colors;
-
-
-
