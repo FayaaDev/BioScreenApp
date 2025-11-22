@@ -1109,7 +1109,7 @@ export function FamilyManagement({
                 <View>
                   {/* Relationship Field */}
                   <View marginB-s4>
-                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>العلاقة</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.relationship")}</Text>
                     <TextField
                       style={{
                         height: 48,
@@ -1140,7 +1140,7 @@ export function FamilyManagement({
 
                   {/* Gender */}
                   <View marginB-s4>
-                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>الجنس</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.gender")}</Text>
                     <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
                       <ArabicButton
                         label={t("common.male")}
@@ -1184,7 +1184,7 @@ export function FamilyManagement({
 
                   {/* Date of Birth */}
                   <View marginB-s4>
-                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>تاريخ الميلاد</Text>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.dateOfBirth")}</Text>
                     <TouchableOpacity
                       style={{
                         height: 48,
@@ -1207,7 +1207,7 @@ export function FamilyManagement({
                             month: 'long',
                             day: 'numeric',
                           })
-                          : 'اختر تاريخ الميلاد'}
+                          : t("family.selectDateOfBirth")}
                       </Text>
                     </TouchableOpacity>
                     {showDatePicker && Platform.OS === 'ios' && (
@@ -1234,7 +1234,7 @@ export function FamilyManagement({
                             />
                             <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
                               <Button
-                                label="إلغاء"
+                                label={t("common.cancel")}
                                 backgroundColor={Colors.background}
                                 style={{ flex: 1, paddingVertical: 12 }}
                                 onPress={() => {
@@ -1244,7 +1244,7 @@ export function FamilyManagement({
                                 labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
                               />
                               <Button
-                                label="تأكيد"
+                                label={t("family.confirm")}
                                 backgroundColor={Colors.primary}
                                 style={{ flex: 1, paddingVertical: 12 }}
                                 onPress={() => {
@@ -1286,8 +1286,8 @@ export function FamilyManagement({
                         maximumDate={new Date()}
                         minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
                         themeVariant="dark"
-                        positiveButton={{ label: 'موافق', textColor: Colors.primary }}
-                        negativeButton={{ label: 'إلغاء', textColor: Colors.error }}
+                        positiveButton={{ label: t("family.confirm"), textColor: Colors.primary }}
+                        negativeButton={{ label: t("common.cancel"), textColor: Colors.error }}
                       />
                     )}
                     {submitAttempted && validationErrors.dateOfBirth && (
@@ -1298,7 +1298,7 @@ export function FamilyManagement({
                   {/* Height */}
                   <View marginB-s4>
                     <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                      الطول: {formData.height || '140'} سم
+                      {t("onboarding.height")}: {formData.height || '140'} {t("common.cm")}
                     </Text>
                     <Slider
                       value={parseFloat(formData.height) || 140}
@@ -1322,7 +1322,7 @@ export function FamilyManagement({
                   {/* Weight */}
                   <View marginB-s4>
                     <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                      {t("family.weight")}: {formData.weight || '60'} كجم
+                      {t("onboarding.weight")}: {formData.weight || '60'} {t("common.kg")}
                     </Text>
                     <Slider
                       value={parseFloat(formData.weight) || 60}
@@ -1360,7 +1360,7 @@ export function FamilyManagement({
                           borderColor: Colors.primary + '20',
                         }}
                       >
-                        <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI)</Text>
+                        <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>{t("family.bmi")}</Text>
                         <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                           {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
                         </Text>
@@ -1380,29 +1380,29 @@ export function FamilyManagement({
                         paddingVertical: 4
                       }}
                     >
-                      الاستبيان الطبي
+                      {t("family.medicalSurveyTitle")}
                     </ArabicText>
                     <Text body textSecondary center marginT-s2>
-                      اختر ما ينطبق على فرد العائلة من الحالات التالية
+                      {t("family.selectConditions")}
                     </Text>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>نمط الحياة</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.lifestyle")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات المزمنة</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.chronicConditions")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
-                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات الأخرى</ArabicText>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.otherConditions")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                       {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => renderConditionChip(condition))}
                       {formData.gender === 'female' && (

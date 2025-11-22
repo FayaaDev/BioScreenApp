@@ -4,30 +4,6 @@
     "refreshing": "جاري التحديث...",
     "error": "خطأ",
     "save": "حفظ",
-    "cancel": "إلغاء",
-    "submit": "إرسال",
-    "continue": "متابعة",
-    "back": "رجوع",
-    "next": "التالي",
-    "done": "تم",
-    "close": "إغلاق",
-    "male": "ذكر",
-    "female": "أنثى",
-    "age": "العمر",
-    "you": "أنت",
-    "years": "سنوات"
-  },
-  "navigation": {
-    "home": "الرئيسية",
-    "upcoming": " أحجز",
-    "completed": "مكتمل ",
-    "profile": "الملف الشخصي",
-    "admin": "لوحة الإدارة"
-  },
-  "onboarding": {
-    "title": "تذكير الفحوصات الصحية",
-    "subtitle": "احصل على توصيات شخصية للفحوصات الطبية",
-    "fullName": "الاسم الكامل",
     "fullNamePlaceholder": "أدخل اسمك الكامل",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "أدخل بريدك الإلكتروني",
@@ -116,7 +92,14 @@
       "dateOfBirth": "الرجاء إدخال تاريخ الميلاد",
       "height": "الرجاء إدخال الطول",
       "weight": "الرجاء إدخال الوزن"
-    }
+    },
+    "male": "ذكر",
+    "female": "أنثى",
+    "cancel": "إلغاء",
+    "cm": "سم",
+    "kg": "كجم",
+    "understood": "فهمت",
+    "noInfo": "لا توجد معلومات متاحة"
   },
   "home": {
     "greeting": "مرحبا بك في زِمامـ",
@@ -403,7 +386,12 @@
       "gestationalDiabetesHistory": "أصبت بمرض سكري الحمل في حمل سابق",
       "sexualHistory": "قمت باتصال جنسي خلال علاقة زوجية حالية أو سابقة"
     },
-    "medicalConditions": "الحالات الصحية"
+    "medicalConditions": "الحالات الصحية",
+    "medicalSurveyTitle": "الاستبيان الطبي",
+    "selectConditions": "اختر كل ما ينطبق على فرد العائلة",
+    "lifestyle": "نمط الحياة",
+    "chronicConditions": "الحالات المزمنة",
+    "otherConditions": "الحالات الأخرى"
   },
   "language": {
     "switchTo": "English",

@@ -185,7 +185,9 @@ export default function Onboarding() {
     try {
       // Get or create local user ID
       let userId = await AsyncStorage.getItem('local_user_id');
-      medicalStorage.setOnboardingComplete(userId, true);
+      if (userId) {
+        medicalStorage.setOnboardingComplete(userId, true);
+      }
 
       showToast({
         title: 'مرحباً بك',
@@ -342,18 +344,18 @@ export default function Onboarding() {
       >
         <Card padding-s5 backgroundColor={Colors.card} br40>
           <View center marginB-s6>
-            <Text h2 zimam-primary center marginB-s2>مرحباً بك في زِمامـ</Text>
+            <Text h2 zimam-primary center marginB-s2>{t("onboarding.welcomeTitle")}</Text>
             <Text body color={Colors.textSecondary} center>
-              احصل على توصيات صحية وقائية مخصصة لك من خلال الإجابة على بعض الأسئلة السريعة حول جنسك وعمرك وحالتك الصحية
+              {t("onboarding.welcomeDesc")}
             </Text>
           </View>
 
           <View>
             <View marginB-s4>
-              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>الجنس</Text>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.gender")}</Text>
               <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
                 <ArabicButton
-                  label="ذكر"
+                  label={t("common.male")}
                   isSelected={formData.gender === 'male'}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'male' });
@@ -372,7 +374,7 @@ export default function Onboarding() {
                 />
 
                 <ArabicButton
-                  label="أنثى"
+                  label={t("common.female")}
                   isSelected={formData.gender === 'female'}
                   onPress={() => {
                     setFormData({ ...formData, gender: 'female' });
@@ -396,7 +398,7 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>تاريخ الميلاد</Text>
+              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.dateOfBirth")}</Text>
               <TouchableOpacity
                 style={{
                   height: 48,
@@ -444,7 +446,7 @@ export default function Onboarding() {
                       />
                       <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
                         <Button
-                          label="إلغاء"
+                          label={t("common.cancel")}
                           backgroundColor={Colors.background}
                           style={{ flex: 1, paddingVertical: 12 }}
                           onPress={() => {
@@ -454,7 +456,7 @@ export default function Onboarding() {
                           labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
                         />
                         <Button
-                          label="تأكيد"
+                          label={t("family.confirm")}
                           backgroundColor={Colors.primary}
                           style={{ flex: 1, paddingVertical: 12 }}
                           onPress={() => {
@@ -495,8 +497,8 @@ export default function Onboarding() {
                   }}
                   maximumDate={new Date()}
                   minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
-                  positiveButton={{ label: 'موافق', textColor: Colors.primary }}
-                  negativeButton={{ label: 'إلغاء', textColor: Colors.error }}
+                  positiveButton={{ label: t("family.confirm"), textColor: Colors.primary }}
+                  negativeButton={{ label: t("common.cancel"), textColor: Colors.error }}
                   themeVariant="dark"
                 />
               )}
@@ -507,7 +509,7 @@ export default function Onboarding() {
 
             <View marginB-s4>
               <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                {t('onboarding.height')}: {formData.height || '140'} cm
+                {t("onboarding.height")}: {formData.height || '140'} {t("common.cm")}
               </Text>
               <Slider
                 value={parseFloat(formData.height) || 140}
@@ -530,7 +532,7 @@ export default function Onboarding() {
 
             <View marginB-s4>
               <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                {t('onboarding.weight')}: {formData.weight || '60'} kg
+                {t("onboarding.weight")}: {formData.weight || '60'} {t("common.kg")}
               </Text>
               <Slider
                 value={parseFloat(formData.weight) || 60}
@@ -567,7 +569,7 @@ export default function Onboarding() {
                   borderColor: Colors.primary + '20',
                 }}
               >
-                <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>مؤشر كتلة الجسم (BMI):</Text>
+                <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>{t("family.bmi")}</Text>
                 <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
                   {calculateBMI(parseFloat(formData.height), parseFloat(formData.weight)).toFixed(1)}
                 </Text>
@@ -587,7 +589,7 @@ export default function Onboarding() {
                   paddingVertical: 4
                 }}
               >
-                الاستبيان الطبي
+                {t("family.medicalSurveyTitle")}
               </ArabicText>
               <Text body color={Colors.textSecondary} center marginT-s2>
                 {t('onboarding.medicalSurveyDesc')}
@@ -595,21 +597,21 @@ export default function Onboarding() {
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>نمط الحياة</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.lifestyle")}</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['physicalInactivity', 'tobaccoSmoking'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات المزمنة</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.chronicConditions")}</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['hypertension', 'diabetes', 'cardiovascularHistory', 'chronicOrganDisease'].map(renderConditionChip)}
               </View>
             </View>
 
             <View marginB-s4>
-              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>الحالات الأخرى</ArabicText>
+              <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.otherConditions")}</ArabicText>
               <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
                 {['highBloodPressureReadings', 'familyDiabetesHistory'].map(renderConditionChip)}
                 {formData.gender === 'female' && (
@@ -642,10 +644,10 @@ export default function Onboarding() {
                       </Text>
                     </View>
                     <Text style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 20 }}>
-                      {conditionExplanations[selectedInfoCondition] || 'لا توجد معلومات متاحة'}
+                      {conditionExplanations[selectedInfoCondition] || t("common.noInfo")}
                     </Text>
                     <Button
-                      label="فهمت"
+                      label={t("common.understood")}
                       backgroundColor={Colors.primary}
                       paddingV-12
                       borderRadius={12}
@@ -665,7 +667,7 @@ export default function Onboarding() {
               <Checkbox
                 value={formData.saveData}
                 onValueChange={(value) => setFormData({ ...formData, saveData: value })}
-                label="  حفظ البيانات لتخطي هذا النموذج مستقبلاً"
+                label={t("onboarding.saveData")}
                 color={Colors.primary}
                 labelStyle={{
                   fontFamily: 'ReadexPro-Medium',
@@ -685,12 +687,12 @@ export default function Onboarding() {
                 }}
               />
               <Text bodySmall right marginT-s1 style={{ color: Colors.textSecondary, lineHeight: 18, paddingVertical: 2 }}>
-                يمكنك تعديل أو مسح البيانات في أي وقت
+                {t("onboarding.saveDataDesc")}
               </Text>
             </View>
 
             <Button
-              label="حفظ البيانات"
+              label={t("common.save")}
               backgroundColor={isSubmitting ? Colors.textSecondary : Colors.primary}
               paddingV-16
               borderRadius={200}
