@@ -100,31 +100,15 @@
     "eveningGreeting": "مساء الخير، {{name}}!",
     "greetingDefault": "مرحباً بك!",
     "manageHealth": "أمسك بزمام صحتك\nلتتمتع بعمر أطول وصحة أفضل",
-    "testStatus": "حالة الفحوصات",
     "overdue": "المشورات",
     "completed": "مكتمل",
     "due": "التطعيمات",
     "later": "الفحوصات",
-    "healthTips": "جرعة وقائية ",
     "readMore": "اقرأ المزيد",
     "defaultTipTitle": "حافظ على صحتك",
     "defaultTipContent": "الفحوصات الطبية المنتظمة مهمة للكشف المبكر والوقاية من الأمراض. اتبع جدول الفحوصات الموصى به.",
-    "quickActions": "إجراءات سريعة",
-    "addFamily": "إضافة عائلة",
-    "manageFamilyMembers": "إدارة أفراد العائلة",
-    "upcomingTests": "الفحوصات القادمة",
-    "viewScheduledTests": "عرض الفحوصات المجدولة",
-    "completedTests": "الفحوصات المكتملة",
-    "viewTestHistory": "عرض تاريخ الفحوصات",
     "addResult": "إضافة نتيجة",
     "recordTestResult": "تسجيل نتيجة الفحص",
-    "tabs": {
-      "all": "الكل",
-      "overdue": "المشورات",
-      "done": "مكتمل",
-      "due": "التطعيمات",
-      "later": "الفحوصات"
-    },
     "noScreenings": "لا توجد توصيات.",
     "noScreeningsForTab": "لا توجد فحوصات {{status}}.",
     "noDue": "لا توجد تطعيمات.",
@@ -139,7 +123,23 @@
     "loadingPlan": "جاري تحميل خطتك الصحية...",
     "sessionExpired": "انتهت الجلسة",
     "sessionExpiredDesc": "انتهت جلستك بسبب إعادة تشغيل الخادم. يرجى إنشاء ملف شخصي جديد للمتابعة.",
-    "createNewProfile": "إنشاء ملف شخصي جديد"
+    "createNewProfile": "إنشاء ملف شخصي جديد",
+    "testStatusTitle": "حالة الفحوصات",
+    "statusTabs": {
+      "all": "الكل",
+      "overdue": "المشورات",
+      "done": "مكتمل",
+      "due": "التطعيمات",
+      "later": "الفحوصات"
+    },
+    "healthTipsTitle": "جرعة وقائية",
+    "quickActionsTitle": "إجراءات سريعة",
+    "addFamilyTitle": "إضافة عائلة",
+    "manageFamilyDesc": "إدارة أفراد العائلة",
+    "upcomingTestsTitle": "الفحوصات القادمة",
+    "viewScheduledTestsDesc": "عرض الفحوصات المجدولة",
+    "completedTestsTitle": "الفحوصات المكتملة",
+    "viewTestHistoryDesc": "عرض تاريخ الفحوصات"
   },
   "completed": {
     "title": "الفحوصات المكتملة",
@@ -381,7 +381,7 @@
     "switchTo": "English",
     "current": "العربية"
   },
-  "contact": {
+  "contactUs": {
     "title": "تواصل معنا",
     "send": "إرسال",
     "name": "الاسم",

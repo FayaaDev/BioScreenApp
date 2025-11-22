@@ -359,7 +359,7 @@ export default function HomeScreen() {
       {/* Stats Cards */}
       <View paddingH-s5 marginB-s5>
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.testStatus')}
+          {t('home.testStatusTitle')}
         </Text>
         <View row style={{ justifyContent: 'space-between', gap: 8 }}>
           <Card
@@ -391,7 +391,7 @@ export default function HomeScreen() {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {t('home.tabs.done')}
+              {t('home.statusTabs.done')}
             </Text>
           </Card>
 
@@ -424,7 +424,7 @@ export default function HomeScreen() {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {t('home.tabs.later')}
+              {t('home.statusTabs.later')}
             </Text>
           </Card>
 
@@ -457,7 +457,7 @@ export default function HomeScreen() {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {t('home.tabs.overdue')}
+              {t('home.statusTabs.overdue')}
             </Text>
           </Card>
 
@@ -490,7 +490,7 @@ export default function HomeScreen() {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {t('home.tabs.due')}
+              {t('home.statusTabs.due')}
             </Text>
           </Card>
         </View>
@@ -499,7 +499,7 @@ export default function HomeScreen() {
       {/* Educational Content - Middle Section */}
       <View paddingH-s5 marginB-s8>
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.healthTips')}
+          {t('home.healthTipsTitle')}
         </Text>
 
         {educationalContent.length > 0 ? (
@@ -538,7 +538,7 @@ export default function HomeScreen() {
       {/* Quick Actions - Bottom Section */}
       <View paddingH-s5 marginB-s5>
         <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.quickActions')}
+          {t('home.quickActionsTitle')}
         </Text>
 
         <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between', gap: 12 }}>
@@ -549,10 +549,10 @@ export default function HomeScreen() {
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="account-group" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
-                {t('home.addFamily')}
+                {t('home.addFamilyTitle')}
               </Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
-                {t('home.manageFamilyMembers')}
+                {t('home.manageFamilyDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
@@ -564,10 +564,10 @@ export default function HomeScreen() {
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
-                {t('home.upcomingTests')}
+                {t('home.upcomingTestsTitle')}
               </Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
-                {t('home.viewScheduledTests')}
+                {t('home.viewScheduledTestsDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
@@ -579,10 +579,10 @@ export default function HomeScreen() {
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="clipboard-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
-                {t('home.completedTests')}
+                {t('home.completedTestsTitle')}
               </Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
-                {t('home.viewTestHistory')}
+                {t('home.viewTestHistoryDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
@@ -593,8 +593,8 @@ export default function HomeScreen() {
           >
             <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="email" size={32} color={Colors.primary} />
-              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>{t('contact.title')}</Text>
-              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>{t('contact.description')}</Text>
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>{t('contactUs.title')}</Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>{t('contactUs.description')}</Text>
             </Card>
           </TouchableOpacity>
         </View>

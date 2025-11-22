@@ -52,51 +52,16 @@
     "greeting": "Hello!",
     "greetingWithName": "Hello, {{name}}!",
     "hello": "Hello, {{name}}",
-    "welcomeDesc": "Get personalized medical screening reminders based on your age and gender. Never miss important health checkups again.",
-    "missingInfo": "Missing Information",
-    "fillAllFields": "Please fill in all fields.",
-    "createError": "Failed to create your profile. Please try again.",
-    "userAgreement": "User Agreement",
-    "userAgreementTitle": "User Agreement for Medical Screening App",
-    "validationRequired": "This field is required",
-    "validationEmail": "Please enter a valid email address"
-  },
-  "home": {
-    "greeting": "Hello!",
-    "greetingWithName": "Hello, {{name}}!",
-    "hello": "Hello, {{name}}",
-    "welcomeDesc": "Get personalized medical screening reminders based on your age and gender. Never miss important health checkups again.",
-    "missingInfo": "Missing Information",
-    "fillAllFields": "Please fill in all fields.",
-    "createError": "Failed to create your profile. Please try again.",
-    "userAgreement": "User Agreement",
-    "userAgreementTitle": "User Agreement for Medical Screening App",
-    "validationRequired": "This field is required",
-    "validationEmail": "Please enter a valid email address"
-  },
-  "home": {
-    "greeting": "Hello!",
-    "greetingWithName": "Hello, {{name}}!",
-    "hello": "Hello, {{name}}",
     "screeningsFor": "{{name}}'s Screenings",
     "morningGreeting": "Good morning, {{name}}!",
     "afternoonGreeting": "Good afternoon, {{name}}!",
     "eveningGreeting": "Good evening, {{name}}!",
     "greetingDefault": "Welcome!",
     "manageHealth": "Manage your health",
-    "testStatus": "Test Status",
     "due": "Due Now",
     "overdue": "Overdue",
-    "viewTestHistory": "View test history",
     "addResult": "Add Result",
     "recordTestResult": "Record test result",
-    "tabs": {
-      "all": "All",
-      "due": "Due",
-      "overdue": "Overdue",
-      "later": "Later",
-      "done": "Done"
-    },
     "noScreenings": "No screenings found.",
     "noScreeningsForTab": "No {{status}} screenings.",
     "noDue": "No due screenings.",
@@ -107,7 +72,23 @@
     "markComplete": "Mark Complete",
     "screeningCompleted": "Screening Completed",
     "screeningCompletedDesc": "Great job! Your screening has been marked as completed.",
-    "updateError": "Failed to update screening status. Please try again."
+    "updateError": "Failed to update screening status. Please try again.",
+    "testStatusTitle": "Test Status",
+    "statusTabs": {
+      "all": "All",
+      "due": "Vaccinations",
+      "overdue": "Counselings",
+      "later": "Screenings",
+      "done": "Done"
+    },
+    "viewTestHistoryDesc": "View test history",
+    "healthTipsTitle": "Health Tips",
+    "quickActionsTitle": "Quick Actions",
+    "addFamilyTitle": "Add Family",
+    "manageFamilyDesc": "Manage Family Members",
+    "upcomingTestsTitle": "Upcoming Tests",
+    "viewScheduledTestsDesc": "View Scheduled Tests",
+    "completedTestsTitle": "Completed Tests"
   },
   "completed": {
     "title": "Completed Screenings",
@@ -339,7 +320,7 @@
     },
     "medicalConditions": "Medical Conditions"
   },
-  "contact": {
+  "contactUs": {
     "title": "Contact Us",
     "send": "Send",
     "name": "Name",
