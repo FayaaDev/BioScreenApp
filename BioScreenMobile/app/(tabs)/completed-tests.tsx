@@ -227,18 +227,19 @@ export default function CompletedTests() {
   const calculateBMI = (height: string, weight: string) => {
     const h = parseFloat(height) / 100;
     const w = parseFloat(weight);
-    if (!h || !w) return null;
     return (w / (h * h)).toFixed(1);
   };
 
   const bmi = calculateBMI(currentPerson.height, currentPerson.weight);
 
-  const getBMICategory = (bmiValue: string) => {
-    const bmi = parseFloat(bmiValue);
+  const getBMICategory = (bmiValue: string | number) => {
+    const bmi = typeof bmiValue === 'string' ? parseFloat(bmiValue) : bmiValue;
     if (bmi < 18.5) return t("family.bmiCategory.underweight");
     if (bmi < 25) return t("family.bmiCategory.normal");
     if (bmi < 30) return t("family.bmiCategory.overweight");
-    return t("family.bmiCategory.obese");
+    if (bmi < 35) return t("family.bmiCategory.obese1");
+    if (bmi < 40) return t("family.bmiCategory.obese2");
+    return t("family.bmiCategory.obese3");
   };
 
   const completedScreenings = filterScreeningsByStatus(screenings, 'completed');

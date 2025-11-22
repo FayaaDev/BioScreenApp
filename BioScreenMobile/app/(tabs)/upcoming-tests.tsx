@@ -634,13 +634,14 @@ export default function UpcomingTests() {
 
   const bmi = calculateBMI(currentPerson.height, currentPerson.weight);
 
-  const getBMICategory = (bmiValue: string) => {
-    const bmi = parseFloat(bmiValue);
+  const getBMICategory = (bmiValue: string | number) => {
+    const bmi = typeof bmiValue === 'string' ? parseFloat(bmiValue) : bmiValue;
     if (bmi < 18.5) return t("family.bmiCategory.underweight");
     if (bmi < 25) return t("family.bmiCategory.normal");
     if (bmi < 30) return t("family.bmiCategory.overweight");
-    // Use obese1 as generic obese since 'obese' key is missing
-    return t("family.bmiCategory.obese1");
+    if (bmi < 35) return t("family.bmiCategory.obese1");
+    if (bmi < 40) return t("family.bmiCategory.obese2");
+    return t("family.bmiCategory.obese3");
   };
 
   const stats = calculateScreeningStats(screenings);
