@@ -63,7 +63,9 @@
       "dateOfBirth": "Please enter date of birth",
       "height": "Please enter height",
       "weight": "Please enter weight"
-    }
+    },
+    "selectDate": "Select Date",
+    "medicalSurveyDesc": "Select all that apply to you, or leave blank if unsure"
   },
   "phoneNumber": {
     "label": "Mobile Number (WhatsApp)",
