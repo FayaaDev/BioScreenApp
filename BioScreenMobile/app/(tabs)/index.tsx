@@ -141,7 +141,7 @@ export default function HomeScreen() {
 
   // Fetch family members data from local storage
   const { data: familyMembersData } = useQuery<StoredFamilyMember[]>({
-    queryKey: ['family-members', userId],
+    queryKey: ["familyMembers", userId],
     queryFn: async () => {
       if (!userId) return [];
       return await medicalStorage.getFamilyMembers(userId);

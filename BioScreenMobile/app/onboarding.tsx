@@ -16,6 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { medicalStorage } from '../lib/medical-storage';
 import Colors from '../constants/Colors';
 import { useColorScheme } from '../hooks/useColorScheme';
+import { useTranslation } from 'react-i18next';
 
 // Custom Text wrapper with proper Arabic text rendering
 const ArabicText = ({ children, style, ...props }: any) => (
@@ -120,6 +121,7 @@ interface FormErrors {
 
 export default function Onboarding() {
   const colorScheme = useColorScheme() ?? 'light';
+  const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -145,17 +147,33 @@ export default function Onboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
 
+  const getConditionTranslationKey = (condition: string): string => {
+    const map: { [key: string]: string } = {
+      'قلة النشاط البدني': 'physicalInactivity',
+      'تدخين التبغ': 'tobaccoSmoking',
+      'مرض ارتفاع ضغط الدم': 'hypertension',
+      'داء السكري': 'diabetes',
+      'تاريخ لمرض قلبي وعائي': 'cardiovascularHistory',
+      'مرض عضوي مزمن': 'chronicOrganDisease',
+      'قراءات مرتفعة لضغط الدم': 'highBloodPressureReadings',
+      'تاريخ عائلي للسكري': 'familyDiabetesHistory',
+      'تاريخ لسكري الحمل': 'gestationalDiabetesHistory',
+      'تاريخ جنسي': 'sexualHistory'
+    };
+    return map[condition] || condition;
+  };
+
   const conditionExplanations: { [key: string]: string } = {
-    'قلة النشاط البدني': 'أمارس أقل من ساعتين ونصف أسبوعيًا من النشاط البدني المعتدل، مثل المشي السريع',
-    'تدخين التبغ': 'أستخدم منتجات التبغ، مثل السجائر أو الشيشة',
-    'مرض ارتفاع ضغط الدم': 'لدي مرض ارتفاع ضغط الدم',
-    'داء السكري': 'لدي مرض السكري من النوع الأول أو الثاني، المعروف أيضًا بداء السكري',
-    'تاريخ لمرض قلبي وعائي': 'أصبت بأحد الأمراض القلبية الوعائية، مثل النوبة القلبية أو الذبحة الصدرية أو السكتة الدماغية',
-    'مرض عضوي مزمن': 'لدي مرض مزمن في القلب أو الرئتين أو الكبد أو الكلى',
-    'قراءات مرتفعة لضغط الدم': 'قراءاتي لضغط الدم أعلى من 130‏/85 ملم زئبق، دون تشخيص بمرض ارتفاع ضغط الدم',
-    'تاريخ عائلي للسكري': 'لدى أحد أفراد عائلتي (الوالدين أو الإخوة) مرض السكري',
-    'تاريخ لسكري الحمل': 'أصبت بمرض سكري الحمل في حمل سابق',
-    'تاريخ جنسي': 'قمت باتصال جنسي خلال علاقة زوجية حالية أو سابقة',
+    'قلة النشاط البدني': t('family.explanations.physicalInactivity'),
+    'تدخين التبغ': t('family.explanations.tobaccoSmoking'),
+    'مرض ارتفاع ضغط الدم': t('family.explanations.hypertension'),
+    'داء السكري': t('family.explanations.diabetes'),
+    'تاريخ لمرض قلبي وعائي': t('family.explanations.cardiovascularHistory'),
+    'مرض عضوي مزمن': t('family.explanations.chronicOrganDisease'),
+    'قراءات مرتفعة لضغط الدم': t('family.explanations.highBloodPressureReadings'),
+    'تاريخ عائلي للسكري': t('family.explanations.familyDiabetesHistory'),
+    'تاريخ لسكري الحمل': t('family.explanations.gestationalDiabetesHistory'),
+    'تاريخ جنسي': t('family.explanations.sexualHistory'),
   };
 
   const handleSubmit = async () => {
@@ -261,11 +279,12 @@ export default function Onboarding() {
 
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
+    const translationKey = getConditionTranslationKey(condition);
 
     return (
       <View key={condition} style={{ position: 'relative' }}>
         <Chip
-          label={condition}
+          label={t(`family.conditions.${translationKey}`, { defaultValue: condition })}
           onPress={() => {
             setFormData({
               ...formData,

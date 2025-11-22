@@ -599,21 +599,37 @@ export function FamilyManagement({
   >({});
   const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
 
+  const getConditionTranslationKey = (condition: string): string => {
+    const map: { [key: string]: string } = {
+      'قلة النشاط البدني': 'physicalInactivity',
+      'تدخين التبغ': 'tobaccoSmoking',
+      'مرض ارتفاع ضغط الدم': 'hypertension',
+      'داء السكري': 'diabetes',
+      'تاريخ لمرض قلبي وعائي': 'cardiovascularHistory',
+      'مرض عضوي مزمن': 'chronicOrganDisease',
+      'قراءات مرتفعة لضغط الدم': 'highBloodPressureReadings',
+      'تاريخ عائلي للسكري': 'familyDiabetesHistory',
+      'تاريخ لسكري الحمل': 'gestationalDiabetesHistory',
+      'تاريخ جنسي': 'sexualHistory'
+    };
+    return map[condition] || condition;
+  };
+
   const conditionExplanations: { [key: string]: string } = {
-    'قلة النشاط البدني': 'أمارس أقل من ساعتين ونصف أسبوعيًا من النشاط البدني المعتدل، مثل المشي السريع',
-    'تدخين التبغ': 'أستخدم منتجات التبغ، مثل السجائر أو الشيشة',
-    'مرض ارتفاع ضغط الدم': 'لدي مرض ارتفاع ضغط الدم',
-    'داء السكري': 'لدي مرض السكري من النوع الأول أو الثاني، المعروف أيضًا بداء السكري',
-    'تاريخ لمرض قلبي وعائي': 'أصبت بأحد الأمراض القلبية الوعائية، مثل النوبة القلبية أو الذبحة الصدرية أو السكتة الدماغية',
-    'مرض عضوي مزمن': 'لدي مرض مزمن في القلب أو الرئتين أو الكبد أو الكلى',
-    'قراءات مرتفعة لضغط الدم': 'قراءاتي لضغط الدم أعلى من 130‏/85 ملم زئبق، دون تشخيص بمرض ارتفاع ضغط الدم',
-    'تاريخ عائلي للسكري': 'لدى أحد أفراد عائلتي (الوالدين أو الإخوة) مرض السكري',
-    'تاريخ لسكري الحمل': 'أصبت بمرض سكري الحمل في حمل سابق',
-    'تاريخ جنسي': 'قمت باتصال جنسي خلال علاقة زوجية حالية أو سابقة',
+    'قلة النشاط البدني': t('family.explanations.physicalInactivity'),
+    'تدخين التبغ': t('family.explanations.tobaccoSmoking'),
+    'مرض ارتفاع ضغط الدم': t('family.explanations.hypertension'),
+    'داء السكري': t('family.explanations.diabetes'),
+    'تاريخ لمرض قلبي وعائي': t('family.explanations.cardiovascularHistory'),
+    'مرض عضوي مزمن': t('family.explanations.chronicOrganDisease'),
+    'قراءات مرتفعة لضغط الدم': t('family.explanations.highBloodPressureReadings'),
+    'تاريخ عائلي للسكري': t('family.explanations.familyDiabetesHistory'),
+    'تاريخ لسكري الحمل': t('family.explanations.gestationalDiabetesHistory'),
+    'تاريخ جنسي': t('family.explanations.sexualHistory'),
   };
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
-    queryKey: ["family", userId],
+    queryKey: ["familyMembers", userId],
     queryFn: async () => {
       if (!userId) return [];
       return await medicalStorage.getFamilyMembers(userId);
@@ -634,7 +650,7 @@ export function FamilyManagement({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       setIsModalOpen(false);
       setEditingMember(null);
@@ -668,7 +684,7 @@ export function FamilyManagement({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       setEditingMember(null);
       setIsModalOpen(false);
@@ -693,7 +709,7 @@ export function FamilyManagement({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       showToast({ title: t("family.memberDeleted"), type: "success" });
     },
@@ -875,11 +891,12 @@ export function FamilyManagement({
 
   const renderConditionChip = (condition: string) => {
     const isSelected = formData.medicalConditions.includes(condition);
+    const translationKey = getConditionTranslationKey(condition);
 
     return (
       <View key={condition} style={{ position: 'relative' }}>
         <Chip
-          label={condition}
+          label={t(`family.conditions.${translationKey}`, { defaultValue: condition })}
           onPress={() => {
             console.log('Chip pressed:', condition);
             setFormData({
@@ -1442,13 +1459,13 @@ export function FamilyManagement({
                     <MaterialIcons name="close" size={24} color={Colors.textSecondary} />
                   </TouchableOpacity>
                   <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.primary, marginBottom: 16, textAlign: 'center', marginTop: 12 }}>
-                    {selectedInfoCondition}
+                    {t(`family.conditions.${getConditionTranslationKey(selectedInfoCondition)}`, { defaultValue: selectedInfoCondition })}
                   </Text>
                   <Text style={{ fontSize: 15, fontFamily: 'ReadexPro', color: Colors.text, lineHeight: 24, textAlign: 'center' }}>
                     {conditionExplanations[selectedInfoCondition]}
                   </Text>
                   <Button
-                    label="فهمت"
+                    label={t("common.close")}
                     backgroundColor={Colors.primary}
                     paddingV-s4
                     marginT-s4
