@@ -144,7 +144,7 @@ export const Colors: {
     tabBarBackground: getStep(radixScales.sageLight, 4),
     dashboardStatus: {
       due: '#0c4a6e', // Dark Blue
-      overdue: '#ca8a04', // Dark Yellow/Gold
+      overdue: '#D97706', // Yellowish-Brownish (Amber 600)
       later: '#ffffff', // White
       completed: '#134e4a', // Dark Teal/Green
     },
@@ -193,7 +193,7 @@ export const Colors: {
     tabBarBackground: getStep(radixScales.cyanDark, 1),
     dashboardStatus: {
       due: '#22d3ee', // Light Blue
-      overdue: '#fbbf24', // Light Yellow
+      overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
       completed: '#4ade80', // Light Green
     },
@@ -243,7 +243,7 @@ export const Colors: {
     tabBarBackground: getStep(radixScales.sageLight, 4),
     dashboardStatus: {
       due: '#0c4a6e', // Dark Blue
-      overdue: '#7f1d1d', // Dark Red
+      overdue: '#D97706', // Yellowish-Brownish (Amber 600)
       later: '#ffffff', // White
       completed: '#134e4a', // Dark Teal/Green
     },
@@ -292,7 +292,7 @@ export const Colors: {
     tabBarBackground: getStep(radixScales.cyanDark, 1),
     dashboardStatus: {
       due: '#22d3ee', // Light Blue
-      overdue: '#ef4444', // Light Red
+      overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
       completed: '#4ade80', // Light Green
     },
@@ -342,7 +342,7 @@ export const Colors: {
   tabBarBackground: getStep(radixScales.sageLight, 4),
   dashboardStatus: {
     due: '#0c4a6e',
-    overdue: '#ca8a04',
+    overdue: '#D97706',
     later: '#ffffff',
     completed: '#134e4a',
   },
