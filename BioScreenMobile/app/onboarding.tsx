@@ -640,7 +640,7 @@ export default function Onboarding() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, gap: 12 }}>
                       <MaterialIcons name="info" size={28} color={Colors.primary} />
                       <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, fontSize: 18, textAlign: 'center', lineHeight: 28 }}>
-                        {selectedInfoCondition}
+                        {t(`family.conditions.${selectedInfoCondition}`)}
                       </Text>
                     </View>
                     <Text style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 20 }}>
