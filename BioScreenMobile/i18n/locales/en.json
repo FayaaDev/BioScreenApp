@@ -233,6 +233,7 @@
     "title": "Family Management",
     "description": "Add family members to manage their health screenings",
     "addMember": "Add Family Member",
+    "addMemberDescription": "Add a family member to get personalized recommendations for them",
     "editMember": "Edit Family Member",
     "name": "Name",
     "namePlaceholder": "Enter member name",
