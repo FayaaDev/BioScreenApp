@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInputProps } from 'react-native';
-import { TextField } from 'react-native-ui-lib';
+import { TextField, Colors } from 'react-native-ui-lib';
+import { useTranslation } from 'react-i18next';
 
 interface PhoneNumberInputProps extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   value: string;
@@ -16,14 +17,17 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   value,
   onChangeText,
   error,
-  label = 'رقم الجوال (WhatsApp)',
+  label,
   placeholder = 'xxxxxxxxx',
   isRTL = true,
   required = true,
   style,
   ...props
 }) => {
+  const { t } = useTranslation();
   const [displayValue, setDisplayValue] = useState('');
+
+  const actualLabel = label || t('common.phoneNumber.label');
 
   // Memoize the onChangeText callback to prevent unnecessary re-renders
   const handleChange = useCallback((newValue: string) => {
@@ -34,7 +38,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     // Extract just the 9 digits from the full phone number
     if (value) {
       let cleanValue = value.replace(/[^\d+]/g, '');
-      
+
       // Extract digits after +966
       if (cleanValue.startsWith('+966')) {
         const digits = cleanValue.substring(4);
@@ -70,9 +74,9 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   const handleTextChange = (text: string) => {
     // Only allow digits and limit to 9 characters
     const cleanText = text.replace(/[^\d]/g, '').substring(0, 9);
-    
+
     setDisplayValue(cleanText);
-    
+
     // Always prepend +966 to the digits
     const fullPhoneNumber = '+966' + cleanText;
     onChangeText(fullPhoneNumber);
@@ -80,13 +84,11 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
 
   return (
     <View style={styles.container}>
-      {label && (
-        <Text style={[styles.label]}>
-          {label}
-          {required && <Text style={styles.required}> *</Text>}
-        </Text>
-      )}
-      
+      <Text style={[styles.label]}>
+        {actualLabel}
+        {required && <Text style={styles.required}> *</Text>}
+      </Text>
+
       <View style={[
         styles.phoneInputContainer,
         error && styles.inputError
@@ -95,10 +97,10 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
         <View style={styles.countryCodeContainer}>
           <Text style={styles.countryCodeText}>+966</Text>
         </View>
-        
+
         {/* Separator */}
         <View style={styles.separator} />
-        
+
         {/* Phone number input box */}
         <TextField
           style={[
@@ -117,12 +119,12 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
           {...props}
         />
       </View>
-      
+
       {error && (
         <Text style={styles.errorText}>{error}</Text>
       )}
       <Text style={styles.helpText}>
-        
+
       </Text>
     </View>
   );
@@ -197,7 +199,7 @@ const styles = StyleSheet.create({
     fontFamily: 'ReadexPro',
   },
   inputError: {
-    bordercolor: Colors.error,
+    borderColor: Colors.error,
     backgroundColor: Colors.error + '10',
   },
   errorText: {
@@ -216,38 +218,38 @@ const styles = StyleSheet.create({
   },
 });
 
-export const validatePhoneNumber = (phoneNumber: string): string | null => {
+export const validatePhoneNumber = (phoneNumber: string, t: (key: string, options?: any) => string): string | null => {
   if (!phoneNumber || phoneNumber.trim() === '') {
-    return 'الرجاء إدخال رقم الهاتف';
+    return t('common.phoneNumber.required');
   }
 
   // Remove all non-digit characters except +
   const cleanNumber = phoneNumber.replace(/[^\d+]/g, '');
-  
+
   // Check if it starts with +966
   if (!cleanNumber.startsWith('+966')) {
-    return 'يجب أن يبدأ رقم الهاتف بـ +966';
+    return t('common.phoneNumber.startWith966');
   }
 
   // Check if it has exactly 9 digits after +966
   const digitsAfterPrefix = cleanNumber.substring(4);
   if (digitsAfterPrefix.length !== 9) {
     if (digitsAfterPrefix.length < 9) {
-      return `الرجاء إدخال ${9 - digitsAfterPrefix.length} أرقام إضافية`;
+      return t('common.phoneNumber.moreDigits', { count: 9 - digitsAfterPrefix.length });
     } else {
-      return 'رقم الهاتف طويل جداً';
+      return t('common.phoneNumber.tooLong');
     }
   }
 
   // Check if all characters after +966 are digits
   if (!/^\d{9}$/.test(digitsAfterPrefix)) {
-    return 'رقم الهاتف يجب أن يحتوي على أرقام فقط';
+    return t('common.phoneNumber.digitsOnly');
   }
 
   // Additional validation for Saudi phone numbers
   const firstDigit = digitsAfterPrefix[0];
   if (!['5', '9'].includes(firstDigit)) {
-    return 'رقم الهاتف السعودي يجب أن يبدأ برقم 5 أو 9 بعد 966';
+    return t('common.phoneNumber.saudiStart');
   }
 
   return null; // Valid

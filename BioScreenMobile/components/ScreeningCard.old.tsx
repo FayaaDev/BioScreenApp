@@ -30,95 +30,81 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
   const iconName = iconMap[getScreeningIcon(screening.screening?.category || 'general')] || 'pulse';
   const statusLabel = getScreeningStatusLabel(screening.status);
   const statusColors = STATUS_COLORS[screening.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.due;
-  
+
   const timeFromNow = getTimeFromNow(screening.nextDue);
-  const isCompleted = screening.status === 'completed';
-
-  // Helper function to get frequency text in Arabic
-  const getFrequencyText = (years: number) => {
-    if (i18n.language === 'ar') {
-      if (years === 0) return t("screening.noRepetition");
-      if (years === 1) return "كل سنة";
-      if (years === 2) return "كل سنتين";
-      return `كل ${years} سنين`;
-    }
-    return t("screening.everyYear", { count: years });
-  };
-
-  return (
-    <View style={{flexDirection: 'row', alignItems: 'stretch'}}>
-      {/* Left border */}
-      <View style={{width: 4, borderRadius: 4, backgroundColor: statusColors.border, marginRight: 8}} />
-      <View style={styles.card}>  
-        <View style={[styles.headerRow, isRTL && styles.rtlHeaderRow]}>
-          <View style={[styles.statusBadge, { backgroundColor: statusColors.background }]}> 
-            <Text style={[styles.statusBadgeText, { color: statusColors.text }]}> 
-              {statusLabel}
-            </Text>
-          </View>
-          <Text style={[styles.title, isRTL && styles.rtlText]} numberOfLines={1}>
-            {screening.screening?.name || 'Unknown Screening'}
+  <View style={{ flexDirection: 'row', alignItems: 'stretch' }}>
+    {/* Left border */}
+    <View style={{ width: 4, borderRadius: 4, backgroundColor: statusColors.border, marginRight: 8 }} />
+    <View style={styles.card}>
+      <View style={[styles.headerRow, isRTL && styles.rtlHeaderRow]}>
+        <View style={[styles.statusBadge, { backgroundColor: statusColors.background }]}>
+          <Text style={[styles.statusBadgeText, { color: statusColors.text }]}>
+            {statusLabel}
           </Text>
         </View>
-        <View style={[styles.iconAndDescRow, isRTL && styles.rtlIconAndDescRow]}>
-          <View style={[styles.iconContainer, { backgroundColor: statusColors.background }]}> 
-            {screening.screening?.iconUrl ? (
-              <Image 
-                source={{ uri: screening.screening.iconUrl }}
-                style={styles.icon}
-              />
-            ) : (
-              <MaterialCommunityIcons name={iconName} size={24} color={statusColors.icon} />
-            )}
-          </View>
-          <Text style={[styles.description, isRTL && styles.rtlText]} numberOfLines={2}>
-            {screening.screening?.description || 'No description available'}
-          </Text>
-        </View>
-        <View style={[styles.timeInfo, isRTL && styles.rtlTimeInfo]}>
-          <MaterialCommunityIcons name="clock-outline" size={14} color="#666" />
-          <Text style={styles.timeText}>
-            {screening.status === 'overdue' && userBirthDate
-              ? getOverdueTime(userBirthDate, screening.screening?.startAge || 0)
-              : getFrequencyText(screening.screening?.frequencyYears || 1)
-            }
-          </Text>
-        </View>
-        {screening.status === 'later' && screening.screening?.startAge && (
-          <Text style={[styles.ageInfo, isRTL && styles.rtlText]}>
-            {t("screening.takeAtAge", { age: screening.screening.startAge })}
-          </Text>
-        )}
-        {isCompleted && screening.screening?.frequencyYears && screening.screening.frequencyYears > 0 && (
-          <Text style={[styles.nextDue, isRTL && styles.rtlText]}>
-            {t("screening.nextDue", { date: formatDate(screening.nextDue) })}
-          </Text>
-        )}
-        <View style={[styles.actions]}>
-          {!isCompleted && (
-            <TouchableOpacity 
-              style={styles.scheduleButton}
-              onPress={() => {
-                const appLink = getSehhatyAppLink();
-                if (onSchedule) onSchedule();
-              }}
-            >
-              <Text style={styles.scheduleButtonText}>
-                {t("home.bookWithSehhaty")}
-              </Text>
-            </TouchableOpacity>
+        <Text style={[styles.title, isRTL && styles.rtlText]} numberOfLines={1}>
+          {screening.screening?.name || 'Unknown Screening'}
+        </Text>
+      </View>
+      <View style={[styles.iconAndDescRow, isRTL && styles.rtlIconAndDescRow]}>
+        <View style={[styles.iconContainer, { backgroundColor: statusColors.background }]}>
+          {screening.screening?.iconUrl ? (
+            <Image
+              source={{ uri: screening.screening.iconUrl }}
+              style={styles.icon}
+            />
+          ) : (
+            <MaterialCommunityIcons name={iconName} size={24} color={statusColors.icon} />
           )}
-          <TouchableOpacity 
-            style={styles.completeButton}
-            onPress={onMarkCompleted}
+        </View>
+        <Text style={[styles.description, isRTL && styles.rtlText]} numberOfLines={2}>
+          {screening.screening?.description || 'No description available'}
+        </Text>
+      </View>
+      <View style={[styles.timeInfo, isRTL && styles.rtlTimeInfo]}>
+        <MaterialCommunityIcons name="clock-outline" size={14} color="#666" />
+        <Text style={styles.timeText}>
+          {screening.status === 'overdue' && userBirthDate
+            ? getOverdueTime(userBirthDate, screening.screening?.startAge || 0)
+            : getFrequencyText(screening.screening?.frequencyYears || 1)
+          }
+        </Text>
+      </View>
+      {screening.status === 'later' && screening.screening?.startAge && (
+        <Text style={[styles.ageInfo, isRTL && styles.rtlText]}>
+          {t("screening.takeAtAge", { age: screening.screening.startAge })}
+        </Text>
+      )}
+      {isCompleted && screening.screening?.frequencyYears && screening.screening.frequencyYears > 0 && (
+        <Text style={[styles.nextDue, isRTL && styles.rtlText]}>
+          {t("screening.nextDue", { date: formatDate(screening.nextDue) })}
+        </Text>
+      )}
+      <View style={[styles.actions]}>
+        {!isCompleted && (
+          <TouchableOpacity
+            style={styles.scheduleButton}
+            onPress={() => {
+              const appLink = getSehhatyAppLink();
+              if (onSchedule) onSchedule();
+            }}
           >
-            <Text style={styles.completeButtonText}>
-              {isCompleted ? "غير مكتمل" : t("home.markComplete")}
+            <Text style={styles.scheduleButtonText}>
+              {t("home.bookWithSehhaty")}
             </Text>
           </TouchableOpacity>
-        </View>
+        )}
+        <TouchableOpacity
+          style={styles.completeButton}
+          onPress={onMarkCompleted}
+        >
+          <Text style={styles.completeButtonText}>
+            {isCompleted ? t("screening.status.incomplete") : t("home.markComplete")}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
+  </View>
   );
 }
 

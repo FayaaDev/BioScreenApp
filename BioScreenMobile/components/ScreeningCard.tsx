@@ -39,9 +39,9 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
   const getFrequencyText = (years: number) => {
     if (i18n.language === 'ar') {
       if (years === 0) return t("screening.noRepetition");
-      if (years === 1) return "كل سنة";
-      if (years === 2) return "كل سنتين";
-      return `كل ${years} سنين`;
+      if (years === 1) return t("screening.frequency.everyYear");
+      if (years === 2) return t("screening.frequency.every2Years");
+      return t("screening.frequency.everyNYears", { years });
     }
     return t("screening.everyYear", { count: years });
   };
@@ -156,7 +156,7 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
             />
           )}
           <Button
-            label={isCompleted ? "غير مكتمل" : t("home.markComplete")}
+            label={isCompleted ? t("screening.status.incomplete") : t("home.markComplete")}
             size="xSmall"
             outline
             outlineColor={Colors.border}

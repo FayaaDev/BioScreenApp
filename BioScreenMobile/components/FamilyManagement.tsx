@@ -601,31 +601,31 @@ export function FamilyManagement({
 
   const getConditionTranslationKey = (condition: string): string => {
     const map: { [key: string]: string } = {
-      'قلة النشاط البدني': 'physicalInactivity',
-      'تدخين التبغ': 'tobaccoSmoking',
-      'مرض ارتفاع ضغط الدم': 'hypertension',
-      'داء السكري': 'diabetes',
-      'تاريخ لمرض قلبي وعائي': 'cardiovascularHistory',
-      'مرض عضوي مزمن': 'chronicOrganDisease',
-      'قراءات مرتفعة لضغط الدم': 'highBloodPressureReadings',
-      'تاريخ عائلي للسكري': 'familyDiabetesHistory',
-      'تاريخ لسكري الحمل': 'gestationalDiabetesHistory',
-      'تاريخ جنسي': 'sexualHistory'
+      'physicalInactivity': 'physicalInactivity',
+      'tobaccoSmoking': 'tobaccoSmoking',
+      'hypertension': 'hypertension',
+      'diabetes': 'diabetes',
+      'cardiovascularHistory': 'cardiovascularHistory',
+      'chronicOrganDisease': 'chronicOrganDisease',
+      'highBloodPressureReadings': 'highBloodPressureReadings',
+      'familyDiabetesHistory': 'familyDiabetesHistory',
+      'gestationalDiabetesHistory': 'gestationalDiabetesHistory',
+      'sexualHistory': 'sexualHistory'
     };
     return map[condition] || condition;
   };
 
   const conditionExplanations: { [key: string]: string } = {
-    'قلة النشاط البدني': t('family.explanations.physicalInactivity'),
-    'تدخين التبغ': t('family.explanations.tobaccoSmoking'),
-    'مرض ارتفاع ضغط الدم': t('family.explanations.hypertension'),
-    'داء السكري': t('family.explanations.diabetes'),
-    'تاريخ لمرض قلبي وعائي': t('family.explanations.cardiovascularHistory'),
-    'مرض عضوي مزمن': t('family.explanations.chronicOrganDisease'),
-    'قراءات مرتفعة لضغط الدم': t('family.explanations.highBloodPressureReadings'),
-    'تاريخ عائلي للسكري': t('family.explanations.familyDiabetesHistory'),
-    'تاريخ لسكري الحمل': t('family.explanations.gestationalDiabetesHistory'),
-    'تاريخ جنسي': t('family.explanations.sexualHistory'),
+    'physicalInactivity': t('family.explanations.physicalInactivity'),
+    'tobaccoSmoking': t('family.explanations.tobaccoSmoking'),
+    'hypertension': t('family.explanations.hypertension'),
+    'diabetes': t('family.explanations.diabetes'),
+    'cardiovascularHistory': t('family.explanations.cardiovascularHistory'),
+    'chronicOrganDisease': t('family.explanations.chronicOrganDisease'),
+    'highBloodPressureReadings': t('family.explanations.highBloodPressureReadings'),
+    'familyDiabetesHistory': t('family.explanations.familyDiabetesHistory'),
+    'gestationalDiabetesHistory': t('family.explanations.gestationalDiabetesHistory'),
+    'sexualHistory': t('family.explanations.sexualHistory'),
   };
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
@@ -822,17 +822,17 @@ export function FamilyManagement({
 
     // Convert legacy fields to medical conditions array
     const conditions: string[] = member.medicalConditions || [];
-    if (member.isDiabetic && !conditions.includes('داء السكري')) {
-      conditions.push('داء السكري');
+    if (member.isDiabetic && !conditions.includes('diabetes')) {
+      conditions.push('diabetes');
     }
-    if (member.isHypertensive && !conditions.includes('مرض ارتفاع ضغط الدم')) {
-      conditions.push('مرض ارتفاع ضغط الدم');
+    if (member.isHypertensive && !conditions.includes('hypertension')) {
+      conditions.push('hypertension');
     }
-    if (member.isCholesterol && !conditions.includes('قراءات مرتفعة لضغط الدم')) {
-      conditions.push('قراءات مرتفعة لضغط الدم');
+    if (member.isCholesterol && !conditions.includes('highBloodPressureReadings')) {
+      conditions.push('highBloodPressureReadings');
     }
-    if (member.isSmoker && !conditions.includes('تدخين التبغ')) {
-      conditions.push('تدخين التبغ');
+    if (member.isSmoker && !conditions.includes('tobaccoSmoking')) {
+      conditions.push('tobaccoSmoking');
     }
 
     setFormData({
@@ -1390,25 +1390,25 @@ export function FamilyManagement({
                   <View marginB-s4>
                     <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.lifestyle")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                      {['قلة النشاط البدني', 'تدخين التبغ'].map((condition) => renderConditionChip(condition))}
+                      {['physicalInactivity', 'tobaccoSmoking'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
                     <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.chronicConditions")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                      {['مرض ارتفاع ضغط الدم', 'داء السكري', 'تاريخ لمرض قلبي وعائي', 'مرض عضوي مزمن'].map((condition) => renderConditionChip(condition))}
+                      {['hypertension', 'diabetes', 'cardiovascularHistory', 'chronicOrganDisease'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
 
                   <View marginB-s4>
                     <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.otherConditions")}</ArabicText>
                     <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
-                      {['قراءات مرتفعة لضغط الدم', 'تاريخ عائلي للسكري'].map((condition) => renderConditionChip(condition))}
+                      {['highBloodPressureReadings', 'familyDiabetesHistory'].map((condition) => renderConditionChip(condition))}
                       {formData.gender === 'female' && (
                         <>
-                          {renderConditionChip('تاريخ لسكري الحمل')}
-                          {renderConditionChip('تاريخ جنسي')}
+                          {renderConditionChip('gestationalDiabetesHistory')}
+                          {renderConditionChip('sexualHistory')}
                         </>
                       )}
                     </View>
