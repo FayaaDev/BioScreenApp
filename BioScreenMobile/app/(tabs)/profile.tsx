@@ -91,16 +91,34 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (userId) {
-      await medicalStorage.saveUserProfile(userId, {
-        ...formData,
-        isDiabetic: false,
-        isHypertensive: false,
-        isCholesterol: false,
-        isSmoker: false,
-        height: "",
-        weight: "",
-        isSexuallyActive: false,
-      });
+      // Get existing profile to preserve all fields
+      const existingProfile = await medicalStorage.getUserProfile(userId);
+      
+      if (existingProfile) {
+        // Update only the fields we're editing, preserve everything else
+        await medicalStorage.saveUserProfile(userId, {
+          ...existingProfile,
+          dateOfBirth: formData.dateOfBirth,
+          gender: formData.gender,
+        });
+      } else {
+        // Create new profile if it doesn't exist
+        await medicalStorage.saveUserProfile(userId, {
+          dateOfBirth: formData.dateOfBirth,
+          gender: formData.gender,
+          height: "",
+          weight: "",
+          isDiabetic: false,
+          isHypertensive: false,
+          isCholesterol: false,
+          isSmoker: false,
+          isSexuallyActive: false,
+        });
+      }
+      
+      // Invalidate queries to refresh profile data in all screens
+      queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+      
       setIsEditing(false);
       showToast({ title: t("profile.profileUpdated"), type: "success" });
     }

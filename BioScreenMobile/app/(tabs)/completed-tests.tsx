@@ -395,29 +395,16 @@ export default function CompletedTests() {
       >
         <View style={{ width: '100%' }}>
           <View style={{ width: '100%', gap: 12 }}>
-            {/* Gender Row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                {t("profile.gender")}:
-              </Text>
-              <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 14 }}>
-                  {currentPersonGender === "male" ? t("common.male") : t("common.female")}
-                </Text>
-              </View>
-            </View>
-
-            {/* Age Row */}
-            {currentPersonAge !== "" && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Gender and Date of Birth Row */}
+            {currentPerson.dateOfBirth && (
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                  {t("profile.age")}:
+                  {currentPersonGender === "male" ? t("common.male") : currentPersonGender === "female" ? t("common.female") : "-"}
                 </Text>
-                <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
-                  <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 14 }}>
-                    {currentPersonAge} {t("common.years")}
-                  </Text>
-                </View>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
+                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                  {currentPerson.dateOfBirth}
+                </Text>
               </View>
             )}
 

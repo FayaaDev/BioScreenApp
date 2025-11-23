@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export interface MedicalProfile {
   dateOfBirth: string;
   gender: string;
+  medicalConditions?: string[];
   isDiabetic: boolean;
   isHypertensive: boolean;
   isCholesterol: boolean;

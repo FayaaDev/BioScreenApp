@@ -17,6 +17,7 @@ import { medicalStorage } from '../lib/medical-storage';
 import { Colors } from 'react-native-ui-lib';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Custom Text wrapper with proper Arabic text rendering
 const ArabicText = ({ children, style, ...props }: any) => (
@@ -124,6 +125,7 @@ export default function Onboarding() {
   const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState<OnboardingFormData>({
@@ -186,7 +188,28 @@ export default function Onboarding() {
       // Get or create local user ID
       let userId = await AsyncStorage.getItem('local_user_id');
       if (userId) {
+        // Save the user profile data
+        await medicalStorage.saveUserProfile(userId, {
+          dateOfBirth: formData.dateOfBirth,
+          gender: formData.gender,
+          height: formData.height,
+          weight: formData.weight,
+          medicalConditions: formData.medicalConditions,
+          smokingDetails: formData.smokingDetails,
+          isDiabetic: formData.medicalConditions.includes('diabetes'),
+          isHypertensive: formData.medicalConditions.includes('hypertension'),
+          isCholesterol: formData.medicalConditions.includes('highBloodPressureReadings'),
+          isSmoker: formData.medicalConditions.includes('tobaccoSmoking'),
+          isPregnant: formData.isPregnant,
+          isSexuallyActive: formData.isSexuallyActive,
+          sexualActivityDetails: formData.sexualActivityDetails,
+        });
+        
+        // Mark onboarding as complete
         medicalStorage.setOnboardingComplete(userId, true);
+        
+        // Invalidate queries to refresh profile data in all screens
+        queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
       }
 
       showToast({
@@ -195,6 +218,9 @@ export default function Onboarding() {
         type: 'success',
       });
 
+      // Small delay to ensure AsyncStorage completes before navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Error saving onboarding data:', error);
