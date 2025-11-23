@@ -1,6 +1,7 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { View, Text } from 'react-native-ui-lib';
+import Colors from '../constants/Colors';
 
 export default function NotFoundScreen() {
   return (
@@ -9,7 +10,7 @@ export default function NotFoundScreen() {
       <View style={styles.container}>
         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>This screen does not exist.</Text>
         <Link href="/" style={styles.link}>
-          <Text style={{ color: '#0a7ea4' }}>Go to home screen!</Text>
+          <Text style={{ color: Colors.primary }}>Go to home screen!</Text>
         </Link>
       </View>
     </>

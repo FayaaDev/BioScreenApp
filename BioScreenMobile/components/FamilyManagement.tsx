@@ -5,8 +5,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Pressable,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Slider, Chip, Colors } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../hooks/useToast";
@@ -17,6 +19,78 @@ import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Custom Text wrapper with proper Arabic text rendering
+const ArabicText = ({ children, style, ...props }: any) => (
+  <Text
+    {...props}
+    style={[
+      {
+        lineHeight: style?.fontSize ? style.fontSize * 1.6 : 26,
+        includeFontPadding: false,
+        paddingVertical: 4,
+      },
+      style,
+    ]}
+  >
+    {children}
+  </Text>
+);
+
+// Reusable Arabic Button Component
+const ArabicButton = ({
+  label,
+  isSelected,
+  onPress,
+  icon,
+  disabled = false,
+  style = {}
+}: {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  style?: any;
+}) => (
+  <TouchableOpacity
+    style={[{
+      flex: 1,
+      minHeight: 56,
+      borderWidth: 2,
+      borderColor: isSelected ? Colors.primary : Colors.textSecondary,
+      backgroundColor: isSelected ? Colors.primary : Colors.card,
+      borderRadius: 20,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      elevation: isSelected ? 4 : 0,
+      shadowColor: isSelected ? Colors.primary : 'transparent',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    }, style]}
+    onPress={onPress}
+    disabled={disabled}
+  >
+    {icon}
+    <Text
+      style={{
+        fontFamily: 'ReadexPro-Bold',
+        color: isSelected ? Colors.white : Colors.textSecondary,
+        writingDirection: 'rtl',
+        fontSize: 15,
+        lineHeight: 24,
+        includeFontPadding: false,
+      }}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 interface FamilyMember {
   id: string;
   userId: string;
@@ -25,10 +99,7 @@ interface FamilyMember {
   dateOfBirth: string;
   createdAt: string;
   // Medical survey fields
-  isDiabetic: boolean;
-  isHypertensive: boolean;
-  isCholesterol: boolean;
-  isSmoker: boolean;
+  medicalConditions?: string[];
   smokingDetails?: {
     amount: string;
     duration: string;
@@ -40,6 +111,11 @@ interface FamilyMember {
   sexualActivityDetails?: {
     partnerCount: "single" | "multiple";
   };
+  // Legacy fields for backward compatibility
+  isDiabetic?: boolean;
+  isHypertensive?: boolean;
+  isCholesterol?: boolean;
+  isSmoker?: boolean;
 }
 
 export function FamilyManagement({
@@ -50,7 +126,447 @@ export function FamilyManagement({
   onSwitchPerson?: (id: string) => void;
 }) {
   const insets = useSafeAreaInsets();
-  
+
+  const styles = {
+    card: {
+      backgroundColor: Colors.card,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      marginBottom: 12,
+      textAlign: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    emptyText: {
+      textAlign: "center",
+      color: Colors.textSecondary,
+      fontSize: 16,
+      marginTop: 32,
+      fontFamily: "ReadexPro",
+    },
+    memberRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: Colors.background,
+      borderRadius: 16,
+      padding: 12,
+      gap: 12,
+      borderWidth: 1,
+      borderColor: Colors.textSecondary + '20',
+      marginBottom: 8,
+    },
+    memberInfo: {
+      flex: 1,
+    },
+    memberName: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    memberDetails: {
+      fontSize: 14,
+      color: Colors.textSecondary,
+      fontFamily: "ReadexPro",
+    },
+    memberActions: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    editButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+    },
+    editButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    deleteButton: {
+      backgroundColor: Colors.textSecondary,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginLeft: 4,
+    },
+    deleteButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    addButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      marginTop: 16,
+    },
+    addButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: Colors.background,
+      paddingTop: 32,
+    },
+    modalContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 16,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: Colors.primary,
+      marginBottom: 12,
+      textAlign: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    input: {
+      height: 48,
+      borderWidth: 1,
+      borderColor: Colors.textSecondary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      fontSize: 16,
+      backgroundColor: Colors.card,
+      color: Colors.text,
+      // width: "100%",
+      width: 250,
+      marginBottom: 8,
+      fontFamily: "ReadexPro",
+    },
+    label: {
+      fontSize: 16,
+      color: Colors.text,
+      fontWeight: "500",
+      marginBottom: 4,
+      alignSelf: "flex-start",
+      textAlign: "left",
+      fontFamily: "ReadexPro-Medium",
+    },
+    optionButton: {
+      backgroundColor: Colors.card,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      marginHorizontal: 4,
+      marginBottom: 4,
+    },
+    optionButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    optionButtonText: {
+      color: Colors.primary,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    optionButtonTextSelected: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    saveButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+    },
+    saveButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    cancelButton: {
+      backgroundColor: Colors.error,
+      borderRadius: 8,
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+    },
+    cancelButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    genderButton: {
+      backgroundColor: Colors.background,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      marginHorizontal: 4,
+      marginBottom: 4,
+    },
+    genderButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    genderButtonText: {
+      color: Colors.primary,
+      fontWeight: "bold",
+      fontFamily: "ReadexPro-Bold",
+    },
+    genderButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    questionContainer: {
+      gap: 8,
+      width: "100%",
+    },
+    questionLabel: {
+      fontSize: 16,
+      color: Colors.text,
+      fontWeight: "500",
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Medium",
+    },
+    yesNoContainer: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    yesNoButton: {
+      flex: 1,
+      height: 48,
+      borderWidth: 1,
+      borderColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.card,
+    },
+    yesNoButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    yesNoButtonText: {
+      fontSize: 16,
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    yesNoButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      textAlign: "center",
+      alignSelf: "center",
+      fontFamily: "ReadexPro-Bold",
+    },
+    medicalSurveyContainer: {
+      gap: 16,
+      width: "100%",
+    },
+    checkboxContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderWidth: 2,
+      borderColor: Colors.primary,
+      borderRadius: 4,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    checkboxLabel: {
+      fontSize: 16,
+      color: Colors.text,
+      fontFamily: "ReadexPro",
+    },
+    smokingDetailsContainer: {
+      gap: 8,
+      marginLeft: 32,
+    },
+    partnerCountContainer: {
+      marginLeft: 32,
+      gap: 8,
+    },
+    partnerCountButtons: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    partnerCountButton: {
+      flex: 1,
+      height: 40,
+      borderWidth: 1,
+      borderColor: Colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: Colors.card,
+    },
+    partnerCountButtonSelected: {
+      backgroundColor: Colors.primary,
+    },
+    partnerCountButtonText: {
+      fontSize: 14,
+      color: Colors.primary,
+      fontFamily: "ReadexPro-Bold",
+    },
+    partnerCountButtonTextSelected: {
+      color: Colors.white,
+      fontFamily: "ReadexPro-Bold",
+    },
+    inputContainer: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+    },
+    bmiBox: {
+      backgroundColor: Colors.background,
+      borderRadius: 10,
+      padding: 16,
+      marginTop: 12,
+      alignItems: "flex-start",
+    },
+    bmiLabel: {
+      color: Colors.success,
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    bmiValue: {
+      color: Colors.success,
+      fontWeight: "bold",
+      fontSize: 28,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    bmiCategoryText: {
+      color: Colors.textSecondary,
+      fontSize: 16,
+      fontFamily: "ReadexPro",
+    },
+    section: {
+      marginTop: 24,
+      width: "100%",
+    },
+    packYearsText: {
+      color: Colors.textSecondary,
+      fontSize: 14,
+      marginTop: 4,
+      fontFamily: "ReadexPro",
+    },
+    packYearsBox: {
+      backgroundColor: Colors.background,
+      borderRadius: 10,
+      padding: 16,
+      marginTop: 12,
+      alignItems: "flex-start",
+    },
+    packYearsLabel: {
+      color: Colors.warning,
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    packYearsValue: {
+      color: Colors.warning,
+      fontWeight: "bold",
+      fontSize: 28,
+      marginBottom: 4,
+      fontFamily: "ReadexPro-Bold",
+    },
+    inputError: {
+      borderColor: Colors.error,
+      borderWidth: 1,
+    },
+    errorText: {
+      color: Colors.error,
+      fontSize: 12,
+      marginTop: -4,
+      marginBottom: 8,
+      textAlign: "left",
+      alignSelf: "flex-start",
+      fontFamily: "ReadexPro",
+    },
+    warningText: {
+      color: Colors.warning,
+      fontSize: 12,
+      marginTop: -4,
+      marginBottom: 8,
+      fontWeight: "500",
+      fontFamily: "ReadexPro-Medium",
+    },
+    datePickerButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      backgroundColor: Colors.background,
+      alignSelf: "flex-end",
+      marginTop: 4,
+      marginBottom: 4,
+      width: "100%",
+    },
+    datePickerModal: {
+      backgroundColor: Colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 8,
+      width: "100%",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    datePickerActions: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 12,
+      marginTop: 16,
+    },
+    confirmButton: {
+      backgroundColor: Colors.primary,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 24,
+    },
+    confirmButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+    cancelDateButton: {
+      backgroundColor: Colors.error,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 24,
+    },
+    cancelDateButtonText: {
+      color: Colors.white,
+      fontWeight: "bold",
+      fontSize: 16,
+      fontFamily: "ReadexPro-Bold",
+    },
+  };
+
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
@@ -62,10 +578,7 @@ export function FamilyManagement({
     gender: "",
     dateOfBirth: "",
     // Medical survey fields
-    isDiabetic: false,
-    isHypertensive: false,
-    isCholesterol: false,
-    isSmoker: false,
+    medicalConditions: [] as string[],
     smokingDetails: {
       amount: "",
       duration: "",
@@ -84,9 +597,39 @@ export function FamilyManagement({
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
+
+  const getConditionTranslationKey = (condition: string): string => {
+    const map: { [key: string]: string } = {
+      'physicalInactivity': 'physicalInactivity',
+      'tobaccoSmoking': 'tobaccoSmoking',
+      'hypertension': 'hypertension',
+      'diabetes': 'diabetes',
+      'cardiovascularHistory': 'cardiovascularHistory',
+      'chronicOrganDisease': 'chronicOrganDisease',
+      'highBloodPressureReadings': 'highBloodPressureReadings',
+      'familyDiabetesHistory': 'familyDiabetesHistory',
+      'gestationalDiabetesHistory': 'gestationalDiabetesHistory',
+      'sexualHistory': 'sexualHistory'
+    };
+    return map[condition] || condition;
+  };
+
+  const conditionExplanations: { [key: string]: string } = {
+    'physicalInactivity': t('family.explanations.physicalInactivity'),
+    'tobaccoSmoking': t('family.explanations.tobaccoSmoking'),
+    'hypertension': t('family.explanations.hypertension'),
+    'diabetes': t('family.explanations.diabetes'),
+    'cardiovascularHistory': t('family.explanations.cardiovascularHistory'),
+    'chronicOrganDisease': t('family.explanations.chronicOrganDisease'),
+    'highBloodPressureReadings': t('family.explanations.highBloodPressureReadings'),
+    'familyDiabetesHistory': t('family.explanations.familyDiabetesHistory'),
+    'gestationalDiabetesHistory': t('family.explanations.gestationalDiabetesHistory'),
+    'sexualHistory': t('family.explanations.sexualHistory'),
+  };
 
   const { data: familyMembers, isLoading } = useQuery<FamilyMember[]>({
-    queryKey: ["family", userId],
+    queryKey: ["familyMembers", userId],
     queryFn: async () => {
       if (!userId) return [];
       return await medicalStorage.getFamilyMembers(userId);
@@ -96,18 +639,18 @@ export function FamilyManagement({
 
   const createFamilyMemberMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const newMember: FamilyMember = {
+      const newMember = {
         ...data,
         id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId,
         createdAt: new Date().toISOString(),
       };
-      await medicalStorage.saveFamilyMember(userId, newMember);
-      return newMember;
+      await medicalStorage.saveFamilyMember(userId, newMember as any);
+      return newMember as FamilyMember;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       setIsModalOpen(false);
       setEditingMember(null);
@@ -141,7 +684,7 @@ export function FamilyManagement({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       setEditingMember(null);
       setIsModalOpen(false);
@@ -166,7 +709,7 @@ export function FamilyManagement({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["family", userId],
+        queryKey: ["familyMembers", userId],
       });
       showToast({ title: t("family.memberDeleted"), type: "success" });
     },
@@ -184,10 +727,7 @@ export function FamilyManagement({
       relationship: "",
       gender: "",
       dateOfBirth: "",
-      isDiabetic: false,
-      isHypertensive: false,
-      isCholesterol: false,
-      isSmoker: false,
+      medicalConditions: [],
       smokingDetails: {
         amount: "",
         duration: "",
@@ -250,59 +790,56 @@ export function FamilyManagement({
       newErrors.weight = t("family.validation.weightInvalid");
     }
 
-    if (formData.isSmoker) {
-      if (!formData.smokingDetails?.amount) {
-        newErrors.smokingAmount = t("family.validation.smokingAmountRequired");
-      } else if (
-        isNaN(parseFloat(formData.smokingDetails.amount)) ||
-        parseFloat(formData.smokingDetails.amount) <= 0
-      ) {
-        newErrors.smokingAmount = t("family.validation.smokingAmountInvalid");
-      }
-
-      if (!formData.smokingDetails?.duration) {
-        newErrors.smokingDuration = t(
-          "family.validation.smokingDurationRequired",
-        );
-      } else if (
-        isNaN(parseFloat(formData.smokingDetails.duration)) ||
-        parseFloat(formData.smokingDetails.duration) <= 0
-      ) {
-        newErrors.smokingDuration = t(
-          "family.validation.smokingDurationInvalid",
-        );
-      }
-    }
-
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
-    if (!validateForm()) {
+    console.log("Form data:", formData);
+    const isValid = validateForm();
+    console.log("Form validation result:", isValid);
+    console.log("Validation errors:", validationErrors);
+    if (!isValid) {
+      console.log("Form validation failed, not submitting");
       return;
     }
+    console.log("Submitting form...");
     if (editingMember) {
+      console.log("Updating member:", editingMember.id);
       updateFamilyMemberMutation.mutate({
         id: editingMember.id,
         data: formData,
       });
     } else {
+      console.log("Creating new member");
       createFamilyMemberMutation.mutate(formData);
     }
   };
 
   const handleEdit = (member: FamilyMember) => {
     setEditingMember(member);
+
+    // Convert legacy fields to medical conditions array
+    const conditions: string[] = member.medicalConditions || [];
+    if (member.isDiabetic && !conditions.includes('diabetes')) {
+      conditions.push('diabetes');
+    }
+    if (member.isHypertensive && !conditions.includes('hypertension')) {
+      conditions.push('hypertension');
+    }
+    if (member.isCholesterol && !conditions.includes('highBloodPressureReadings')) {
+      conditions.push('highBloodPressureReadings');
+    }
+    if (member.isSmoker && !conditions.includes('tobaccoSmoking')) {
+      conditions.push('tobaccoSmoking');
+    }
+
     setFormData({
       relationship: member.relationship,
       gender: member.gender,
       dateOfBirth: member.dateOfBirth,
-      isDiabetic: member.isDiabetic ?? false,
-      isHypertensive: member.isHypertensive ?? false,
-      isCholesterol: member.isCholesterol ?? false,
-      isSmoker: member.isSmoker ?? false,
+      medicalConditions: conditions,
       smokingDetails: member.smokingDetails ?? { amount: "", duration: "" },
       height: member.height ?? "",
       weight: member.weight ?? "",
@@ -352,80 +889,150 @@ export function FamilyManagement({
     return t("family.bmiCategory.tryAgain");
   };
 
-  const calculatePackYears = (smokingDetails: {
-    amount: string;
-    duration: string;
-  }): number => {
-    const amount = parseFloat(smokingDetails.amount);
-    const duration = parseFloat(smokingDetails.duration);
-    return amount * duration;
+  const renderConditionChip = (condition: string) => {
+    const isSelected = formData.medicalConditions.includes(condition);
+    const translationKey = getConditionTranslationKey(condition);
+
+    return (
+      <View key={condition} style={{ position: 'relative' }}>
+        <Chip
+          label={t(`family.conditions.${translationKey}`, { defaultValue: condition })}
+          onPress={() => {
+            console.log('Chip pressed:', condition);
+            setFormData({
+              ...formData,
+              medicalConditions: isSelected
+                ? formData.medicalConditions.filter(c => c !== condition)
+                : [...formData.medicalConditions, condition]
+            });
+          }}
+          backgroundColor={isSelected ? Colors.primary : Colors.card}
+          labelStyle={{
+            fontFamily: 'ReadexPro-Bold',
+            color: isSelected ? '#fff' : Colors.textSecondary,
+            fontSize: 16,
+            lineHeight: 24,
+            includeFontPadding: false,
+            paddingVertical: 4,
+            paddingRight: 32, // Make room for info icon
+          }}
+          containerStyle={{
+            borderWidth: 2,
+            borderColor: isSelected ? Colors.primary : Colors.textSecondary,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 24,
+            elevation: isSelected ? 4 : 0,
+            shadowColor: isSelected ? Colors.primary : 'transparent',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+        />
+        <TouchableOpacity
+          onPressIn={() => console.log('Info button PRESS IN:', condition)}
+          onPressOut={() => console.log('Info button PRESS OUT:', condition)}
+          onPress={() => {
+            console.log('Info button PRESSED!!!:', condition);
+            setSelectedInfoCondition(condition);
+          }}
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: [{ translateY: -12 }],
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: isSelected ? Colors.white + '33' : Colors.primary + '33', // 20% opacity
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 10,
+          }}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons
+            name="info-outline"
+            size={16}
+            color={isSelected ? Colors.white : Colors.primary}
+          />
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
     <>
-      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: '#045468' }}>{t("family.title")}</Text>
+      <Text text70 center style={{ fontFamily: 'ReadexPro-Bold', marginBottom: 12, color: Colors.text }}>{t("family.title")}</Text>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#4CCCE6" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       ) : (
         <ScrollView
           style={{ maxHeight: 300 }}
           contentContainerStyle={{ gap: 12 }}
         >
-          {!familyMembers || familyMembers.length === 0 ? (
-            <Text center grey40 text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
+          {!familyMembers || !Array.isArray(familyMembers) || familyMembers.length === 0 ? (
+            <Text center textSecondary text70 style={{ fontFamily: 'ReadexPro', marginTop: 32 }}>{t("family.noMembers")}</Text>
           ) : (
-            familyMembers.map((member) => (
-              <View key={member.id} style={styles.memberRow}>
+            familyMembers.map((member: FamilyMember) => (
+              <View key={member.id} style={styles.memberRow as any}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: member.gender === 'male' ? Colors.primary + '20' : Colors.primary + '20',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: isRTL ? 0 : 12,
+                  marginLeft: isRTL ? 12 : 0,
+                }}>
+                  <MaterialIcons
+                    name={member.gender === 'male' ? "male" : "female"}
+                    size={28}
+                    color={Colors.primary}
+                  />
+                </View>
+
                 <TouchableOpacity
                   style={styles.memberInfo}
                   onPress={() => handleSwitch(member.id)}
                 >
-                  <Text style={styles.memberName}>{member.relationship}</Text>
-                  <Text style={styles.memberDetails}>
-                    {member.gender === "male"
-                      ? t("common.male")
-                      : t("common.female")}
-                  </Text>
-                  <Text style={styles.memberDetails}>
-                    {t("family.dateOfBirthLabel")}: {member.dateOfBirth}
-                  </Text>
-                  {member.isSmoker && member.smokingDetails && (
-                    <View style={styles.packYearsBox}>
-                      <Text
-                        style={[
-                          styles.packYearsLabel,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {t("family.medicalSurvey.packYears")}:
-                      </Text>
-                      <Text
-                        style={[
-                          styles.packYearsValue,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {calculatePackYears(member.smokingDetails)}
-                      </Text>
-                    </View>
-                  )}
+                  <Text style={styles.memberName as any}>{member.relationship}</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                    <Text style={styles.memberDetails}>
+                      {member.gender === "male" ? t("common.male") : t("common.female")}
+                    </Text>
+                    <Text style={styles.memberDetails}>•</Text>
+                    <Text style={styles.memberDetails}>
+                      {member.dateOfBirth}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
-                <View style={styles.memberActions}>
+
+                <View style={styles.memberActions as any}>
                   <TouchableOpacity
-                    style={styles.editButton}
+                    style={{
+                      padding: 8,
+                      backgroundColor: Colors.card,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: Colors.primary + '40',
+                    }}
                     onPress={() => handleEdit(member)}
                   >
-                    <Text style={styles.editButtonText}>
-                      {t("family.edit")}
-                    </Text>
+                    <MaterialIcons name="edit" size={20} color={Colors.primary} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={{
+                      padding: 8,
+                      backgroundColor: Colors.error + '10',
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: Colors.error + '40',
+                    }}
                     onPress={() => handleDelete(member.id)}
                   >
-                    <Text style={styles.deleteButtonText}>
-                      {t("family.delete")}
-                    </Text>
+                    <MaterialIcons name="delete-outline" size={20} color={Colors.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -435,12 +1042,14 @@ export function FamilyManagement({
       )}
       <Button
         label={t("family.addMember")}
-        backgroundColor="#045468"
+        backgroundColor={Colors.primary}
         marginT-s4
-        style={{ opacity: familyMembers && familyMembers.length >= 5 ? 0.5 : 1 }}
-        disabled={familyMembers && familyMembers.length >= 5}
+        paddingV-s5
+        borderRadius={200}
+        style={{ opacity: Array.isArray(familyMembers) && familyMembers.length >= 5 ? 0.5 : 1 }}
+        disabled={Array.isArray(familyMembers) && familyMembers.length >= 5}
         onPress={() => {
-          if (familyMembers && familyMembers.length >= 5) {
+          if (Array.isArray(familyMembers) && familyMembers.length >= 5) {
             showToast({
               title: t("family.maxLimitReached"),
               description: t("family.maxFamilyMembers"),
@@ -454,10 +1063,10 @@ export function FamilyManagement({
         }}
         labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
       />
-      {familyMembers && familyMembers.length >= 5 && (
+      {Array.isArray(familyMembers) && familyMembers.length >= 5 && (
         <Text
           style={{
-            color: "#ef4444",
+            color: Colors.error,
             marginTop: 8,
             textAlign: "center",
             fontWeight: "bold",
@@ -470,7 +1079,7 @@ export function FamilyManagement({
       <Modal
         visible={isModalOpen}
         onDismiss={() => setIsModalOpen(false)}
-        overlayBackgroundColor="rgba(0,0,0,0.5)"
+        overlayBackgroundColor={Colors.overlay}
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -484,628 +1093,396 @@ export function FamilyManagement({
           ]
           }>
             <ScrollView
-              contentContainerStyle={styles.modalContent}
-              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.modalContent as any}
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.modalTitle}>
-                {editingMember
-                  ? t("family.editMember")
-                  : t("family.addMember")}
-              </Text>
-              <TextField
-                style={[
-                  styles.input,
-                  { textAlign: "left", writingDirection: "ltr" },
-                  submitAttempted &&
-                    validationErrors.relationship &&
-                    styles.inputError,
-                ]}
-                placeholder={t("family.relationship")}
-                placeholderTextColor="#999"
-                value={formData.relationship}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, relationship: text });
-                  if (validationErrors.relationship) {
-                    setValidationErrors((prev) => ({
-                      ...prev,
-                      relationship: "",
-                    }));
-                  }
-                }}
-              />
-              {submitAttempted && validationErrors.relationship && (
-                <Text style={styles.errorText}>
-                  {validationErrors.relationship}
-                </Text>
-              )}
+              <Card padding-s5 backgroundColor={Colors.card} br40 style={{ width: '100%' }}>
+                <View center marginB-s4>
+                  <Text h3 zimam-primary center marginB-s2>
+                    {editingMember ? t("family.editMember") : t("family.addMember")}
+                  </Text>
+                  <Text body textSecondary center>
+                    {t("family.addMemberDescription")}
+                  </Text>
+                </View>
 
-              <View
-                style={{ alignItems: "center", width: "100%", marginTop: 16 }}
-              >
-                <Text
-                  style={[
-                    styles.label,
-                    { textAlign: "center", alignSelf: "center" },
-                  ]}
-                >
-                  {t("profile.gender")}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 8,
-                    justifyContent: "center",
-                  }}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.genderButton,
-                      formData.gender === "male" &&
-                        styles.genderButtonSelected,
-                      submitAttempted &&
-                        validationErrors.gender &&
-                        styles.inputError,
-                    ]}
-                    onPress={() => {
-                      setFormData({ ...formData, gender: "male" });
-                      if (validationErrors.gender) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          gender: "",
-                        }));
-                      }
-                    }}
-                  >
-                    <MaterialIcons
-                      name="male"
-                      size={20}
-                      color={formData.gender === "male" ? "#fff" : "#4CCCE6"}
-                    />
-                    <Text
-                      style={[
-                        styles.genderButtonText,
-                        formData.gender === "male" &&
-                          styles.genderButtonTextSelected,
-                      ]}
-                    >
-                      {t("common.male")}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.genderButton,
-                      formData.gender === "female" &&
-                        styles.genderButtonSelected,
-                      submitAttempted &&
-                        validationErrors.gender &&
-                        styles.inputError,
-                    ]}
-                    onPress={() => {
-                      setFormData({ ...formData, gender: "female" });
-                      if (validationErrors.gender) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          gender: "",
-                        }));
-                      }
-                    }}
-                  >
-                    <MaterialIcons
-                      name="female"
-                      size={20}
-                      color={
-                        formData.gender === "female" ? "#fff" : "#4CCCE6"
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.genderButtonText,
-                        formData.gender === "female" &&
-                          styles.genderButtonTextSelected,
-                      ]}
-                    >
-                      {t("common.female")}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {submitAttempted && validationErrors.gender && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.gender}
-                  </Text>
-                )}
-              </View>
-              <View
-                style={{ alignItems: "center", width: "100%", marginTop: 16 }}
-              >
-                <Text
-                  style={[
-                    styles.label,
-                    { textAlign: "center", alignSelf: "center" },
-                  ]}
-                >
-                  {t("family.dateOfBirthLabel")}
-                </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.datePickerButton,
-                    submitAttempted &&
-                      validationErrors.dateOfBirth &&
-                      styles.inputError,
-                  ]}
-                  onPress={() => {
-                    setTempDate(
-                      formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth)
-                        : new Date(),
-                    );
-                    setShowDatePicker(true);
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: formData.dateOfBirth ? "#374151" : "#888",
-                      textAlign: "left",
-                    }}
-                  >
-                    {formData.dateOfBirth
-                      ? new Date(formData.dateOfBirth).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          },
-                        )
-                      : t("family.selectDateOfBirth")}
-                  </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={tempDate || new Date()}
-                    mode="date"
-                    display="spinner"
-                    maximumDate={new Date()}
-                    minimumDate={
-                      new Date(
-                        new Date().setFullYear(
-                          new Date().getFullYear() - 120,
-                        ),
-                      )
-                    }
-                    onChange={(event, selectedDate) => {
-                      if (selectedDate) {
-                        setFormData({
-                          ...formData,
-                          dateOfBirth: selectedDate
-                            .toISOString()
-                            .split("T")[0],
-                        });
-                        if (validationErrors.dateOfBirth) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            dateOfBirth: "",
-                          }));
+                <View>
+                  {/* Relationship Field */}
+                  <View marginB-s4>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.relationship")}</Text>
+                    <TextField
+                      style={{
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: validationErrors.relationship ? Colors.error : Colors.textSecondary,
+                        borderRadius: 8,
+                        backgroundColor: Colors.card,
+                        paddingHorizontal: 16,
+                        fontSize: 16,
+                        color: Colors.text,
+                        fontFamily: 'ReadexPro',
+                        textAlign: 'right',
+                      }}
+                      placeholder={t("family.relationship")}
+                      placeholderTextColor={Colors.textSecondary}
+                      value={formData.relationship}
+                      onChangeText={(text) => {
+                        setFormData({ ...formData, relationship: text });
+                        if (validationErrors.relationship) {
+                          setValidationErrors({ ...validationErrors, relationship: '' });
                         }
-                      }
-                      setShowDatePicker(false);
-                      setTempDate(null);
-                    }}
-                    style={{ alignSelf: "flex-end", width: "100%" }}
-                    textColor="#FFFFFF"
-                  />
-                )}
-                {submitAttempted && validationErrors.dateOfBirth && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.dateOfBirth}
-                  </Text>
-                )}
-              </View>
-              {/* Medical Survey Section */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("family.healthData")}
-                </Text>
-                {/* Height */}
-                <View style={styles.inputContainer}>
-                  <Text
-                    style={[
-                      styles.label,
-                      { textAlign: "left", alignSelf: "flex-start" },
-                    ]}
-                  >
-                    {t("family.height")}
-                  </Text>
-                  <TextField
-                    style={[
-                      styles.input,
-                      { textAlign: "left", writingDirection: "ltr" },
-                      submitAttempted &&
-                        validationErrors.height &&
-                        styles.inputError,
-                    ]}
-                    placeholder={t("family.heightPlaceholder")}
-                    placeholderTextColor="#999"
-                    value={formData.height}
-                    onChangeText={(text) => {
-                      setFormData((prev) => ({ ...prev, height: text }));
-                      if (validationErrors.height) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          height: "",
-                        }));
-                      }
-                    }}
-                    keyboardType="numeric"
-                  />
-                </View>
-                {submitAttempted && validationErrors.height && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.height}
-                  </Text>
-                )}
-                {/* Weight */}
-                <View style={styles.inputContainer}>
-                  <Text style={[styles.label, { textAlign: "left" }]}>
-                    {t("family.weight")}
-                  </Text>
-                  <TextField
-                    style={[
-                      styles.input,
-                      { textAlign: "left", writingDirection: "ltr" },
-                      submitAttempted &&
-                        validationErrors.weight &&
-                        styles.inputError,
-                    ]}
-                    placeholder={t("family.weightPlaceholder")}
-                    placeholderTextColor="#999"
-                    value={formData.weight}
-                    onChangeText={(text) => {
-                      setFormData((prev) => ({ ...prev, weight: text }));
-                      if (validationErrors.weight) {
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          weight: "",
-                        }));
-                      }
-                    }}
-                    keyboardType="numeric"
-                  />
-                </View>
-                {submitAttempted && validationErrors.weight && (
-                  <Text style={styles.errorText}>
-                    {validationErrors.weight}
-                  </Text>
-                )}
-                {formData.height &&
-                  formData.weight &&
-                  calculateBMI(formData.height, formData.weight) && (
-                    <View style={styles.bmiBox}>
-                      <Text
-                        style={[
-                          styles.bmiLabel,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {t("family.bmi")}:
-                      </Text>
-                      <Text
-                        style={[
-                          styles.bmiValue,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {calculateBMI(
-                          formData.height,
-                          formData.weight,
-                        )?.toFixed(1)}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.bmiCategoryText,
-                          { textAlign: "left", width: "100%" },
-                        ]}
-                      >
-                        {getBMICategory(
-                          calculateBMI(formData.height, formData.weight) || 0,
-                        )}
-                      </Text>
+                      }}
+                    />
+                    {submitAttempted && validationErrors.relationship && (
+                      <Text error caption marginT-s1>{validationErrors.relationship}</Text>
+                    )}
+                  </View>
+
+                  {/* Gender */}
+                  <View marginB-s4>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.gender")}</Text>
+                    <View row spread style={{ gap: 12, flexDirection: 'row-reverse' }}>
+                      <ArabicButton
+                        label={t("common.male")}
+                        isSelected={formData.gender === 'male'}
+                        onPress={() => {
+                          setFormData({ ...formData, gender: 'male' });
+                          if (validationErrors.gender) {
+                            setValidationErrors({ ...validationErrors, gender: '' });
+                          }
+                        }}
+                        icon={
+                          <MaterialIcons
+                            name="male"
+                            size={20}
+                            color={formData.gender === 'male' ? Colors.white : Colors.textSecondary}
+                          />
+                        }
+                      />
+                      <ArabicButton
+                        label={t("common.female")}
+                        isSelected={formData.gender === 'female'}
+                        onPress={() => {
+                          setFormData({ ...formData, gender: 'female' });
+                          if (validationErrors.gender) {
+                            setValidationErrors({ ...validationErrors, gender: '' });
+                          }
+                        }}
+                        icon={
+                          <MaterialIcons
+                            name="female"
+                            size={20}
+                            color={formData.gender === 'female' ? Colors.white : Colors.textSecondary}
+                          />
+                        }
+                      />
                     </View>
-                  )}
-              </View>
-
-              <View style={styles.medicalSurveyContainer}>
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isDiabetic}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isDiabetic: value })
-                    }
-                    label={t("family.medicalSurvey.diabetic")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isHypertensive}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isHypertensive: value })
-                    }
-                    label={t("family.medicalSurvey.hypertensive")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isCholesterol}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isCholesterol: value })
-                    }
-                    label={t("family.medicalSurvey.cholesterol")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isSmoker}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isSmoker: value })
-                    }
-                    label={t("family.medicalSurvey.smoker")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                {formData.isSmoker && (
-                  <View style={styles.smokingDetailsContainer}>
-                    <TextField
-                      style={[
-                        styles.input,
-                        {
-                          textAlign: "left",
-                          writingDirection: "ltr",
-                          alignSelf: "flex-start",
-                        },
-                        submitAttempted &&
-                          validationErrors.smokingAmount &&
-                          styles.inputError,
-                      ]}
-                      placeholder={t("family.medicalSurvey.smokingAmount")}
-                      placeholderTextColor="#999"
-                      value={formData.smokingDetails.amount}
-                      onChangeText={(text) => {
-                        setFormData({
-                          ...formData,
-                          smokingDetails: {
-                            ...formData.smokingDetails,
-                            amount: text,
-                          },
-                        });
-                        if (validationErrors.smokingAmount) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            smokingAmount: "",
-                          }));
-                        }
-                      }}
-                      keyboardType="numeric"
-                    />
-                    {submitAttempted && validationErrors.smokingAmount && (
-                      <Text style={styles.errorText}>
-                        {validationErrors.smokingAmount}
-                      </Text>
+                    {submitAttempted && validationErrors.gender && (
+                      <Text error caption marginT-s1>{validationErrors.gender}</Text>
                     )}
-                    <TextField
-                      style={[
-                        styles.input,
-                        {
-                          textAlign: "left",
-                          writingDirection: "ltr",
-                          alignSelf: "flex-start",
-                        },
-                        submitAttempted &&
-                          validationErrors.smokingDuration &&
-                          styles.inputError,
-                      ]}
-                      placeholder={t("family.medicalSurvey.smokingDuration")}
-                      placeholderTextColor="#999"
-                      value={formData.smokingDetails.duration}
-                      onChangeText={(text) => {
-                        setFormData({
-                          ...formData,
-                          smokingDetails: {
-                            ...formData.smokingDetails,
-                            duration: text,
-                          },
-                        });
-                        if (validationErrors.smokingDuration) {
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            smokingDuration: "",
-                          }));
-                        }
+                  </View>
+
+                  {/* Date of Birth */}
+                  <View marginB-s4>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("profile.dateOfBirth")}</Text>
+                    <TouchableOpacity
+                      style={{
+                        height: 48,
+                        borderWidth: 1,
+                        borderColor: validationErrors.dateOfBirth ? Colors.error : Colors.textSecondary,
+                        borderRadius: 8,
+                        backgroundColor: Colors.card,
+                        justifyContent: 'center',
+                        paddingHorizontal: 16,
                       }}
-                      keyboardType="numeric"
-                    />
-                    {submitAttempted && validationErrors.smokingDuration && (
-                      <Text style={styles.errorText}>
-                        {validationErrors.smokingDuration}
+                      onPress={() => {
+                        setTempDate(formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date());
+                        setShowDatePicker(true);
+                      }}
+                    >
+                      <Text style={{ color: formData.dateOfBirth ? Colors.text : Colors.textSecondary, textAlign: 'right', fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
+                        {formData.dateOfBirth
+                          ? new Date(formData.dateOfBirth).toLocaleDateString('ar-EG', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
+                          : t("family.selectDateOfBirth")}
                       </Text>
-                    )}
-                    {formData.smokingDetails.amount &&
-                      formData.smokingDetails.duration && (
-                        <View style={styles.packYearsBox}>
-                          <Text
-                            style={[
-                              styles.packYearsLabel,
-                              { textAlign: "left", width: "100%" },
-                            ]}
-                          >
-                            {t("family.medicalSurvey.packYears")}:
-                          </Text>
-                          <Text
-                            style={[
-                              styles.packYearsValue,
-                              { textAlign: "left", width: "100%" },
-                            ]}
-                          >
-                            {calculatePackYears(formData.smokingDetails)}
-                          </Text>
+                    </TouchableOpacity>
+                    {showDatePicker && Platform.OS === 'ios' && (
+                      <Modal
+                        visible={showDatePicker}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose={() => setShowDatePicker(false)}
+                      >
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}>
+                          <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
+                            <DateTimePicker
+                              value={tempDate || new Date()}
+                              mode="date"
+                              display="spinner"
+                              onChange={(event, selectedDate) => {
+                                setTempDate(selectedDate || tempDate);
+                              }}
+                              maximumDate={new Date()}
+                              minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                              style={{ width: '100%' }}
+                              textColor={Colors.text}
+                              themeVariant="dark"
+                            />
+                            <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
+                              <Button
+                                label={t("common.cancel")}
+                                backgroundColor={Colors.background}
+                                style={{ flex: 1, paddingVertical: 12 }}
+                                onPress={() => {
+                                  setShowDatePicker(false);
+                                  setTempDate(null);
+                                }}
+                                labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                              />
+                              <Button
+                                label={t("family.confirm")}
+                                backgroundColor={Colors.primary}
+                                style={{ flex: 1, paddingVertical: 12 }}
+                                onPress={() => {
+                                  if (tempDate) {
+                                    setFormData({
+                                      ...formData,
+                                      dateOfBirth: tempDate.toISOString().split('T')[0],
+                                    });
+                                    if (validationErrors.dateOfBirth) {
+                                      setValidationErrors({ ...validationErrors, dateOfBirth: '' });
+                                    }
+                                  }
+                                  setShowDatePicker(false);
+                                }}
+                                labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                              />
+                            </View>
+                          </View>
                         </View>
-                      )}
+                      </Modal>
+                    )}
+                    {showDatePicker && Platform.OS === 'android' && (
+                      <DateTimePicker
+                        value={tempDate || new Date()}
+                        mode="date"
+                        display="default"
+                        onChange={(event, selectedDate) => {
+                          setShowDatePicker(false);
+                          if (event.type === 'set' && selectedDate) {
+                            setFormData({
+                              ...formData,
+                              dateOfBirth: selectedDate.toISOString().split('T')[0],
+                            });
+                            if (validationErrors.dateOfBirth) {
+                              setValidationErrors({ ...validationErrors, dateOfBirth: '' });
+                            }
+                          }
+                        }}
+                        maximumDate={new Date()}
+                        minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                        themeVariant="dark"
+                        positiveButton={{ label: t("family.confirm"), textColor: Colors.primary }}
+                        negativeButton={{ label: t("common.cancel"), textColor: Colors.error }}
+                      />
+                    )}
+                    {submitAttempted && validationErrors.dateOfBirth && (
+                      <Text error caption marginT-s1>{validationErrors.dateOfBirth}</Text>
+                    )}
                   </View>
-                )}
 
-                {formData.gender === "female" && (
-                  <View style={styles.questionContainer}>
-                    <Checkbox
-                      value={formData.isPregnant}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, isPregnant: value })
-                      }
-                      label={t("family.medicalSurvey.pregnant")}
-                      color="#045468"
-                      labelStyle={styles.checkboxLabel}
-                      containerStyle={styles.checkboxContainer}
-                    />
-                  </View>
-                )}
-
-                <View style={styles.questionContainer}>
-                  <Checkbox
-                    value={formData.isSexuallyActive}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, isSexuallyActive: value })
-                    }
-                    label={t("family.medicalSurvey.sexuallyActive")}
-                    color="#045468"
-                    labelStyle={styles.checkboxLabel}
-                    containerStyle={styles.checkboxContainer}
-                  />
-                </View>
-
-                {formData.isSexuallyActive && (
-                  <View style={styles.partnerCountContainer}>
-                    <Text
-                      style={[
-                        styles.label,
-                        { textAlign: "left", alignSelf: "flex-start" },
-                      ]}
-                    >
-                      {t("family.medicalSurvey.partnerCount")}
+                  {/* Height */}
+                  <View marginB-s4>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
+                      {t("onboarding.height")}: {formData.height || '140'} {t("common.cm")}
                     </Text>
-                    <View
-                      style={[
-                        styles.partnerCountButtons,
-                        { flexDirection: "row" },
-                      ]}
+                    <Slider
+                      value={parseFloat(formData.height) || 140}
+                      minimumValue={100}
+                      maximumValue={250}
+                      step={1}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, height: value.toString() });
+                        if (validationErrors.height) {
+                          setValidationErrors({ ...validationErrors, height: '' });
+                        }
+                      }}
+                      thumbTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                      minimumTrackTintColor={formData.height ? Colors.primary : Colors.textSecondary}
+                      maximumTrackTintColor={Colors.textSecondary}
+                      containerStyle={{ marginBottom: 8 }}
+                    />
+                    {validationErrors.height && <Text error caption marginT-s1>{validationErrors.height}</Text>}
+                  </View>
+
+                  {/* Weight */}
+                  <View marginB-s4>
+                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
+                      {t("onboarding.weight")}: {formData.weight || '60'} {t("common.kg")}
+                    </Text>
+                    <Slider
+                      value={parseFloat(formData.weight) || 60}
+                      minimumValue={30}
+                      maximumValue={200}
+                      step={1}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, weight: value.toString() });
+                        if (validationErrors.weight) {
+                          setValidationErrors({ ...validationErrors, weight: '' });
+                        }
+                      }}
+                      thumbTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                      minimumTrackTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
+                      maximumTrackTintColor={Colors.textSecondary}
+                      containerStyle={{ marginBottom: 8 }}
+                    />
+                    {validationErrors.weight && <Text error caption marginT-s1>{validationErrors.weight}</Text>}
+                  </View>
+
+                  {formData.height &&
+                    formData.weight &&
+                    calculateBMI(formData.height, formData.weight) && (
+                      <Card
+                        backgroundColor={Colors.card}
+                        enableShadow
+                        elevation={5}
+                        style={{
+                          padding: 16,
+                          borderRadius: 12,
+                          borderRightWidth: 4,
+                          borderRightColor: Colors.primary,
+                          alignItems: 'center',
+                          borderWidth: 1,
+                          borderColor: Colors.primary + '20',
+                        }}
+                      >
+                        <Text text80 style={{ fontFamily: 'ReadexPro-SemiBold', color: Colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>{t("family.bmi")}</Text>
+                        <Text style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary, textAlign: 'center', fontSize: 28, marginBottom: 4 }}>
+                          {calculateBMI(formData.height, formData.weight)?.toFixed(1)}
+                        </Text>
+                        <Text text80 style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text, textAlign: 'center' }}>
+                          {getBMICategory(calculateBMI(formData.height, formData.weight) || 0)}
+                        </Text>
+                      </Card>
+                    )}
+
+                  {/* Medical Survey Section */}
+                  <View marginT-s6 marginB-s4 paddingB-s2 style={{ borderBottomWidth: 1, borderBottomColor: Colors.border }}>
+                    <ArabicText
+                      h3
+                      zimam-primary
+                      center
+                      style={{
+                        paddingVertical: 4
+                      }}
                     >
-                      <TouchableOpacity
-                        style={[
-                          styles.partnerCountButton,
-                          formData.sexualActivityDetails.partnerCount ===
-                            "single" && styles.partnerCountButtonSelected,
-                          submitAttempted &&
-                            validationErrors.sexualActivityDetailsPartnerCount &&
-                            styles.inputError,
-                        ]}
-                        onPress={() =>
-                          setFormData({
-                            ...formData,
-                            sexualActivityDetails: {
-                              ...formData.sexualActivityDetails,
-                              partnerCount: "single",
-                            },
-                          })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.partnerCountButtonText,
-                            formData.sexualActivityDetails.partnerCount ===
-                              "single" &&
-                              styles.partnerCountButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.singlePartner")}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          styles.partnerCountButton,
-                          formData.sexualActivityDetails.partnerCount ===
-                            "multiple" && styles.partnerCountButtonSelected,
-                          submitAttempted &&
-                            validationErrors.sexualActivityDetailsPartnerCount &&
-                            styles.inputError,
-                        ]}
-                        onPress={() =>
-                          setFormData({
-                            ...formData,
-                            sexualActivityDetails: {
-                              ...formData.sexualActivityDetails,
-                              partnerCount: "multiple",
-                            },
-                          })
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.partnerCountButtonText,
-                            formData.sexualActivityDetails.partnerCount ===
-                              "multiple" &&
-                              styles.partnerCountButtonTextSelected,
-                          ]}
-                        >
-                          {t("family.medicalSurvey.multiplePartners")}
-                        </Text>
-                      </TouchableOpacity>
+                      {t("family.medicalSurveyTitle")}
+                    </ArabicText>
+                    <Text body textSecondary center marginT-s2>
+                      {t("family.selectConditions")}
+                    </Text>
+                  </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.lifestyle")}</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['physicalInactivity', 'tobaccoSmoking'].map((condition) => renderConditionChip(condition))}
                     </View>
                   </View>
-                )}
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 12,
-                  marginTop: 16,
-                  justifyContent: "center",
-                  alignSelf: "center",
-                }}
-              >
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleSubmit}
-                >
-                  <Text style={styles.saveButtonText}>
-                    {editingMember ? t("common.save") : t("family.add")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => {
-                    setIsModalOpen(false);
-                    setEditingMember(null);
-                    resetForm();
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>
-                    {t("common.cancel")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.chronicConditions")}</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['hypertension', 'diabetes', 'cardiovascularHistory', 'chronicOrganDisease'].map((condition) => renderConditionChip(condition))}
+                    </View>
+                  </View>
+
+                  <View marginB-s4>
+                    <ArabicText bodySmall right marginB-s2 style={{ color: Colors.text }}>{t("family.otherConditions")}</ArabicText>
+                    <View row right style={{ flexWrap: 'wrap', gap: 8, flexDirection: 'row-reverse' }}>
+                      {['highBloodPressureReadings', 'familyDiabetesHistory'].map((condition) => renderConditionChip(condition))}
+                      {formData.gender === 'female' && (
+                        <>
+                          {renderConditionChip('gestationalDiabetesHistory')}
+                          {renderConditionChip('sexualHistory')}
+                        </>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Action Buttons */}
+                  <View row center style={{ gap: 12, marginTop: 24 }}>
+                    <Button
+                      label={editingMember ? t("common.save") : t("family.add")}
+                      backgroundColor={Colors.primary}
+                      style={{ flex: 1 }}
+                      paddingV-16
+                      borderRadius={200}
+                      onPress={handleSubmit}
+                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                    />
+                    <Button
+                      label={t("common.cancel")}
+                      backgroundColor="transparent"
+                      outline
+                      outlineColor={Colors.error}
+                      style={{ flex: 1, borderWidth: 1, borderColor: Colors.error }}
+                      paddingV-16
+                      borderRadius={200}
+                      onPress={() => {
+                        setIsModalOpen(false);
+                        setEditingMember(null);
+                        resetForm();
+                      }}
+                      labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16, color: Colors.error }}
+                    />
+                  </View>
+                </View>
+              </Card>
             </ScrollView>
+
+            {/* Condition Info Modal - Positioned relative to screen, not scroll content */}
+            {selectedInfoCondition && (
+              <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                zIndex: 9999,
+              }}>
+                <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400, margin: 16 }}>
+                  <TouchableOpacity
+                    style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}
+                    onPress={() => setSelectedInfoCondition(null)}
+                  >
+                    <MaterialIcons name="close" size={24} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.primary, marginBottom: 16, textAlign: 'center', marginTop: 12 }}>
+                    {t(`family.conditions.${getConditionTranslationKey(selectedInfoCondition)}`, { defaultValue: selectedInfoCondition })}
+                  </Text>
+                  <Text style={{ fontSize: 15, fontFamily: 'ReadexPro', color: Colors.text, lineHeight: 24, textAlign: 'center' }}>
+                    {conditionExplanations[selectedInfoCondition]}
+                  </Text>
+                  <Button
+                    label={t("common.close")}
+                    backgroundColor={Colors.primary}
+                    paddingV-s4
+                    marginT-s4
+                    onPress={() => setSelectedInfoCondition(null)}
+                    labelStyle={{ fontFamily: 'ReadexPro-Bold', fontSize: 16 }}
+                    borderRadius={200}
+                  />
+                </View>
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -1113,442 +1490,4 @@ export function FamilyManagement({
   );
 }
 
-const styles = {
-  card: {
-    backgroundColor: "#2E3130",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4CCCE6",
-    marginBottom: 12,
-    textAlign: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#94a3b8",
-    fontSize: 16,
-    marginTop: 32,
-    fontFamily: "ReadexPro",
-  },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#202221",
-    borderRadius: 8,
-    padding: 12,
-    gap: 8,
-  },
-  memberInfo: {
-    flex: 1,
-  },
-  memberName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4CCCE6",
-    fontFamily: "ReadexPro-Bold",
-  },
-  memberDetails: {
-    fontSize: 14,
-    color: "#94a3b8",
-    fontFamily: "ReadexPro",
-  },
-  memberActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  editButton: {
-    backgroundColor: "#045468",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  editButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  deleteButton: {
-    backgroundColor: "#444947",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 4,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  addButton: {
-    backgroundColor: "#045468",
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    marginTop: 16,
-  },
-  addButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "#202221",
-  },
-  modalContent: {
-    alignItems: "center",
-    gap: 16,
-    paddingTop: 32,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-    width: "100%",
-    flexGrow: 1,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4CCCE6",
-    marginBottom: 12,
-    textAlign: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#555",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: "#2E3130",
-    color: "#ECEDEE",
-    // width: "100%",
-    width: 250,
-    marginBottom: 8,
-    fontFamily: "ReadexPro",
-  },
-  label: {
-    fontSize: 16,
-    color: "#ECEDEE",
-    fontWeight: "500",
-    marginBottom: 4,
-    alignSelf: "flex-start",
-    textAlign: "left",
-    fontFamily: "ReadexPro-Medium",
-  },
-  optionButton: {
-    backgroundColor: "#202221",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    marginBottom: 4,
-  },
-  optionButtonSelected: {
-    backgroundColor: "#045468",
-  },
-  optionButtonText: {
-    color: "#045468",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  optionButtonTextSelected: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  saveButton: {
-    backgroundColor: "#045468",
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  cancelButton: {
-    backgroundColor: "#ef4444",
-    borderRadius: 8,
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  cancelButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  genderButton: {
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    marginBottom: 4,
-  },
-  genderButtonSelected: {
-    backgroundColor: "#045468",
-  },
-  genderButtonText: {
-    color: "#045468",
-    fontWeight: "bold",
-    fontFamily: "ReadexPro-Bold",
-  },
-  genderButtonTextSelected: {
-    color: "#fff",
-    fontFamily: "ReadexPro-Bold",
-  },
-  questionContainer: {
-    gap: 8,
-    width: "100%",
-  },
-  questionLabel: {
-    fontSize: 16,
-    color: "#ECEDEE",
-    fontWeight: "500",
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Medium",
-  },
-  yesNoContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  yesNoButton: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#045468",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  yesNoButtonSelected: {
-    backgroundColor: "#045468",
-  },
-  yesNoButtonText: {
-    fontSize: 16,
-    color: "#045468",
-    fontFamily: "ReadexPro-Bold",
-  },
-  yesNoButtonTextSelected: {
-    color: "#fff",
-    fontFamily: "ReadexPro-Bold",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4CCCE6",
-    textAlign: "center",
-    alignSelf: "center",
-    fontFamily: "ReadexPro-Bold",
-  },
-  medicalSurveyContainer: {
-    gap: 16,
-    width: "100%",
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: "#045468",
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    color: "#ECEDEE",
-    fontFamily: "ReadexPro",
-  },
-  smokingDetailsContainer: {
-    gap: 8,
-    marginLeft: 32,
-  },
-  partnerCountContainer: {
-    marginLeft: 32,
-    gap: 8,
-  },
-  partnerCountButtons: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  partnerCountButton: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#045468",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  partnerCountButtonSelected: {
-    backgroundColor: "#045468",
-  },
-  partnerCountButtonText: {
-    fontSize: 14,
-    color: "#045468",
-    fontFamily: "ReadexPro-Bold",
-  },
-  partnerCountButtonTextSelected: {
-    color: "#fff",
-    fontFamily: "ReadexPro-Bold",
-  },
-  inputContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  bmiBox: {
-    backgroundColor: "#e6faed",
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 12,
-    alignItems: "flex-start",
-  },
-  bmiLabel: {
-    color: "#009966",
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  bmiValue: {
-    color: "#009966",
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  bmiCategoryText: {
-    color: "#666",
-    fontSize: 16,
-    fontFamily: "ReadexPro",
-  },
-  section: {
-    marginTop: 24,
-    width: "100%",
-  },
-  packYearsText: {
-    color: "#666",
-    fontSize: 14,
-    marginTop: 4,
-    fontFamily: "ReadexPro",
-  },
-  packYearsBox: {
-    backgroundColor: "#fffbe6",
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 12,
-    alignItems: "flex-start",
-  },
-  packYearsLabel: {
-    color: "#bfa100",
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  packYearsValue: {
-    color: "#bfa100",
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 4,
-    fontFamily: "ReadexPro-Bold",
-  },
-  inputError: {
-    borderColor: "#ef4444",
-    borderWidth: 1,
-  },
-  errorText: {
-    color: "#ef4444",
-    fontSize: 12,
-    marginTop: -4,
-    marginBottom: 8,
-    textAlign: "left",
-    alignSelf: "flex-start",
-    fontFamily: "ReadexPro",
-  },
-  warningText: {
-    color: "#f59e0b",
-    fontSize: 12,
-    marginTop: -4,
-    marginBottom: 8,
-    fontWeight: "500",
-    fontFamily: "ReadexPro-Medium",
-  },
-  datePickerButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    alignSelf: "flex-end",
-    marginTop: 4,
-    marginBottom: 4,
-    width: "100%",
-  },
-  datePickerModal: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-    width: "100%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  datePickerActions: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 16,
-  },
-  confirmButton: {
-    backgroundColor: "#045468",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  confirmButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-  cancelDateButton: {
-    backgroundColor: "#ef4444",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  cancelDateButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    fontFamily: "ReadexPro-Bold",
-  },
-};
+

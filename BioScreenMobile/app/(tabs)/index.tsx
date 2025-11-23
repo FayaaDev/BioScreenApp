@@ -6,7 +6,7 @@ import {
   I18nManager,
   Dimensions,
 } from 'react-native';
-import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen, Colors } from 'react-native-ui-lib';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -16,10 +16,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
+import { medicalStorage, Screening, FamilyMember as StoredFamilyMember } from '@/lib/medical-storage';
 
 interface DashboardStats {
   totalScreenings: number;
@@ -85,94 +85,91 @@ export default function HomeScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', content: '' });
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
+  const [screenings, setScreenings] = useState<Screening[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const colors = Colors[colorScheme ?? 'light'];
 
-  // Load user data from AsyncStorage
+  // Load userId from AsyncStorage
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('healthscreen_user');
-        const userIdData = await AsyncStorage.getItem('healthscreen_user_id');
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-        if (userIdData) {
-          setUserId(userIdData);
-        }
-      } catch (error) {
-        console.error('Failed to load user data:', error);
+    AsyncStorage.getItem("local_user_id").then((id) => {
+      if (id) {
+        setUserId(id);
+      } else {
+        // Create a new local user ID if it doesn't exist
+        const newUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        AsyncStorage.setItem("local_user_id", newUserId);
+        setUserId(newUserId);
       }
-    };
-    loadUser();
+    });
   }, []);
 
-  // Fetch user data with screenings
-  const { data: userDataWithScreenings, isLoading, refetch } = useQuery<UserDataResponse>({
-    queryKey: [`/api/users/${userId}`],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}`),
+  // Fetch user profile
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      return await medicalStorage.getUserProfile(userId);
+    },
     enabled: !!userId,
   });
 
-  // Fetch family members data
-  const { data: familyMembersData } = useQuery<FamilyMember[]>({
-    queryKey: ['/api/users', userId, 'family'],
-    queryFn: () => apiRequest('GET', `/api/users/${userId}/family`),
+  useEffect(() => {
+    if (userProfile) {
+      setUser(userProfile as User);
+    }
+  }, [userProfile]);
+
+  // Load screenings from local storage based on selected person
+  useEffect(() => {
+    const loadScreenings = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        let loadedScreenings: Screening[] = [];
+
+        if (selectedPersonId === 'user') {
+          loadedScreenings = await medicalStorage.getUserScreenings(userId);
+        } else {
+          loadedScreenings = await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);
+        }
+
+        setScreenings(loadedScreenings);
+      } catch (error) {
+        console.error('Failed to load screenings:', error);
+        setScreenings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadScreenings();
+  }, [userId, selectedPersonId]);
+
+  // Fetch family members data from local storage
+  const { data: familyMembersData } = useQuery<StoredFamilyMember[]>({
+    queryKey: ["familyMembers", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return await medicalStorage.getFamilyMembers(userId);
+    },
     enabled: !!userId,
   });
 
   // Validate selected person when family members data changes
   useEffect(() => {
-    if (familyMembersData && selectedPersonId !== "user") {
-      const familyMemberExists = familyMembersData.some(member => member.id.toString() === selectedPersonId);
+    if (familyMembersData && Array.isArray(familyMembersData) && selectedPersonId !== "user") {
+      const familyMemberExists = familyMembersData.some((member: StoredFamilyMember) => member.id.toString() === selectedPersonId);
       if (!familyMemberExists) {
         console.log('Selected family member no longer exists, switching to user');
         setSelectedPersonId("user");
       }
     }
   }, [familyMembersData, selectedPersonId]);
-
-  // Fetch selected person's screenings
-  const { data: selectedPersonData, error: selectedPersonError } = useQuery({
-    queryKey: selectedPersonId === "user" 
-      ? [`/api/users/${userId}`] 
-      : [`/api/family/${selectedPersonId}/screenings`],
-    queryFn: () =>
-      selectedPersonId === "user"
-        ? apiRequest('GET', `/api/users/${userId}`)
-        : apiRequest('GET', `/api/family/${selectedPersonId}/screenings`),
-    enabled: !!userId && !!selectedPersonId && (
-      selectedPersonId === "user" || 
-      (familyMembersData && familyMembersData.some(member => member.id.toString() === selectedPersonId))
-    ),
-    retry: (failureCount, error: any) => {
-      // If it's a family member not found error, don't retry
-      if (error?.message?.includes('Family member not found')) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-
-  // Handle family member not found error - reset to user
-  useEffect(() => {
-    if (selectedPersonError && selectedPersonError.message?.includes('Family member not found')) {
-      console.log('Selected family member not found, switching to user');
-      setSelectedPersonId("user");
-    }
-  }, [selectedPersonError]);
-
-  // Extract screenings based on selected person
-  let screenings: any[] = [];
-  if (selectedPersonData) {
-    if (selectedPersonId === "user") {
-      const userResponse = selectedPersonData as UserDataResponse;
-      screenings = userResponse.screenings || [];
-    } else {
-      const familyResponse = selectedPersonData as FamilyMemberResponse;
-      screenings = familyResponse.screenings || [];
-    }
-  }
 
   // Fetch educational content
   const { data: educationalContent = [] } = useQuery({
@@ -183,7 +180,7 @@ export default function HomeScreen() {
   });
 
   // Calculate stats from screenings data using the same logic as upcoming tests
-  const calculateDashboardStats = (screenings: any[]): DashboardStats => {
+  const calculateDashboardStats = (screenings: Screening[]): DashboardStats => {
     const stats = {
       totalScreenings: screenings.length,
       dueScreenings: 0,
@@ -217,18 +214,27 @@ export default function HomeScreen() {
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      if (!userId) return;
+
+      // Reload screenings from local storage
+      let loadedScreenings: Screening[] = [];
+      if (selectedPersonId === 'user') {
+        loadedScreenings = await medicalStorage.getUserScreenings(userId);
+      } else {
+        loadedScreenings = await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);
+      }
+      setScreenings(loadedScreenings);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [userId, selectedPersonId]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
     const name = user?.name || '';
-    
+
     if (hour < 12) {
       return name ? t('home.morningGreeting', { name }) : t('home.greeting');
     } else if (hour < 17) {
@@ -240,7 +246,7 @@ export default function HomeScreen() {
 
   if (isLoading && !userId) {
     return (
-      <LoaderScreen color={colors.primary} message={t('common.loading')} backgroundColor={colors.background} />
+      <LoaderScreen color={Colors.primary} message={t('common.loading')} backgroundColor={Colors.background} />
     );
   }
 
@@ -251,45 +257,38 @@ export default function HomeScreen() {
   //     Am I right to left or left to right
   //   </Text>
   // </View>
-  
+
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: colors.background }}
-      showsVerticalScrollIndicator={false}
+    <ScrollView
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={['#4CCCE6']} // Android
-          tintColor="#4CCCE6" // iOS
-          title={t('common.refreshing')} // iOS
-          titleColor="#4CCCE6" // iOS
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+      style={{ backgroundColor: Colors.background }}
     >
       {/* Header with Gradient */}
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#202221', '#272A29'] : ['#003848', '#4CCCE6']}
-        style={{ 
+        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
+        style={{
           paddingHorizontal: 16,
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
           overflow: 'hidden',
           minHeight: 160,
-          paddingTop: insets.top + 16, 
-          paddingBottom: 16 
+          paddingTop: insets.top + 16,
+          paddingBottom: 16
         }}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
-              {getGreeting()} 
+            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 2, textAlign: 'left', fontFamily: 'ReadexPro-Bold', color: Colors.white }}>
+              {getGreeting()}
             </Text>
-            <Text style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: '#FFFFFF' }}>
+            <Text style={{ fontSize: 20, fontFamily: 'ReadexPro', marginBottom: 2, color: Colors.white }}>
               {t('home.manageHealth')}
             </Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ padding: 8 }}
             onPress={() => router.push('/profile')}
           >
@@ -305,111 +304,204 @@ export default function HomeScreen() {
         >
           <TouchableOpacity
             style={[
-              { backgroundColor: '#2E3130', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: '#045468' },
-              selectedPersonId === 'user' && { backgroundColor: '#045468', borderColor: '#045468' }
+              {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 20,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.3)'
+              },
+              selectedPersonId === 'user' && {
+                backgroundColor: Colors.white,
+                borderColor: Colors.white
+              }
             ]}
             onPress={() => setSelectedPersonId('user')}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{t('common.you')}</Text>
+            <Text style={{
+              color: selectedPersonId === 'user' ? Colors.primary : Colors.white,
+              fontWeight: 'bold',
+              fontFamily: 'ReadexPro-Bold'
+            }}>{t('common.you')}</Text>
           </TouchableOpacity>
-          {Array.isArray(familyMembersData) && familyMembersData.map((member) => (
+          {Array.isArray(familyMembersData) && familyMembersData.map((member: StoredFamilyMember) => (
             <TouchableOpacity
               key={member.id}
               style={[
-                { backgroundColor: '#2E3130', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 16, borderWidth: 1, borderColor: '#045468' },
-                selectedPersonId === member.id.toString() && { backgroundColor: '#045468', borderColor: '#045468' }
+                {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: 20,
+                  paddingVertical: 8,
+                  paddingHorizontal: 20,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)'
+                },
+                selectedPersonId === member.id.toString() && {
+                  backgroundColor: Colors.white,
+                  borderColor: Colors.white
+                }
               ]}
               onPress={() => setSelectedPersonId(member.id.toString())}
             >
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontFamily: 'ReadexPro-Bold' }}>{member.name}</Text>
+              <Text style={{
+                color: selectedPersonId === member.id.toString() ? Colors.primary : Colors.white,
+                fontWeight: 'bold',
+                fontFamily: 'ReadexPro-Bold'
+              }}>
+                {member.relationship ? t(`family.relationships.${member.relationship}`, { defaultValue: member.relationship }) : (member.name || "Member")}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </LinearGradient>
 
-      {/* Test Status Stats - Top Section */}
-      <View padding-s5>
-        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.testStatus')}
+      {/* Stats Cards */}
+      <View paddingH-s5 marginB-s5>
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
+          {t('home.testStatusTitle')}
         </Text>
-        
-        <View row marginB-s3 style={{ justifyContent: 'space-between' }}>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'due' }
-              });
-            }}
+        <View row style={{ justifyContent: 'space-between', gap: 8 }}>
+          <Card
+            paddingV-s4
+            paddingH-s1
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#0EB39E' }}>
-                {stats?.dueScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.due')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'overdue' }
-              });
-            }}
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
+                color: Colors.dashboardStatus.completed,
+                marginBottom: 8
+              }}
+            >
+              {stats.completedThisYear}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
+                color: Colors.white,
+                fontSize: 9
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.statusTabs.done')}
+            </Text>
+          </Card>
+
+          <Card
+            paddingV-s4
+            paddingH-s1
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#A35829' }}>
-                {stats?.overdueScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.overdue')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => {
-              router.push({
-                pathname: '/(tabs)/upcoming-tests',
-                params: { initialTab: 'later' }
-              });
-            }}
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
+                color: Colors.dashboardStatus.later,
+                marginBottom: 8
+              }}
+            >
+              {stats.laterScreenings}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
+                color: Colors.white,
+                fontSize: 9
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.statusTabs.later')}
+            </Text>
+          </Card>
+
+          <Card
+            paddingV-s4
+            paddingH-s1
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#fff' }}>
-                {stats?.laterScreenings || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.later')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{ flex: 1, marginHorizontal: 4 }}
-            onPress={() => router.push('/(tabs)/completed-tests')}
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
+                color: Colors.dashboardStatus.overdue,
+                marginBottom: 8
+              }}
+            >
+              {stats.overdueScreenings}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
+                color: Colors.white,
+                fontSize: 9
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.statusTabs.overdue')}
+            </Text>
+          </Card>
+
+          <Card
+            paddingV-s4
+            paddingH-s1
+            center
+            backgroundColor={Colors.dashboardCardBackground}
+            enableShadow
+            elevation={3}
+            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
           >
-            <Card padding-s5 center backgroundColor="#004558" br40 style={{ borderWidth: 1, borderColor: '#555' }}>
-              <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4, fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>
-                {stats?.completedThisYear || 0}
-              </Text>
-              <Text caption color="#ECEDEE" style={{ textAlign: 'center', fontWeight: '500', fontFamily: 'ReadexPro-Medium' }}>
-                {t('home.tabs.done')}
-              </Text>
-            </Card>
-          </TouchableOpacity>
+            <Text
+              style={{
+                fontSize: 36,
+                fontFamily: 'ReadexPro-Bold',
+                color: Colors.dashboardStatus.due,
+                marginBottom: 8
+              }}
+            >
+              {stats.dueScreenings}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'ReadexPro-SemiBold',
+                textAlign: 'center',
+                color: Colors.white,
+                fontSize: 9
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {t('home.statusTabs.due')}
+            </Text>
+          </Card>
         </View>
       </View>
 
       {/* Educational Content - Middle Section */}
       <View paddingH-s5 marginB-s8>
-        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.healthTips')}
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
+          {t('home.healthTipsTitle')}
         </Text>
-        
+
         {educationalContent.length > 0 ? (
           <View>
             {educationalContent.slice(0, 3).map((content) => (
@@ -417,26 +509,26 @@ export default function HomeScreen() {
                 key={content.id}
                 padding-s5
                 marginB-s3
-                backgroundColor="#2E3130"
+                backgroundColor={Colors.card}
                 enableShadow
                 elevation={3}
               >
-                <Text body style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', marginBottom: 8, color: '#FFFFFF' }}>
+                <Text body style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', marginBottom: 8, color: Colors.text }}>
                   {content.title}
                 </Text>
-                <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: '#ECEDEE' }} numberOfLines={4}>
+                <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: Colors.text }} numberOfLines={4}>
                   {content.content}
                 </Text>
               </Card>
             ))}
           </View>
         ) : (
-          <Card padding-s5 backgroundColor="#2E3130" enableShadow elevation={3}>
-            <MaterialCommunityIcons name="information" size={32} color="#4CCCE6" />
-            <Text body marginT-s3 marginB-s2 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', color: '#FFFFFF' }}>
+          <Card padding-s5 backgroundColor={Colors.card} enableShadow elevation={3}>
+            <MaterialCommunityIcons name="information" size={32} color={Colors.primary} />
+            <Text body marginT-s3 marginB-s2 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
               {t('home.defaultTipTitle')}
             </Text>
-            <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: '#ECEDEE' }}>
+            <Text bodySmall style={{ fontFamily: 'ReadexPro', lineHeight: 20, color: Colors.text }}>
               {t('home.defaultTipContent')}
             </Text>
           </Card>
@@ -445,64 +537,64 @@ export default function HomeScreen() {
 
       {/* Quick Actions - Bottom Section */}
       <View paddingH-s5 marginB-s5>
-        <Text h4 marginB-s4 style={{ textAlign: 'left', color: '#FFFFFF', fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.quickActions')}
+        <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
+          {t('home.quickActionsTitle')}
         </Text>
-        
-        <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          <TouchableOpacity 
-            style={{ width: '48%' }}
+
+        <View row style={{ flexWrap: 'wrap', justifyContent: 'space-between', gap: 12 }}>
+          <TouchableOpacity
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
-              <MaterialCommunityIcons name="account-group" size={32} color="#4CCCE6" />
-              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
-                {t('home.addFamily')}
+            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+              <MaterialCommunityIcons name="account-group" size={32} color={Colors.primary} />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
+                {t('home.addFamilyTitle')}
               </Text>
-              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
-                {t('home.manageFamilyMembers')}
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
+                {t('home.manageFamilyDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={{ width: '48%' }}
+          <TouchableOpacity
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/upcoming-tests')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
-              <MaterialCommunityIcons name="calendar-check" size={32} color="#4CCCE6" />
-              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
-                {t('home.upcomingTests')}
+            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+              <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.primary} />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
+                {t('home.upcomingTestsTitle')}
               </Text>
-              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
-                {t('home.viewScheduledTests')}
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
+                {t('home.viewScheduledTestsDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={{ width: '48%' }}
+          <TouchableOpacity
+            style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
-              <MaterialCommunityIcons name="clipboard-check" size={32} color="#4CCCE6" />
-              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>
-                {t('home.completedTests')}
+            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+              <MaterialCommunityIcons name="clipboard-check" size={32} color={Colors.primary} />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
+                {t('home.completedTestsTitle')}
               </Text>
-              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>
-                {t('home.viewTestHistory')}
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>
+                {t('home.viewTestHistoryDesc')}
               </Text>
             </Card>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={{ width: '48%' }}
+          <TouchableOpacity
+            style={{ width: '48%', height: 140 }}
             onPress={() => setShowContactModal(true)}
           >
-            <Card padding-s5 center marginB-s4 backgroundColor="#2E3130" enableShadow elevation={3}>
-              <MaterialCommunityIcons name="email" size={32} color="#4CCCE6" />
-              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: '#FFFFFF' }}>{t('contact.title')}</Text>
-              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: '#ECEDEE' }}>{t('contact.description')}</Text>
+            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+              <MaterialCommunityIcons name="email" size={32} color={Colors.primary} />
+              <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>{t('contactUs.title')}</Text>
+              <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>{t('contactUs.description')}</Text>
             </Card>
           </TouchableOpacity>
         </View>
@@ -511,65 +603,65 @@ export default function HomeScreen() {
       {/* Bottom padding for better scrolling */}
       <View style={{ height: 20 }} />
 
-      <Modal 
-        visible={showContactModal} 
+      <Modal
+        visible={showContactModal}
         onDismiss={() => setShowContactModal(false)}
-        overlayBackgroundColor="rgba(0,0,0,0.2)"
+        overlayBackgroundColor={Colors.overlay}
       >
-        <Card backgroundColor="#2E3130" padding-s6 style={{ minWidth: 320, width: '90%' }}>
-            <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: '#4CCCE6' }}>{t('contact.title')}</Text>
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.name')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
-              value={contactForm.name}
-              onChangeText={text => setContactForm({ ...contactForm, name: text })}
-              placeholder={t('contact.namePlaceholder')}
-              placeholderTextColor="#94a3b8"
+        <Card backgroundColor={Colors.card} padding-s6 style={{ minWidth: 320, width: '90%' }}>
+          <Text h4 marginB-s4 center style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary }}>{t('contact.title')}</Text>
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.name')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.name}
+            onChangeText={text => setContactForm({ ...contactForm, name: text })}
+            placeholder={t('contact.namePlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.email')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.email}
+            onChangeText={text => setContactForm({ ...contactForm, email: text })}
+            placeholder={t('contact.emailPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.subject')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.subject}
+            onChangeText={text => setContactForm({ ...contactForm, subject: text })}
+            placeholder={t('contact.subjectPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+          />
+          <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>{t('contact.content')}</Text>
+          <TextField
+            style={{ borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: Colors.background, color: Colors.text, fontFamily: 'ReadexPro' }}
+            value={contactForm.content}
+            onChangeText={text => setContactForm({ ...contactForm, content: text })}
+            placeholder={t('contact.contentPlaceholder')}
+            placeholderTextColor={Colors.textSecondary}
+            multiline
+          />
+          <View row style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
+            <Button
+              label={t('contact.send')}
+              backgroundColor="primary"
+              flex
+              style={{ marginLeft: 8 }}
+              onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
             />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.email')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
-              value={contactForm.email}
-              onChangeText={text => setContactForm({ ...contactForm, email: text })}
-              placeholder={t('contact.emailPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              keyboardType="email-address"
-              autoCapitalize="none"
+            <Button
+              label={t('common.cancel')}
+              backgroundColor={Colors.card}
+              color="primary"
+              flex
+              onPress={() => setShowContactModal(false)}
             />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.subject')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 12, backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
-              value={contactForm.subject}
-              onChangeText={text => setContactForm({ ...contactForm, subject: text })}
-              placeholder={t('contact.subjectPlaceholder')}
-              placeholderTextColor="#94a3b8"
-            />
-            <Text body marginB-s2 style={{ fontFamily: 'ReadexPro', color: '#FFFFFF' }}>{t('contact.content')}</Text>
-            <TextField
-              style={{ borderWidth: 1, borderColor: '#555', borderRadius: 8, padding: 10, marginBottom: 16, height: 80, textAlignVertical: 'top', backgroundColor: '#202221', color: '#ECEDEE', fontFamily: 'ReadexPro' }}
-              value={contactForm.content}
-              onChangeText={text => setContactForm({ ...contactForm, content: text })}
-              placeholder={t('contact.contentPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              multiline
-            />
-            <View row style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', gap: 8 }}>
-              <Button
-                label={t('contact.send')}
-                backgroundColor="primary"
-                flex
-                style={{ marginLeft: 8 }}
-                onPress={() => { setShowContactModal(false); setContactForm({ name: '', email: '', subject: '', content: '' }); }}
-              />
-              <Button
-                label={t('common.cancel')}
-                backgroundColor="#202221"
-                color="primary"
-                flex
-                onPress={() => setShowContactModal(false)}
-              />
-            </View>
-          </Card>
+          </View>
+        </Card>
       </Modal>
     </ScrollView>
   );

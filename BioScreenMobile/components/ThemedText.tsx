@@ -16,7 +16,7 @@ export function ThemedText({
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-  const textColor = typeof color === 'string' ? color : '#ECEDEE';
+  const textColor = typeof color === 'string' ? color : Colors.text;
 
   return (
     <Text
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: Colors.primary,
     fontFamily: 'ReadexPro',
   },
 });

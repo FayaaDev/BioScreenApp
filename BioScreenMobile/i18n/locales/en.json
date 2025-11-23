@@ -11,14 +11,14 @@
     "next": "Next",
     "done": "Done",
     "close": "Close",
+    "understood": "Understood",
+    "noInfo": "No information available",
     "male": "Male",
     "female": "Female",
-    "age": "Age",
-    "you": "You"
-  },
-  "language": {
-    "switchTo": "العربية",
-    "current": "English"
+    "cm": "cm",
+    "kg": "kg",
+    "you": "You",
+    "years": "Years"
   },
   "navigation": {
     "home": "Home",
@@ -41,12 +41,40 @@
     "welcomeTitle": "Welcome to Health Screening Reminder",
     "welcomeDesc": "Get personalized medical screening reminders based on your age and gender. Never miss important health checkups again.",
     "missingInfo": "Missing Information",
-    "fillAllFields": "Please fill in all fields.",
-    "createError": "Failed to create your profile. Please try again.",
-    "userAgreement": "User Agreement",
-    "userAgreementTitle": "User Agreement for Medical Screening App",
-    "validationRequired": "This field is required",
-    "validationEmail": "Please enter a valid email address"
+    "chronicConditions": "Chronic Conditions",
+    "otherConditions": "Other Conditions",
+    "saveData": "Save data to skip this form in the future",
+    "saveDataDesc": "You can edit or delete data at any time",
+    "saveButton": "Save Data",
+    "height": "Height",
+    "weight": "Weight",
+    "bmi": "Body Mass Index (BMI)",
+    "bmiCategories": {
+      "underweight": "Underweight",
+      "normal": "Normal Weight",
+      "preObesity": "Pre-Obesity",
+      "obesity1": "Obesity Class I",
+      "obesity2": "Obesity Class II",
+      "obesity3": "Obesity Class III",
+      "tryAgain": "Try Again"
+    },
+    "validation": {
+      "gender": "Please select gender",
+      "dateOfBirth": "Please enter date of birth",
+      "height": "Please enter height",
+      "weight": "Please enter weight"
+    },
+    "selectDate": "Select Date",
+    "medicalSurveyDesc": "Select all that apply to you, or leave blank if unsure"
+  },
+  "phoneNumber": {
+    "label": "Mobile Number (WhatsApp)",
+    "required": "Please enter phone number",
+    "startWith966": "Phone number must start with +966",
+    "moreDigits": "Please enter {{count}} more digits",
+    "tooLong": "Phone number is too long",
+    "digitsOnly": "Phone number must contain only digits",
+    "saudiStart": "Saudi phone number must start with 5 or 9 after 966"
   },
   "home": {
     "greeting": "Hello!",
@@ -58,31 +86,10 @@
     "eveningGreeting": "Good evening, {{name}}!",
     "greetingDefault": "Welcome!",
     "manageHealth": "Manage your health",
-    "testStatus": "Test Status",
     "due": "Due Now",
     "overdue": "Overdue",
-    "later": "Later",
-    "completed": "Completed",
-    "healthTips": "Health Tips",
-    "readMore": "Read More",
-    "defaultTipTitle": "Stay Healthy",
-    "defaultTipContent": "Regular health screenings are important for early detection and prevention of diseases. Follow your recommended screening schedule.",
-    "quickActions": "Quick Actions",
-    "addFamily": "Add Family",
-    "manageFamilyMembers": "Manage family members",
-    "upcomingTests": "Upcoming Tests",
-    "viewScheduledTests": "View scheduled tests",
-    "completedTests": "Completed Tests",
-    "viewTestHistory": "View test history",
     "addResult": "Add Result",
     "recordTestResult": "Record test result",
-    "tabs": {
-      "all": "All",
-      "due": "Due",
-      "overdue": "Overdue", 
-      "later": "Later",
-      "done": "Done"
-    },
     "noScreenings": "No screenings found.",
     "noScreeningsForTab": "No {{status}} screenings.",
     "noDue": "No due screenings.",
@@ -93,7 +100,23 @@
     "markComplete": "Mark Complete",
     "screeningCompleted": "Screening Completed",
     "screeningCompletedDesc": "Great job! Your screening has been marked as completed.",
-    "updateError": "Failed to update screening status. Please try again."
+    "updateError": "Failed to update screening status. Please try again.",
+    "testStatusTitle": "Test Status",
+    "statusTabs": {
+      "all": "All",
+      "due": "Vaccinations",
+      "overdue": "Counselings",
+      "later": "Screenings",
+      "done": "Done"
+    },
+    "viewTestHistoryDesc": "View test history",
+    "healthTipsTitle": "Health Tips",
+    "quickActionsTitle": "Quick Actions",
+    "addFamilyTitle": "Add Family",
+    "manageFamilyDesc": "Manage Family Members",
+    "upcomingTestsTitle": "Upcoming Tests",
+    "viewScheduledTestsDesc": "View Scheduled Tests",
+    "completedTestsTitle": "Completed Tests"
   },
   "completed": {
     "title": "Completed Screenings",
@@ -137,7 +160,13 @@
     "updateError": "Failed to update profile. Please try again.",
     "languageSettings": "Language Settings",
     "currentLanguage": "Current Language",
-    "age": "Age"
+    "age": "Age",
+    "signOut": "Sign Out",
+    "signOutSuccess": "Signed out successfully",
+    "userAgreement": "User Agreement",
+    "userAgreementTitle": "Zimam Application User Agreement",
+    "userAgreementContent": "This agreement aims to define the terms and conditions of your use of the Zimam application ('Zimam'), which was developed by Dr. Mohammed Al-Shehri and the Zimam team.\n\nBy using the application, you agree to comply with all of the following conditions:\n\n'Zimam' is a tool to know the recommended preventive services and facilitate booking medical examination appointments for them and is not a substitute for medical advice.\n\nAll recommendations and guidelines in the application are based on the recommendations of the Saudi Public Health Authority as a basic reference framework and then enhanced through a systematic review of recommendations from leading international organizations, including: The US Preventive Services Task Force, the Royal Australian College of General Practitioners, and the Canadian Task Force on Preventive Health Care.\n\nThe user acknowledges that Dr. Mohammed Al-Shehri and the Zimam team do not bear any responsibility for any damages or losses resulting from the use of the application, including errors, malfunctions, or decisions based on the information provided.\n\nAll intellectual property rights are reserved to Dr. Mohammed Al-Shehri and the Zimam team, and copying, modifying, or using the application for commercial purposes without written permission is prohibited.\n\nThe user is committed to using the application for lawful purposes only, and any use that harms the application or violates the rights of others is prohibited.\n\nDr. Mohammed Al-Shehri and the Zimam team have the right to terminate the use of the application in case of violation of the conditions without prior notice.\n\nThis agreement is subject to the laws of the Kingdom of Saudi Arabia. The conditions may be amended at any time, and continued use is considered approval of the amendments. For inquiries,\nBy using the application, you acknowledge that you have read and agreed to this agreement.",
+    "changeLanguage": "Change Language"
   },
   "admin": {
     "title": "Admin Panel",
@@ -146,7 +175,7 @@
     "addNewScreening": "Add New Screening",
     "screeningName": "Screening Name",
     "screeningNamePlaceholder": "Enter screening name",
-    "description": "Description", 
+    "description": "Description",
     "descriptionPlaceholder": "Enter screening description",
     "category": "Category",
     "categoryPlaceholder": "Select category",
@@ -160,7 +189,7 @@
     "addError": "Failed to add screening. Please try again.",
     "categories": {
       "heart": "Heart",
-      "eye": "Eye", 
+      "eye": "Eye",
       "cancer": "Cancer",
       "general": "General",
       "bone": "Bone"
@@ -200,15 +229,17 @@
     "overdueYears_plural": "Overdue {{years}} years",
     "status": {
       "overdue": "Overdue",
-      "dueSoon": "Due Soon", 
+      "dueSoon": "Due Soon",
       "upcoming": "Upcoming",
-      "completed": "Completed"
+      "completed": "Completed",
+      "incomplete": "Incomplete"
     }
   },
   "family": {
     "title": "Family Management",
     "description": "Add family members to manage their health screenings",
     "addMember": "Add Family Member",
+    "addMemberDescription": "Add a family member to get personalized recommendations for them",
     "editMember": "Edit Family Member",
     "name": "Name",
     "namePlaceholder": "Enter member name",
@@ -218,7 +249,7 @@
     "noMembersDesc": "Add family members to track their health screenings",
     "memberAdded": "Family Member Added",
     "memberAddedDesc": "Family member has been added successfully.",
-    "memberUpdated": "Family Member Updated", 
+    "memberUpdated": "Family Member Updated",
     "memberUpdatedDesc": "Family member has been updated successfully.",
     "memberDeleted": "Family Member Removed",
     "memberDeletedDesc": "Family member has been removed successfully.",
@@ -293,51 +324,44 @@
     },
     "relationships": {
       "father": "Father",
-      "mother": "Mother", 
+      "mother": "Mother",
       "spouse": "Spouse",
       "child": "Child",
       "sibling": "Sibling",
       "other": "Other"
     },
-    "father": "Father",
-    "mother": "Mother",
-    "spouse": "Spouse", 
-    "child": "Child",
-    "sibling": "Sibling",
-    "other": "Other"
+    "conditions": {
+      "physicalInactivity": "Physical Inactivity",
+      "tobaccoSmoking": "Tobacco Smoking",
+      "hypertension": "Hypertension",
+      "diabetes": "Diabetes",
+      "cardiovascularHistory": "History of Cardiovascular Disease",
+      "chronicOrganDisease": "Chronic Organ Disease",
+      "highBloodPressureReadings": "High Blood Pressure Readings",
+      "familyDiabetesHistory": "Family History of Diabetes",
+      "gestationalDiabetesHistory": "History of Gestational Diabetes",
+      "sexualHistory": "Sexual History"
+    },
+    "explanations": {
+      "physicalInactivity": "I engage in less than 2.5 hours of moderate physical activity per week, such as brisk walking",
+      "tobaccoSmoking": "I use tobacco products, such as cigarettes or shisha",
+      "hypertension": "I have been diagnosed with high blood pressure",
+      "diabetes": "I have type 1 or type 2 diabetes",
+      "cardiovascularHistory": "I have had a cardiovascular event, such as a heart attack, angina, or stroke",
+      "chronicOrganDisease": "I have a chronic disease of the heart, lungs, liver, or kidneys",
+      "highBloodPressureReadings": "My blood pressure readings are higher than 130/85 mmHg, without a diagnosis of hypertension",
+      "familyDiabetesHistory": "A family member (parent or sibling) has diabetes",
+      "gestationalDiabetesHistory": "I had gestational diabetes in a previous pregnancy",
+      "sexualHistory": "I have had sexual contact within a current or past marital relationship"
+    },
+    "medicalConditions": "Medical Conditions",
+    "medicalSurveyTitle": "Medical Survey",
+    "selectConditions": "Select all that apply to the family member",
+    "lifestyle": "Lifestyle",
+    "chronicConditions": "Chronic Conditions",
+    "otherConditions": "Other Conditions"
   },
-  "profile": {
-    "title": "Profile",
-    "manageInfo": "Manage your health information",
-    "loadingProfile": "Loading profile...",
-    "sessionExpired": "Session Expired",
-    "sessionExpiredDesc": "Your session has expired due to a server restart. Please create a new profile to continue.",
-    "createNewProfile": "Create New Profile",
-    "personalInfo": "Personal Information",
-    "name": "Name",
-    "email": "Email",
-    "dateOfBirth": "Date of Birth",
-    "gender": "Gender",
-    "editProfile": "Edit Profile",
-    "resetProfile": "Reset Profile",
-    "profileUpdated": "Profile Updated",
-    "profileUpdatedDesc": "Your profile has been updated successfully.",
-    "profileReset": "Profile Reset",
-    "profileResetDesc": "Your profile has been reset. You can create a new one.",
-    "updateError": "Failed to update profile. Please try again.",
-    "languageSettings": "Language Settings",
-    "currentLanguage": "Current Language",
-    "age": "Age",
-    "signOut": "Sign Out",
-    "signOutSuccess": "Signed Out",
-    "userAgreement": "User Agreement",
-    "changeLanguage": "Change Language",
-    "userAgreementTitle": "User Agreement for \"Zimam\" Application",
-    "userAgreementContent": "This agreement aims to define the terms and conditions of your use of the Zimam application (\"Zimam\"), which was developed by Dr. Mohammed Al-Shehri and the Zimam team.\n\nBy using the application, you agree to abide by all the following terms:\n\n\"Zimam\" is a tool to learn about recommended preventive services and facilitate booking medical screening appointments, and is not a substitute for medical consultation.\n\nAll recommendations and guidance in the application are based on the recommendations of the Saudi Public Health Authority as a basic reference framework, then enhanced through systematic review of recommendations from leading international organizations including: the U.S. Preventive Services Task Force, the Royal Australian College of General Practitioners, and the Canadian Task Force on Preventive Health Care.\n\nThe user acknowledges that Dr. Mohammed Al-Shehri and the Zimam team do not bear any responsibility for any damages or losses arising from the use of the application, including errors, malfunctions, or decisions based on the information provided.\n\nAll intellectual property rights are reserved for Dr. Mohammed Al-Shehri and the Zimam team, and copying, modifying, or using the application for commercial purposes without written permission is prohibited.\n\nThe user is committed to using the application for lawful purposes only, and any use that harms the application or violates the rights of others is prohibited.\n\nDr. Mohammed Al-Shehri and the Zimam team have the right to terminate the use of the application in case of violation of the terms without prior notice.\n\nThis agreement is subject to the laws of the Kingdom of Saudi Arabia. The terms may be modified at any time, and continued use is considered acceptance of the modifications. For inquiries,\n\nBy using the application, you acknowledge that you have read and agreed to this agreement.",
-    "phoneNumber": "Phone Number",
-    "phoneNumberError": "Phone Number Error"
-  },
-  "contact": {
+  "contactUs": {
     "title": "Contact Us",
     "send": "Send",
     "name": "Name",
@@ -349,5 +373,9 @@
     "subjectPlaceholder": "Enter message subject",
     "contentPlaceholder": "Write your message here",
     "description": "Message us for any inquiry or suggestion"
+  },
+  "language": {
+    "switchTo": "العربية",
+    "current": "English"
   }
 }

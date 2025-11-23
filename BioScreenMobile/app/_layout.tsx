@@ -2,10 +2,9 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
-import { I18nManager,View, Text, TextInput } from 'react-native';
+import { I18nManager, View, Text, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemeProvider as NavigationThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 import { toastConfig } from '../components/ToastConfig';
@@ -14,13 +13,13 @@ import { loadStoredLanguage } from '../lib/i18n';
 import { SelectedPersonProvider } from '../context/SelectedPersonContext';
 import { initializeRTL, verifyRTL } from '../lib/rtlSetup';
 import { DirectionTester } from '@/components/playground/DirectionTester';
-import { configureUILibrary } from '../lib/uiLibConfig';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 // Create a client
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function RootLayoutContent() {
+  const { isDark } = useTheme();
   const { i18n } = useTranslation();
   const [isReady, setIsReady] = useState(false);
   const [loaded] = useFonts({
@@ -38,10 +37,10 @@ export default function RootLayout() {
         try {
           // Load stored language preference and apply to i18n
           await loadStoredLanguage();
-          
+
           // Initialize RTL based on current language
           await initializeRTL(i18n.language as 'ar' | 'en');
-          
+
           setIsReady(true);
         } catch (error) {
           console.error('Error setting up language and RTL:', error);
@@ -63,37 +62,25 @@ export default function RootLayout() {
       defaultFont.style = defaultFont.style || {};
       defaultFont.style.fontFamily = 'ReadexPro';
       (Text as any).defaultProps = defaultFont;
-      
+
       // Set default font for TextInput components
       const defaultInputFont = (TextInput as any).defaultProps || {};
       defaultInputFont.style = defaultInputFont.style || {};
       defaultInputFont.style.fontFamily = 'ReadexPro';
       (TextInput as any).defaultProps = defaultInputFont;
-      
+
       console.log('Readex Pro font applied successfully');
     } catch (error) {
       console.warn('Failed to apply Readex Pro font:', error);
     }
   }, []);
 
-  // Configure React Native UI Library with current color scheme
-  useEffect(() => {
-    configureUILibrary(colorScheme ?? 'light');
-  }, [colorScheme]);
-
   if (!loaded || !isReady) {
     return null;
   }
 
-  // return <DirectionTester />
-  //  return <View style={{
-  //    padding: 48,
-  //  }}>
-  //    <Text> Hello wrold</Text>
-  // </View>;
-  
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
         <SelectedPersonProvider>
           <Stack
@@ -106,10 +93,18 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
           <Toast config={toastConfig} />
         </SelectedPersonProvider>
       </QueryClientProvider>
+    </NavigationThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
     </ThemeProvider>
   );
 }

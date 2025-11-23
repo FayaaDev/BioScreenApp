@@ -4,7 +4,8 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, TextField, Modal, LoaderScreen, Colors } from 'react-native-ui-lib';
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../hooks/useToast";
@@ -16,18 +17,15 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from "../../lib/i18n";
 import { changeRTLDirection } from "../../lib/rtlSetup";
 import { medicalStorage } from "../../lib/medical-storage";
+import { useTheme } from "../../context/ThemeContext";
 
-/**
-* After fetching docs about RTL setup from here, see what's going wrong in this app
-* The app is always set to RTL direction
-* Despite console reporting LTR as well as @DirectionTester.tsx component
- * https://docs.expo.dev/guides/localization/#making-an-app-behave-correctly-on-rtl-locales
- */
 export default function Profile() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const { isDark, toggleTheme: contextToggleTheme } = useTheme();
+
   const [userId, setUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,11 +33,19 @@ export default function Profile() {
     gender: "",
   });
   const [showAgreement, setShowAgreement] = useState(false);
-  const isRTL = i18n.language === "ar";
+  const isRTL = i18n.language.startsWith("ar");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleToggleTheme = () => {
+    contextToggleTheme();
+    showToast({
+      title: !isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري',
+      type: 'success'
+    });
+  };
 
   // Force re-render when language changes
   useEffect(() => {
@@ -85,7 +91,16 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (userId) {
-      await medicalStorage.saveUserProfile(userId, formData);
+      await medicalStorage.saveUserProfile(userId, {
+        ...formData,
+        isDiabetic: false,
+        isHypertensive: false,
+        isCholesterol: false,
+        isSmoker: false,
+        height: "",
+        weight: "",
+        isSexuallyActive: false,
+      });
       setIsEditing(false);
       showToast({ title: t("profile.profileUpdated"), type: "success" });
     }
@@ -133,7 +148,7 @@ export default function Profile() {
 
   if (!userId || isLoading) {
     return (
-      <LoaderScreen color="#4CCCE6" message={t("common.loading")} backgroundColor="#202221" />
+      <LoaderScreen color={Colors.primary} message={t("common.loading")} backgroundColor={Colors.background} />
     );
   }
 
@@ -141,14 +156,14 @@ export default function Profile() {
     <View
       flex
       padding-s4
-      style={{ backgroundColor: '#202221' }}
+      style={{ backgroundColor: Colors.background }}
     >
       <ScrollView
         key={refreshKey}
-        style={{ flex: 1, backgroundColor: '#202221', paddingTop: 48 }}
+        style={{ flex: 1, backgroundColor: Colors.background, paddingTop: 48 }}
         contentContainerStyle={{ paddingBottom: 64 }}
       >
-        <Card padding-s5 backgroundColor="#2E3130" br40 marginB-s4>
+        <Card padding-s5 backgroundColor={Colors.card} br40 marginB-s4>
           <View
             style={{
               flexDirection: "row",
@@ -160,28 +175,31 @@ export default function Profile() {
               gap: 12,
             }}
           >
-            <TouchableOpacity onPress={() => setIsEditing(true)}>
-              <MaterialIcons name="edit" size={28} color="#4CCCE6" />
+            <TouchableOpacity onPress={handleToggleTheme}>
+              <MaterialIcons name={isDark ? "light-mode" : "dark-mode"} size={28} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/onboarding")}>
+              <MaterialIcons name="edit" size={28} color={Colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
-              <MaterialIcons name="language" size={28} color="#4CCCE6" />
+              <MaterialIcons name="language" size={28} color={Colors.primary} />
             </TouchableOpacity>
           </View>
-          <Text
-            text60
-            center
-            marginB-s4
-            style={{
-              fontFamily: 'ReadexPro-Bold',
-              lineHeight: 30,
-              color: '#045468',
-            }}
-          >
-            {t("profile.title")}
-          </Text>
+          <View style={{ alignItems: 'flex-start', width: '100%', marginBottom: 16 }}>
+            <Text
+              text60
+              style={{
+                fontFamily: 'ReadexPro-Bold',
+                lineHeight: 30,
+                color: Colors.text,
+              }}
+            >
+              {t("profile.title")}
+            </Text>
+          </View>
           <View style={{ gap: 16 }}>
             <View style={{ gap: 8 }}>
-              <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.dateOfBirth")}</Text>
+              <Text text70 center style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text }}>{t("profile.dateOfBirth")}</Text>
               {isEditing ? (
                 <>
                   <TouchableOpacity
@@ -194,141 +212,178 @@ export default function Profile() {
                       setShowDatePicker(true);
                     }}
                   >
-                    <View padding-s3 br20 backgroundColor="#202221" marginT-s1 marginB-s1>
+                    <View padding-s3 br20 backgroundColor={Colors.background} marginT-s1 marginB-s1>
                       <Text
                         center
                         style={{
-                          color: formData.dateOfBirth ? "#374151" : "#888",
+                          color: formData.dateOfBirth ? Colors.text : Colors.textSecondary,
                           fontFamily: "ReadexPro",
                         }}
                       >
                         {formData.dateOfBirth
                           ? new Date(formData.dateOfBirth).toLocaleDateString(
-                              isRTL ? "ar-EG" : "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              },
-                            )
+                            isRTL ? "ar-EG" : "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )
                           : t("family.selectDateOfBirth")}
                       </Text>
                     </View>
                   </TouchableOpacity>
                   {showDatePicker && (
-                    <DateTimePicker
-                      value={tempDate || new Date()}
-                      mode="date"
-                      display={Platform.OS === "ios" ? "spinner" : "calendar"}
-                      maximumDate={new Date()}
-                      minimumDate={
-                        new Date(
-                          new Date().setFullYear(
-                            new Date().getFullYear() - 120,
-                          ),
-                        )
-                      }
-                      onChange={(event, selectedDate) => {
-                        if (selectedDate) {
-                          setFormData({
-                            ...formData,
-                            dateOfBirth: selectedDate
-                              .toISOString()
-                              .split("T")[0],
-                          });
-                        }
-                        setShowDatePicker(false);
-                        setTempDate(null);
-                      }}
-                      style={{ alignSelf: "flex-end", width: "100%" }}
-                      textColor="#FFFFFF"
-                    />
+                    <Modal
+                      visible={showDatePicker}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowDatePicker(false)}
+                    >
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.overlay }}>
+                        <View style={{ backgroundColor: Colors.card, borderRadius: 18, padding: 24, width: '90%', maxWidth: 400 }}>
+                          <DateTimePicker
+                            value={tempDate || new Date()}
+                            mode="date"
+                            display="spinner"
+                            onChange={(event, selectedDate) => {
+                              if (selectedDate) setTempDate(selectedDate);
+                            }}
+                            maximumDate={new Date()}
+                            minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 120))}
+                            style={{ width: '100%', height: 180 }}
+                            textColor={Colors.text}
+                            themeVariant={isDark ? "dark" : "light"}
+                          />
+                          <View row spread marginT-s4 style={{ width: '100%', gap: 12 }}>
+                            <Button
+                              label="إلغاء"
+                              backgroundColor={Colors.background}
+                              style={{ flex: 1, paddingVertical: 12 }}
+                              onPress={() => {
+                                setShowDatePicker(false);
+                                setTempDate(null);
+                              }}
+                              labelStyle={{ color: Colors.primary, fontFamily: 'ReadexPro-SemiBold', fontSize: 16 }}
+                            />
+                            <Button
+                              label="تأكيد"
+                              backgroundColor={Colors.primary}
+                              style={{ flex: 1, paddingVertical: 12 }}
+                              onPress={() => {
+                                if (tempDate) {
+                                  setFormData({
+                                    ...formData,
+                                    dateOfBirth: tempDate.toISOString().split('T')[0],
+                                  });
+                                }
+                                setShowDatePicker(false);
+                              }}
+                              labelStyle={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16, color: Colors.white }}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    </Modal>
                   )}
                 </>
               ) : (
-                <Text text70 white center marginV-s1 style={{ fontFamily: 'ReadexPro' }}>
+                <Text text70 center marginV-s1 style={{ fontFamily: 'ReadexPro', color: Colors.text }}>
                   {formData.dateOfBirth
                     ? new Date(formData.dateOfBirth).toLocaleDateString(
-                        isRTL ? "ar-EG" : "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
-                      )
+                      isRTL ? "ar-EG" : "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )
                     : "-"}
                 </Text>
               )}
             </View>
             <View style={{ gap: 8 }}>
-              <Text text70 white center style={{ fontFamily: 'ReadexPro-Medium' }}>{t("profile.gender")}</Text>
-              {isEditing || true ? (
-                <View row center style={{ gap: 16, marginTop: 12 }}>
-                  <TouchableOpacity
-                    disabled={!isEditing}
-                    onPress={() =>
-                      isEditing && setFormData({ ...formData, gender: "male" })
-                    }
+              <Text text70 center style={{ fontFamily: 'ReadexPro-Medium', color: Colors.text }}>{t("profile.gender")}</Text>
+              <View row center style={{ gap: 16, marginTop: 12 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    minHeight: 56,
+                    borderWidth: 2,
+                    borderColor: formData.gender === "male" ? Colors.primary : Colors.textSecondary,
+                    backgroundColor: formData.gender === "male" ? Colors.primary : Colors.card,
+                    borderRadius: 20,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    elevation: formData.gender === "male" ? 4 : 0,
+                    shadowColor: formData.gender === "male" ? Colors.primary : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    marginHorizontal: 4,
+                  }}
+                >
+                  <MaterialIcons
+                    name="male"
+                    size={20}
+                    color={formData.gender === "male" ? Colors.white : Colors.textSecondary}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === "male" ? Colors.white : Colors.textSecondary,
+                      writingDirection: 'rtl',
+                      fontSize: 15,
+                      lineHeight: 24,
+                    }}
                   >
-                    <View
-                      paddingV-s2
-                      paddingH-s4
-                      br20
-                      center
-                      backgroundColor={formData.gender === "male" ? "#045468" : "#202221"}
-                      style={{ minWidth: 0, marginHorizontal: 4 }}
-                    >
-                      <MaterialIcons
-                        name="male"
-                        size={20}
-                        color={formData.gender === "male" ? "#fff" : "#045468"}
-                      />
-                      <Text
-                        text70
-                        marginT-s1
-                        style={{
-                          color: formData.gender === "male" ? "#fff" : "#045468",
-                          fontFamily: 'ReadexPro-Bold'
-                        }}
-                      >
-                        {t("common.male")}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    disabled={!isEditing}
-                    onPress={() =>
-                      isEditing &&
-                      setFormData({ ...formData, gender: "female" })
-                    }
-                  >
-                    <View
-                      paddingV-s2
-                      paddingH-s4
-                      br20
-                      center
-                      backgroundColor={formData.gender === "female" ? "#045468" : "#202221"}
-                      style={{ minWidth: 0, marginHorizontal: 4 }}
-                    >
-                      <MaterialIcons
-                        name="female"
-                        size={20}
-                        color={formData.gender === "female" ? "#fff" : "#045468"}
-                      />
-                      <Text
-                        text70
-                        marginT-s1
-                        style={{
-                          color: formData.gender === "female" ? "#fff" : "#045468",
-                          fontFamily: 'ReadexPro-Bold'
-                        }}
-                      >
-                        {t("common.female")}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                    {t("common.male")}
+                  </Text>
                 </View>
-              ) : null}
+                <View
+                  style={{
+                    flex: 1,
+                    minHeight: 56,
+                    borderWidth: 2,
+                    borderColor: formData.gender === "female" ? Colors.primary : Colors.textSecondary,
+                    backgroundColor: formData.gender === "female" ? Colors.primary : Colors.card,
+                    borderRadius: 20,
+                    paddingVertical: 16,
+                    paddingHorizontal: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 8,
+                    elevation: formData.gender === "female" ? 4 : 0,
+                    shadowColor: formData.gender === "female" ? Colors.primary : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    marginHorizontal: 4,
+                  }}
+                >
+                  <MaterialIcons
+                    name="female"
+                    size={20}
+                    color={formData.gender === "female" ? Colors.white : Colors.textSecondary}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      color: formData.gender === "female" ? Colors.white : Colors.textSecondary,
+                      writingDirection: 'rtl',
+                      fontSize: 15,
+                      lineHeight: 24,
+                    }}
+                  >
+                    {t("common.female")}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
           {isEditing ? (
@@ -336,27 +391,30 @@ export default function Profile() {
               <Button
                 flex
                 label={t("common.save")}
-                backgroundColor="#4CCCE6"
+                backgroundColor={Colors.primary}
                 paddingV-s5
                 br20
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleSave}
               />
               <Button
                 flex
                 label={t("common.cancel")}
-                backgroundColor="#ef4444"
+                backgroundColor="transparent"
+                outline
+                outlineColor={Colors.error}
                 paddingV-s5
                 br20
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+                labelStyle={{ color: Colors.error, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
                 onPress={handleCancel}
+                style={{ borderWidth: 1, borderColor: Colors.error }}
               />
             </View>
           ) : null}
         </Card>
 
         {/* Family Management Section */}
-        <Card padding-s5 backgroundColor="#2E3130" br40 marginB-s4>
+        <Card padding-s5 backgroundColor={Colors.card} br40 marginB-s4>
           <FamilyManagement
             userId={userId!}
             onSwitchPerson={handleSwitchPerson}
@@ -364,22 +422,25 @@ export default function Profile() {
         </Card>
 
         {/* Reset Profile and Sign Out */}
-        <Card padding-s5 backgroundColor="#2E3130" br40 marginB-s4>
+        <Card padding-s5 backgroundColor={Colors.card} br40 marginB-s4>
           <Button
             label={t("profile.signOut")}
-            backgroundColor="#045468"
+            backgroundColor="transparent"
+            outline
+            outlineColor={Colors.error}
             paddingV-s5
-            br20
-            marginB-s2
-            labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            borderRadius={200}
+            marginB-s3
+            labelStyle={{ color: Colors.error, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
             onPress={handleSignOut}
+            style={{ borderWidth: 1, borderColor: Colors.error }}
           />
           <Button
             label={t("profile.userAgreement")}
-            backgroundColor="#045468"
+            backgroundColor={Colors.primary}
             paddingV-s5
-            br20
-            labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold', lineHeight: 29 }}
+            borderRadius={200}
+            labelStyle={{ color: Colors.white, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
             onPress={() => setShowAgreement(true)}
           />
         </Card>
@@ -388,31 +449,31 @@ export default function Profile() {
         <Modal
           visible={showLanguageModal}
           onDismiss={() => setShowLanguageModal(false)}
-          overlayBackgroundColor="rgba(0,0,0,0.2)"
+          overlayBackgroundColor={Colors.overlay}
         >
-          <Card
-            padding-s6
-            backgroundColor="#2E3130"
-            br40
-            style={{ minWidth: 280 }}
-          >
+          <View flex center>
+            <Card
+              padding-s6
+              backgroundColor={Colors.card}
+              br40
+              style={{ minWidth: 280 }}
+            >
               <Text
                 text70
-                zimam-primary
+                style={{ fontFamily: "ReadexPro-Bold", color: Colors.primary }}
                 center
                 marginB-s4
-                style={{ fontFamily: "ReadexPro-Bold" }}
               >
                 {t("profile.changeLanguage")}
               </Text>
               <Button
                 label="العربية"
-                backgroundColor={i18n.language === "ar" ? "#4CCCE6" : "#202221"}
+                backgroundColor={i18n.language === "ar" ? Colors.primary : Colors.background}
                 paddingV-s3
                 br20
                 marginB-s3
                 labelStyle={{
-                  color: i18n.language === "ar" ? "#fff" : "#4CCCE6",
+                  color: i18n.language === "ar" ? Colors.white : Colors.primary,
                   fontWeight: "bold",
                   fontSize: 16,
                   fontFamily: "ReadexPro-Bold",
@@ -429,12 +490,12 @@ export default function Profile() {
               />
               <Button
                 label="English"
-                backgroundColor={i18n.language === "en" ? "#4CCCE6" : "#202221"}
+                backgroundColor={i18n.language === "en" ? Colors.primary : Colors.background}
                 paddingV-s3
                 br20
                 marginB-s1
                 labelStyle={{
-                  color: i18n.language === "en" ? "#fff" : "#4CCCE6",
+                  color: i18n.language === "en" ? Colors.white : Colors.primary,
                   fontWeight: "bold",
                   fontSize: 16,
                   fontFamily: "ReadexPro-Bold",
@@ -455,42 +516,40 @@ export default function Profile() {
                 onPress={() => setShowLanguageModal(false)}
               >
                 <Text
-                  zimam-primary
                   text70
-                  style={{ fontFamily: "ReadexPro-Bold" }}
+                  style={{ fontFamily: "ReadexPro-Bold", color: Colors.primary }}
                 >
                   {t("common.close")}
                 </Text>
               </TouchableOpacity>
             </Card>
+          </View>
         </Modal>
 
         {/* User Agreement Modal */}
         <Modal
           visible={showAgreement}
           onDismiss={() => setShowAgreement(false)}
-          overlayBackgroundColor="rgba(0,0,0,0.2)"
+          overlayBackgroundColor={Colors.overlay}
         >
-          onRequestClose={() => setShowAgreement(false)}
-        >
-          <View flex center padding-s6 backgroundColor="#202221">
+          <View flex center padding-s6 backgroundColor={Colors.background}>
             <ScrollView
               contentContainerStyle={{ alignItems: 'center', gap: 16, paddingTop: 60, paddingBottom: 32 }}
             >
-              <Text text60 zimam-primary center marginB-s3 style={{ fontFamily: 'ReadexPro-Bold' }}>
+              <Text text60 center marginB-s3 style={{ fontFamily: 'ReadexPro-Bold', color: Colors.primary }}>
                 {t("profile.userAgreementTitle")}
               </Text>
-              <Text text70 white right marginB-s4 style={{ lineHeight: 29, paddingHorizontal: 16, fontFamily: 'ReadexPro', writingDirection: 'rtl' }}>
+              <Text text70 right marginB-s4 style={{ lineHeight: 29, paddingHorizontal: 16, fontFamily: 'ReadexPro', writingDirection: 'rtl', color: Colors.text }}>
                 {t("profile.userAgreementContent")}
               </Text>
               <Button
                 label={t("common.close")}
-                backgroundColor="#4CCCE6"
+                backgroundColor={Colors.primary}
                 paddingV-s3
                 paddingH-s8
                 br20
                 marginT-s4
-                labelStyle={{ color: '#fff', fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
+                labelStyle={{ color: Colors.white, fontWeight: 'bold', fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
                 onPress={() => setShowAgreement(false)}
               />
             </ScrollView>

@@ -125,41 +125,15 @@ export function groupScreeningsByCategory(screenings: ScreeningWithDetails[]): R
   }, {} as Record<string, ScreeningWithDetails[]>);
 }
 
-// Color constants for React Native
-export const STATUS_COLORS = {
-  due: {
-    background: '#E3F7F4',
-    text: '#0EB39E',
-    border: '#A1E4DC',
-    icon: '#0EB39E'
-  },
-  overdue: {
-    background: '#F4E6DD',
-    text: '#A35829',
-    border: '#E3C8B4',
-    icon: '#A35829'
-  },
-  later: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    text: '#FFFFFF',
-    border: 'rgba(255, 255, 255, 0.16)',
-    icon: '#FFFFFF'
-  },
-  completed: {
-    background: '#f0fdf4', // green-50
-    text: '#166534',       // green-800
-    border: '#bbf7d0',     // green-200
-    icon: '#166534'
-  }
-};
+// Color constants moved to constants/Colors.ts
 
 export function calculateNextDueDate(dateOfBirth: string, startAge: number): Date {
   const birthDate = new Date(dateOfBirth);
   const birthYear = birthDate.getFullYear();
-  
+
   // Calculate the year when user turns the start age
   const targetYear = birthYear + startAge;
-  
+
   // Always set to January 1st of target year
   return new Date(targetYear, 0, 1);
 }
@@ -168,10 +142,10 @@ export function calculateScreeningStatus(dateOfBirth: string, startAge: number):
   const birthDate = new Date(dateOfBirth);
   const birthYear = birthDate.getFullYear();
   const currentYear = new Date().getFullYear();
-  
+
   // Calculate the year when user turns the start age
   const targetYear = birthYear + startAge;
-  
+
   // Determine status based on current date vs target date
   if (currentYear < targetYear) {
     // Before the target year - always "later"
@@ -183,4 +157,4 @@ export function calculateScreeningStatus(dateOfBirth: string, startAge: number):
     // More than one year past start age - "overdue"
     return "overdue";
   }
-} 
+}

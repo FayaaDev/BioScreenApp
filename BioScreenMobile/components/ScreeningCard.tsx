@@ -1,9 +1,9 @@
 import React from 'react';
 import { Image } from 'react-native';
-import { View, Text, Card, Button } from 'react-native-ui-lib';
+import { View, Text, Card, Button, Colors } from 'react-native-ui-lib';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getScreeningStatusLabel, getScreeningIcon, STATUS_COLORS, type ScreeningWithDetails } from '../lib/screening-utils';
+import { getScreeningStatusLabel, getScreeningIcon, type ScreeningWithDetails } from '../lib/screening-utils';
 import { getTimeFromNow, formatDate, getOverdueTime } from '../lib/date-utils';
 import { getSehhatyAppLink } from '../lib/device-utils';
 
@@ -29,8 +29,9 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
   const { t, i18n } = useTranslation();
   const iconName = iconMap[getScreeningIcon(screening.screening?.category || 'general')] || 'pulse';
   const statusLabel = getScreeningStatusLabel(screening.status);
-  const statusColors = STATUS_COLORS[screening.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.due;
-  
+  const statusKey = screening.status === 'laterRecreated' ? 'later' : screening.status;
+  const statusColors = Colors.status[statusKey as keyof typeof Colors.status] || Colors.status.due;
+
   const timeFromNow = getTimeFromNow(screening.nextDue);
   const isCompleted = screening.status === 'completed';
 
@@ -38,9 +39,9 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
   const getFrequencyText = (years: number) => {
     if (i18n.language === 'ar') {
       if (years === 0) return t("screening.noRepetition");
-      if (years === 1) return "كل سنة";
-      if (years === 2) return "كل سنتين";
-      return `كل ${years} سنين`;
+      if (years === 1) return t("screening.frequency.everyYear");
+      if (years === 2) return t("screening.frequency.every2Years");
+      return t("screening.frequency.everyNYears", { years });
     }
     return t("screening.everyYear", { count: years });
   };
@@ -49,49 +50,49 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
     <View row>
       {/* Left border */}
       <View width={4} br40 backgroundColor={statusColors.border} marginR-s2 />
-      <Card 
+      <Card
         flex
         padding-s4
         marginV-s2
-        backgroundColor="white"
+        backgroundColor={Colors.card}
         enableShadow
         elevation={2}
-      >  
+      >
         <View row centerV marginB-s2>
-          <View 
+          <View
             paddingH-14
             paddingV-5
             br40
             marginR-s2
             backgroundColor={statusColors.background}
             style={{ alignSelf: 'flex-start' }}
-          > 
-            <Text bodySmall color={statusColors.text} style={{ fontWeight: '600' }}> 
+          >
+            <Text bodySmall color={statusColors.text} style={{ fontWeight: '600' }}>
               {statusLabel}
             </Text>
           </View>
-          <Text 
+          <Text
             body
             flex
-            color="#1F2937"
+            color={Colors.text}
             style={{ fontWeight: 'bold', textAlign: isRTL ? 'right' : 'left' }}
             numberOfLines={1}
           >
             {screening.screening?.name || 'Unknown Screening'}
           </Text>
         </View>
-        
+
         <View row centerV marginB-s2>
-          <View 
+          <View
             width={40}
             height={40}
             br100
             center
             marginR-s3
             backgroundColor={statusColors.background}
-          > 
+          >
             {screening.screening?.iconUrl ? (
-              <Image 
+              <Image
                 source={{ uri: screening.screening.iconUrl }}
                 style={{ width: 28, height: 28, resizeMode: 'contain' }}
               />
@@ -99,68 +100,68 @@ export function ScreeningCard({ screening, onSchedule, onMarkCompleted, isRTL = 
               <MaterialCommunityIcons name={iconName} size={24} color={statusColors.icon} />
             )}
           </View>
-          <Text 
+          <Text
             bodySmall
             flex
-            color="#4B5563"
+            color={Colors.textSecondary}
             style={{ textAlign: isRTL ? 'right' : 'left' }}
             numberOfLines={2}
           >
             {screening.screening?.description || 'No description available'}
           </Text>
         </View>
-        
+
         <View row centerV marginB-s1>
-          <MaterialCommunityIcons name="clock-outline" size={14} color="#666" />
-          <Text caption color="#4B5563" marginL-4>
+          <MaterialCommunityIcons name="clock-outline" size={14} color={Colors.textSecondary} />
+          <Text caption color={Colors.textSecondary} marginL-4>
             {screening.status === 'overdue' && userBirthDate
               ? getOverdueTime(userBirthDate, screening.screening?.startAge || 0)
               : getFrequencyText(screening.screening?.frequencyYears || 1)
             }
           </Text>
         </View>
-        
+
         {screening.status === 'later' && screening.screening?.startAge && (
-          <Text 
+          <Text
             caption
-            color="#4B5563"
+            color={Colors.textSecondary}
             marginB-s1
             style={{ textAlign: isRTL ? 'right' : 'left' }}
           >
             {t("screening.takeAtAge", { age: screening.screening.startAge })}
           </Text>
         )}
-        
+
         {isCompleted && screening.screening?.frequencyYears && screening.screening.frequencyYears > 0 && (
-          <Text 
+          <Text
             caption
-            color="#4B5563"
+            color={Colors.textSecondary}
             marginB-s1
             style={{ textAlign: isRTL ? 'right' : 'left' }}
           >
             {t("screening.nextDue", { date: formatDate(screening.nextDue) })}
           </Text>
         )}
-        
+
         <View row marginT-s2 style={{ gap: 8 }}>
           {!isCompleted && (
-            <Button 
+            <Button
               label={t("home.bookWithSehhaty")}
               size="xSmall"
-              backgroundColor="primary"
+              backgroundColor={Colors.primary}
               onPress={() => {
                 const appLink = getSehhatyAppLink();
                 if (onSchedule) onSchedule();
               }}
             />
           )}
-          <Button 
-            label={isCompleted ? "غير مكتمل" : t("home.markComplete")}
+          <Button
+            label={isCompleted ? t("screening.status.incomplete") : t("home.markComplete")}
             size="xSmall"
             outline
-            outlineColor="#555"
-            backgroundColor="#2E3130"
-            color="primary"
+            outlineColor={Colors.border}
+            backgroundColor={Colors.card}
+            color={Colors.primary}
             onPress={onMarkCompleted}
           />
         </View>
