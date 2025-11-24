@@ -116,7 +116,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (userProfile) {
-      setUser(userProfile as User);
+      setUser(userProfile as unknown as User);
     }
   }, [userProfile]);
 
@@ -218,7 +218,14 @@ export default function HomeScreen() {
 
       // Reload screenings from local storage
       let loadedScreenings: Screening[] = [];
+
+      // Try to sync with backend if it's the main user
       if (selectedPersonId === 'user') {
+        try {
+          await medicalStorage.fetchAndSyncScreenings(userId);
+        } catch (e) {
+          console.log('Background sync failed, using local data');
+        }
         loadedScreenings = await medicalStorage.getUserScreenings(userId);
       } else {
         loadedScreenings = await medicalStorage.getFamilyMemberScreenings(userId, selectedPersonId);

@@ -39,6 +39,8 @@ export const screenings = pgTable("screenings", {
   iconUrl: text("icon_url"), // URL to uploaded icon
   priority: text("priority").notNull().default("recommended"), // 'strongly_recommended', 'recommended'
   specialCode: text("special_code"), // New field for filtering
+  key: text("key").unique(), // Unique key for localization mapping
+  articulation: text("articulation"), // JSON string for articulation templates
 });
 
 export const userScreenings = pgTable("user_screenings", {
@@ -109,6 +111,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertScreeningSchema = createInsertSchema(screenings).omit({
   id: true,
   isActive: true,
+  key: true,
+  articulation: true,
 });
 
 export const insertUserScreeningSchema = createInsertSchema(userScreenings).omit({

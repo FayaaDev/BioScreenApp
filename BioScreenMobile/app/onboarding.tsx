@@ -204,12 +204,38 @@ export default function Onboarding() {
           isSexuallyActive: formData.isSexuallyActive,
           sexualActivityDetails: formData.sexualActivityDetails,
         });
-        
+
         // Mark onboarding as complete
         medicalStorage.setOnboardingComplete(userId, true);
-        
+
         // Invalidate queries to refresh profile data in all screens
         queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+
+        // Sync with backend
+        try {
+          await medicalStorage.syncUserProfile(userId, {
+            dateOfBirth: formData.dateOfBirth,
+            gender: formData.gender,
+            height: formData.height,
+            weight: formData.weight,
+            medicalConditions: formData.medicalConditions,
+            smokingDetails: formData.smokingDetails,
+            isDiabetic: formData.medicalConditions.includes('diabetes'),
+            isHypertensive: formData.medicalConditions.includes('hypertension'),
+            isCholesterol: formData.medicalConditions.includes('highBloodPressureReadings'),
+            isSmoker: formData.medicalConditions.includes('tobaccoSmoking'),
+            isPregnant: formData.isPregnant,
+            isSexuallyActive: formData.isSexuallyActive,
+            sexualActivityDetails: formData.sexualActivityDetails,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+
+          await medicalStorage.fetchAndSyncScreenings(userId);
+        } catch (syncError) {
+          console.error('Backend sync failed during onboarding:', syncError);
+          // Continue anyway, we can sync later
+        }
       }
 
       showToast({
@@ -220,7 +246,7 @@ export default function Onboarding() {
 
       // Small delay to ensure AsyncStorage completes before navigation
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Error saving onboarding data:', error);

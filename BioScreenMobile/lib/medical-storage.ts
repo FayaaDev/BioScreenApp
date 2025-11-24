@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiRequest } from './api';
 
 export interface MedicalProfile {
   dateOfBirth: string;
@@ -21,6 +22,7 @@ export interface MedicalProfile {
   };
   createdAt: string;
   updatedAt: string;
+  backendId?: number;
 }
 
 export interface FamilyMember extends MedicalProfile {
@@ -75,13 +77,13 @@ export const medicalStorage = {
   saveUserProfile: async (userId: string, profile: Omit<MedicalProfile, 'createdAt' | 'updatedAt'>) => {
     const now = new Date().toISOString();
     const existingProfile = await getUserProfile(userId);
-    
+
     const fullProfile: MedicalProfile = {
       ...profile,
       createdAt: existingProfile?.createdAt || now,
       updatedAt: now,
     };
-    
+
     await AsyncStorage.setItem(`user_profile_${userId}`, JSON.stringify(fullProfile));
   },
 
@@ -91,7 +93,7 @@ export const medicalStorage = {
   saveFamilyMember: async (userId: string, member: Omit<FamilyMember, 'id' | 'createdAt' | 'updatedAt'>): Promise<FamilyMember> => {
     const now = new Date().toISOString();
     const memberId = `${userId}_${Date.now()}`;
-    
+
     const fullMember: FamilyMember = {
       ...member,
       id: memberId,
@@ -99,10 +101,10 @@ export const medicalStorage = {
       createdAt: now,
       updatedAt: now,
     };
-    
+
     const members = await getFamilyMembers(userId);
     members.push(fullMember);
-    
+
     await AsyncStorage.setItem(`family_members_${userId}`, JSON.stringify(members));
     return fullMember;
   },
@@ -110,14 +112,14 @@ export const medicalStorage = {
   updateFamilyMember: async (userId: string, memberId: string, updates: Partial<Omit<FamilyMember, 'id' | 'userId' | 'createdAt'>>) => {
     const members = await getFamilyMembers(userId);
     const index = members.findIndex(m => m.id === memberId);
-    
+
     if (index !== -1) {
       members[index] = {
         ...members[index],
         ...updates,
         updatedAt: new Date().toISOString(),
       };
-      
+
       await AsyncStorage.setItem(`family_members_${userId}`, JSON.stringify(members));
     }
   },
@@ -125,7 +127,7 @@ export const medicalStorage = {
   deleteFamilyMember: async (userId: string, memberId: string) => {
     const members = await getFamilyMembers(userId);
     const filtered = members.filter(m => m.id !== memberId);
-    
+
     await AsyncStorage.setItem(`family_members_${userId}`, JSON.stringify(filtered));
   },
 
@@ -135,7 +137,7 @@ export const medicalStorage = {
   saveTestResult: async (userId: string, testData: any) => {
     const key = `test_${userId}_${Date.now()}`;
     await AsyncStorage.setItem(key, JSON.stringify(testData));
-    
+
     const testsList = await getAllTestKeys(userId);
     testsList.push(key);
     await AsyncStorage.setItem(`tests_list_${userId}`, JSON.stringify(testsList));
@@ -183,10 +185,10 @@ export const medicalStorage = {
     status: 'due' | 'overdue' | 'later' | 'completed',
     memberId?: string
   ) => {
-    const screenings = memberId 
+    const screenings = memberId
       ? await getFamilyMemberScreenings(userId, memberId)
       : await getUserScreenings(userId);
-    
+
     const index = screenings.findIndex(s => s.id === screeningId);
     if (index !== -1) {
       screenings[index] = {
@@ -195,7 +197,7 @@ export const medicalStorage = {
         updatedAt: new Date().toISOString(),
         ...(status === 'completed' && { lastCompleted: new Date().toISOString() })
       };
-      
+
       if (memberId) {
         await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(screenings));
       } else {
@@ -207,36 +209,36 @@ export const medicalStorage = {
   addScreening: async (userId: string, screening: Omit<Screening, 'id' | 'createdAt' | 'updatedAt'>, memberId?: string) => {
     const now = new Date().toISOString();
     const screeningId = `${userId}_${Date.now()}`;
-    
+
     const fullScreening: Screening = {
       ...screening,
       id: screeningId,
       createdAt: now,
       updatedAt: now,
     };
-    
-    const screenings = memberId 
+
+    const screenings = memberId
       ? await getFamilyMemberScreenings(userId, memberId)
       : await getUserScreenings(userId);
-    
+
     screenings.push(fullScreening);
-    
+
     if (memberId) {
       await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(screenings));
     } else {
       await AsyncStorage.setItem(`screenings_${userId}`, JSON.stringify(screenings));
     }
-    
+
     return fullScreening;
   },
 
   deleteScreening: async (userId: string, screeningId: string, memberId?: string) => {
-    const screenings = memberId 
+    const screenings = memberId
       ? await getFamilyMemberScreenings(userId, memberId)
       : await getUserScreenings(userId);
-    
+
     const filtered = screenings.filter(s => s.id !== screeningId);
-    
+
     if (memberId) {
       await AsyncStorage.setItem(`screenings_${userId}_${memberId}`, JSON.stringify(filtered));
     } else {
@@ -251,13 +253,13 @@ export const medicalStorage = {
     await AsyncStorage.removeItem(`tests_list_${userId}`);
     await AsyncStorage.removeItem(`onboarding_completed_${userId}`);
     await AsyncStorage.removeItem(`screenings_${userId}`);
-    
+
     const testKeys = await getAllTestKeys(userId);
     await Promise.all(testKeys.map(key => AsyncStorage.removeItem(key)));
-    
+
     // Clear family member screenings
     const members = await getFamilyMembers(userId);
-    await Promise.all(members.map(member => 
+    await Promise.all(members.map(member =>
       AsyncStorage.removeItem(`screenings_${userId}_${member.id}`)
     ));
   },
@@ -266,4 +268,105 @@ export const medicalStorage = {
   clearAllData: async () => {
     await AsyncStorage.clear();
   },
+
+  // Backend Sync
+  syncUserProfile: async (userId: string, profile: MedicalProfile) => {
+    try {
+      console.log('Syncing user profile to backend...');
+
+      // Check if we already have a backend ID
+      const existingProfile = await medicalStorage.getUserProfile(userId);
+      if (existingProfile?.backendId) {
+        console.log('User already synced with backend ID:', existingProfile.backendId);
+        return existingProfile.backendId;
+      }
+
+      // Create a dummy email/password for the backend user
+      // In a real app, this would be actual auth
+      const email = `user_${userId.replace(/[^a-zA-Z0-9]/g, '')}@bioscreen.local`;
+      const password = "Password123!";
+
+      const payload = {
+        email,
+        password,
+        name: "App User", // We don't collect name in onboarding yet
+        gender: profile.gender,
+        dateOfBirth: profile.dateOfBirth,
+        height: profile.height,
+        weight: profile.weight,
+        isSmoker: profile.isSmoker,
+        smokingDetails: profile.smokingDetails,
+        isDiabetic: profile.isDiabetic,
+        isHypertensive: profile.isHypertensive,
+        medicalConditions: profile.medicalConditions,
+        // Add other fields as needed by backend schema
+      };
+
+      console.log('Sending payload to backend:', payload);
+      const response = await apiRequest<any>('POST', '/api/users', payload);
+
+      if (response && response.id) {
+        console.log('Backend user created with ID:', response.id);
+
+        // Save backend ID to local profile
+        const updatedProfile = { ...profile, backendId: response.id };
+        await medicalStorage.saveUserProfile(userId, updatedProfile);
+
+        return response.id;
+      }
+    } catch (error) {
+      console.error('Failed to sync user profile:', error);
+      throw error;
+    }
+  },
+
+  fetchAndSyncScreenings: async (userId: string) => {
+    try {
+      const profile = await medicalStorage.getUserProfile(userId);
+      if (!profile?.backendId) {
+        console.warn('Cannot fetch screenings: No backend ID found for user');
+        return;
+      }
+
+      console.log('Fetching recommendations from backend for ID:', profile.backendId);
+      const response = await apiRequest<any>('GET', `/api/users/${profile.backendId}`);
+
+      if (response && response.groupedRecs) {
+        const backendScreenings: Screening[] = [];
+        const now = new Date().toISOString();
+
+        // Helper to map backend rec to local screening
+        const mapRecToScreening = (rec: any): Screening => ({
+          id: `backend_${rec.id}`,
+          testName: rec.name,
+          category: rec.category, // 'Screenings', 'Counselings', 'Vaccinations'
+          status: rec.status || 'due',
+          frequency: rec.frequency,
+          notes: rec.articulation, // Store the localized text here
+          createdAt: now,
+          updatedAt: now,
+          // Map other fields if necessary
+        });
+
+        // Iterate over groups
+        Object.values(response.groupedRecs).forEach((group: any) => {
+          if (group.recs && Array.isArray(group.recs)) {
+            group.recs.forEach((rec: any) => {
+              backendScreenings.push(mapRecToScreening(rec));
+            });
+          }
+        });
+
+        console.log(`Mapped ${backendScreenings.length} screenings from backend`);
+
+        // Save to local storage (overwrite existing for now to ensure sync)
+        await medicalStorage.saveUserScreenings(userId, backendScreenings);
+
+        return backendScreenings;
+      }
+    } catch (error) {
+      console.error('Failed to fetch and sync screenings:', error);
+      throw error;
+    }
+  }
 };
