@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   Platform,
@@ -148,6 +148,44 @@ export default function Onboarding() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load existing profile data on mount
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('local_user_id');
+        if (userId) {
+          const existingProfile = await medicalStorage.getUserProfile(userId);
+          if (existingProfile) {
+            setFormData({
+              gender: existingProfile.gender || '',
+              dateOfBirth: existingProfile.dateOfBirth || '',
+              medicalConditions: existingProfile.medicalConditions || [],
+              smokingDetails: existingProfile.smokingDetails || { amount: '', duration: '' },
+              height: existingProfile.height || '',
+              weight: existingProfile.weight || '',
+              isPregnant: existingProfile.isPregnant || false,
+              isSexuallyActive: existingProfile.isSexuallyActive || false,
+              sexualActivityDetails: existingProfile.sexualActivityDetails || { partnerCount: 'single' },
+              saveData: true, // If they had saved data before, default to save again
+            });
+            
+            // Set tempDate for the date picker if dateOfBirth exists
+            if (existingProfile.dateOfBirth) {
+              setTempDate(new Date(existingProfile.dateOfBirth));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingProfile();
+  }, []);
 
   const getConditionTranslationKey = (condition: string): string => {
     const map: { [key: string]: string } = {
@@ -180,6 +218,11 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
+      showToast({
+        title: 'تنبيه',
+        description: 'الرجاء ملء جميع الحقول المطلوبة',
+        type: 'error',
+      });
       return;
     }
 
@@ -187,9 +230,35 @@ export default function Onboarding() {
     try {
       // Get or create local user ID
       let userId = await AsyncStorage.getItem('local_user_id');
-      if (userId) {
-        // Save the user profile data
-        await medicalStorage.saveUserProfile(userId, {
+      if (!userId) {
+        // Create a new local user ID if it doesn't exist
+        userId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await AsyncStorage.setItem('local_user_id', userId);
+      }
+      
+      // Always save the user profile data for this session
+      await medicalStorage.saveUserProfile(userId, {
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        height: formData.height,
+        weight: formData.weight,
+        medicalConditions: formData.medicalConditions,
+        smokingDetails: formData.smokingDetails,
+        isDiabetic: formData.medicalConditions.includes('diabetes'),
+        isHypertensive: formData.medicalConditions.includes('hypertension'),
+        isCholesterol: formData.medicalConditions.includes('highBloodPressureReadings'),
+        isSmoker: formData.medicalConditions.includes('tobaccoSmoking'),
+        isPregnant: formData.isPregnant,
+        isSexuallyActive: formData.isSexuallyActive,
+        sexualActivityDetails: formData.sexualActivityDetails,
+      });
+
+      // Invalidate queries to refresh profile data in all screens
+      queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+
+      // Sync with backend
+      try {
+        await medicalStorage.syncUserProfile(userId, {
           dateOfBirth: formData.dateOfBirth,
           gender: formData.gender,
           height: formData.height,
@@ -203,46 +272,31 @@ export default function Onboarding() {
           isPregnant: formData.isPregnant,
           isSexuallyActive: formData.isSexuallyActive,
           sexualActivityDetails: formData.sexualActivityDetails,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         });
 
-        // Mark onboarding as complete
-        medicalStorage.setOnboardingComplete(userId, true);
-
-        // Invalidate queries to refresh profile data in all screens
-        queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
-
-        // Sync with backend
-        try {
-          await medicalStorage.syncUserProfile(userId, {
-            dateOfBirth: formData.dateOfBirth,
-            gender: formData.gender,
-            height: formData.height,
-            weight: formData.weight,
-            medicalConditions: formData.medicalConditions,
-            smokingDetails: formData.smokingDetails,
-            isDiabetic: formData.medicalConditions.includes('diabetes'),
-            isHypertensive: formData.medicalConditions.includes('hypertension'),
-            isCholesterol: formData.medicalConditions.includes('highBloodPressureReadings'),
-            isSmoker: formData.medicalConditions.includes('tobaccoSmoking'),
-            isPregnant: formData.isPregnant,
-            isSexuallyActive: formData.isSexuallyActive,
-            sexualActivityDetails: formData.sexualActivityDetails,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-
-          await medicalStorage.fetchAndSyncScreenings(userId);
-        } catch (syncError) {
-          console.error('Backend sync failed during onboarding:', syncError);
-          // Continue anyway, we can sync later
-        }
+        await medicalStorage.fetchAndSyncScreenings(userId);
+      } catch (syncError) {
+        console.error('Backend sync failed during onboarding:', syncError);
+        // Continue anyway, we can sync later
       }
 
-      showToast({
-        title: 'مرحباً بك',
-        description: 'تم حفظ بياناتك بنجاح',
-        type: 'success',
-      });
+      // Only mark onboarding as complete if user wants to save permanently
+      if (formData.saveData) {
+        await medicalStorage.setOnboardingComplete(userId, true);
+        showToast({
+          title: 'مرحباً بك',
+          description: 'تم حفظ بياناتك بشكل دائم',
+          type: 'success',
+        });
+      } else {
+        showToast({
+          title: 'مرحباً بك',
+          description: 'تم حفظ بياناتك لهذه الجلسة فقط',
+          type: 'success',
+        });
+      }
 
       // Small delay to ensure AsyncStorage completes before navigation
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -263,29 +317,38 @@ export default function Onboarding() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
+    console.log('Validating form data:', JSON.stringify(formData, null, 2));
+
     if (!formData.gender) {
       newErrors.gender = t('onboarding.validation.gender');
+      console.log('Validation failed: gender is missing');
     }
 
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = t('onboarding.validation.dateOfBirth');
+      console.log('Validation failed: dateOfBirth is missing');
     }
 
     if (!formData.height) {
       newErrors.height = t('onboarding.validation.height');
+      console.log('Validation failed: height is missing');
     }
 
     if (!formData.weight) {
       newErrors.weight = t('onboarding.validation.weight');
+      console.log('Validation failed: weight is missing');
     }
 
-    if (formData.medicalConditions.includes('tobaccoSmoking') && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
-      newErrors.smokingDetails = {
-        amount: !formData.smokingDetails?.amount ? 'الرجاء تحديد كمية التدخين' : undefined,
-        duration: !formData.smokingDetails?.duration ? 'الرجاء تحديد مدة التدخين' : undefined,
-      };
-    }
+    // Smoking details validation - disabled for now, will be added later
+    // if (formData.medicalConditions.includes('tobaccoSmoking') && (!formData.smokingDetails?.amount || !formData.smokingDetails?.duration)) {
+    //   newErrors.smokingDetails = {
+    //     amount: !formData.smokingDetails?.amount ? 'الرجاء تحديد كمية التدخين' : undefined,
+    //     duration: !formData.smokingDetails?.duration ? 'الرجاء تحديد مدة التدخين' : undefined,
+    //   };
+    //   console.log('Validation failed: smoking details missing');
+    // }
 
+    console.log('Validation errors:', JSON.stringify(newErrors, null, 2));
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -384,6 +447,15 @@ export default function Onboarding() {
       </View>
     );
   };
+
+  // Show loading state while fetching existing profile
+  if (isLoading) {
+    return (
+      <View flex center backgroundColor={Colors.background}>
+        <Text color={Colors.textSecondary}>{t('common.loading', 'جاري التحميل...')}</Text>
+      </View>
+    );
+  }
 
   return (
     <RNKeyboardAvoidingView
