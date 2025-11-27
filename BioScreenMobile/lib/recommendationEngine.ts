@@ -1,48 +1,52 @@
+/**
+ * Zimam Recommendation Engine
+ * Generates health recommendations based on user profile using Zimam engine rules
+ */
+
 import { MedicalProfile } from './medical-storage';
+import {
+  medicalProfileToZimam,
+  evaluateRecommendations,
+  GroupedRecs,
+  ZimamProfile,
+} from './zimam';
 
 export interface EngineInput {
-    profile: MedicalProfile;
-    // Add other inputs as needed (e.g. current date, location)
+  profile: MedicalProfile;
+  // Add other inputs as needed (e.g. current date, location)
 }
 
-export interface Recommendation {
-    id: string;
-    title: string;
-    description: string;
-    category: 'screening' | 'lifestyle' | 'vaccination';
-    priority: 'high' | 'medium' | 'low';
-    reason?: string;
-}
+// Re-export Zimam types for external use
+export type { GroupedRecs, ZimamProfile };
+export { Recommendation, RecCategory, BilingualText, Articulation } from './zimam';
 
 export interface EngineOutput {
-    recommendations: Recommendation[];
-    riskFactors: string[];
+  groupedRecs: GroupedRecs;
+  zimamProfile: ZimamProfile;
 }
 
 /**
- * Mock Recommendation Engine
- * This will be replaced by the actual engine logic once the static examples are provided.
+ * Zimam Recommendation Engine
+ * Evaluates user profile and returns grouped recommendations
  */
 export const RecommendationEngine = {
-    /**
-     * Generate recommendations based on user profile
-     */
-    evaluate: async (input: EngineInput): Promise<EngineOutput> => {
-        console.log('Evaluating profile:', input);
+  /**
+   * Generate recommendations based on user profile
+   */
+  evaluate: async (input: EngineInput): Promise<EngineOutput> => {
+    console.log('[Zimam Engine] Evaluating profile:', input.profile);
 
-        // TODO: Implement logic based on static examples
-        // For now, return a dummy recommendation
-        return {
-            recommendations: [
-                {
-                    id: 'mock-1',
-                    title: 'Pending Engine Integration',
-                    description: 'The recommendation engine is waiting for the new logic implementation.',
-                    category: 'screening',
-                    priority: 'high'
-                }
-            ],
-            riskFactors: []
-        };
-    }
+    // Convert MedicalProfile to ZimamProfile format
+    const zimamProfile = medicalProfileToZimam(input.profile);
+    console.log('[Zimam Engine] Converted to ZimamProfile:', zimamProfile);
+
+    // Evaluate recommendations using Zimam engine
+    const groupedRecs = evaluateRecommendations(zimamProfile);
+    console.log('[Zimam Engine] Generated recommendations:', groupedRecs);
+
+    return {
+      groupedRecs,
+      zimamProfile,
+    };
+  },
 };

@@ -3,6 +3,7 @@ import {
   ScrollView,
   Linking,
   RefreshControl,
+  I18nManager,
 } from "react-native";
 import { View, Text, Card, Button, TouchableOpacity, LoaderScreen, Colors } from 'react-native-ui-lib';
 // import { Colors } from '@/constants/Colors';
@@ -16,13 +17,15 @@ import {
   ScreeningWithDetails,
 } from "../../lib/screening-utils";
 import Tooltip from "react-native-walkthrough-tooltip";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { SelectedPersonContext } from "../../context/SelectedPersonContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { medicalStorage } from "../../lib/medical-storage";
+import { RecommendationEngine } from "../../lib/recommendationEngine";
+import { GroupedRecs } from "../../lib/zimam/types";
 
 type UserDataResponse = {
   user: { name?: string; dateOfBirth: string; gender: string };
@@ -516,10 +519,13 @@ export default function UpcomingTests() {
     SelectedPersonContext,
   );
   const isRTL = i18n.language === "ar";
+  const currentLang = i18n.language === 'ar' ? 'ar' : 'en';
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [zimamRecommendations, setZimamRecommendations] = useState<GroupedRecs | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   // Refetch family members when screen comes into focus
   useFocusEffect(
@@ -577,7 +583,105 @@ export default function UpcomingTests() {
       return await medicalStorage.getFamilyMembers(userId);
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
+
+  // Load Zimam recommendations when user profile or selected person changes
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      let profileToEvaluate = null;
+      
+      if (selectedPersonId === 'user' && userProfile) {
+        profileToEvaluate = userProfile;
+      } else if (selectedPersonId !== 'user' && familyMembersList) {
+        const member = familyMembersList.find((m) => m.id === selectedPersonId || m.id?.toString() === selectedPersonId);
+        if (member && member.dateOfBirth && member.gender) {
+          // Build a profile object for the family member
+          const dob = new Date(member.dateOfBirth);
+          const height = member.height || '0';
+          const weight = member.weight || '0';
+          const h = parseFloat(height) / 100;
+          const w = parseFloat(weight);
+          const bmi = h > 0 && w > 0 ? w / (h * h) : 0;
+          const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+          
+          profileToEvaluate = {
+            version: '1.0',
+            data: {
+              gender: member.gender?.toLowerCase() as 'male' | 'female',
+              birthDate: {
+                day: dob.getDate().toString(),
+                month: (dob.getMonth() + 1).toString(),
+                year: dob.getFullYear().toString(),
+              },
+              height: height,
+              weight: weight,
+              conditions: member.medicalConditions || [],
+              age: age,
+              bmi: bmi,
+            },
+          };
+        }
+      }
+      
+      if (profileToEvaluate) {
+        try {
+          const result = await RecommendationEngine.evaluate({ profile: profileToEvaluate });
+          setZimamRecommendations(result.groupedRecs);
+          // Auto-expand all categories initially
+          const expanded: Record<string, boolean> = {};
+          result.groupedRecs.groupedRecs.forEach((cat) => {
+            expanded[cat.key] = true;
+          });
+          setExpandedCategories(expanded);
+        } catch (error) {
+          console.error('Zimam Engine Error:', error);
+          setZimamRecommendations(null);
+        }
+      } else {
+        setZimamRecommendations(null);
+      }
+    };
+    
+    loadRecommendations();
+  }, [userProfile, selectedPersonId, familyMembersList]);
+
+  // Toggle category expansion
+  const toggleCategory = (key: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Get color for recommendation category using dashboard status colors
+  const getCategoryColor = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return Colors.dashboardStatus.due; // Blue
+      case 'counseling':
+        return Colors.dashboardStatus.overdue; // Amber/Yellow
+      case 'vaccination':
+        return Colors.dashboardStatus.completed; // Green
+      default:
+        return Colors.dashboardStatus.later;
+    }
+  };
+
+  // Get icon for recommendation category
+  const getCategoryIcon = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return 'clipboard-pulse';
+      case 'counseling':
+        return 'account-heart';
+      case 'vaccination':
+        return 'needle';
+      default:
+        return 'medical-bag';
+    }
+  };
 
   // Fetch screenings
   const { data: screeningsData } = useQuery({
@@ -646,16 +750,19 @@ export default function UpcomingTests() {
 
   const stats = calculateScreeningStats(screenings);
 
-  // Tabs logic
+  // Helper to create tab color object from dashboardStatus color
+  const createTabColor = (baseColor: string) => ({
+    background: baseColor + '20',
+    text: baseColor,
+    border: baseColor,
+  });
+
+  // Tabs logic - now using recommendation categories
   const tabOptions = [
-    { key: "all", label: t("home.statusTabs.all"), color: undefined },
-    { key: "later", label: t("home.statusTabs.later"), color: (Colors as any).status?.later },
-    {
-      key: "overdue",
-      label: t("home.statusTabs.overdue"),
-      color: (Colors as any).status?.overdue,
-    },
-    { key: "due", label: t("home.statusTabs.due"), color: (Colors as any).status?.due },
+    { key: "all", label: currentLang === 'ar' ? 'الكل' : 'All', color: undefined },
+    { key: "screening", label: currentLang === 'ar' ? 'الفحوصات' : 'Screenings', color: createTabColor(Colors.dashboardStatus.due) },
+    { key: "counseling", label: currentLang === 'ar' ? 'المشورات' : 'Counselings', color: createTabColor(Colors.dashboardStatus.overdue) },
+    { key: "vaccination", label: currentLang === 'ar' ? 'التطعيمات' : 'Vaccinations', color: createTabColor(Colors.dashboardStatus.completed) },
   ];
 
   let filteredScreenings = screenings;
@@ -668,6 +775,12 @@ export default function UpcomingTests() {
   } else if (activeTab !== "all") {
     filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
   }
+
+  // Filter Zimam recommendations based on active tab
+  const filteredZimamRecs = zimamRecommendations?.groupedRecs.filter((category) => {
+    if (activeTab === "all") return true;
+    return category.key === activeTab;
+  }) || [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -925,16 +1038,20 @@ export default function UpcomingTests() {
           {/* Removed the Hello/Greeting Title as requested */}
 
           <View style={{ width: '100%', gap: 12 }}>
-            {/* Gender and Date of Birth Row */}
-            {currentPerson.dateOfBirth && (
+            {/* Gender and Age Row */}
+            {(currentPersonGender || currentPersonAge) && (
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {currentPersonGender === "male" ? t("common.male") : currentPersonGender === "female" ? t("common.female") : "-"}
                 </Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                  {currentPerson.dateOfBirth}
-                </Text>
+                {currentPersonAge && (
+                  <>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                      {currentPersonAge} {currentLang === 'ar' ? 'سنة' : 'years'}
+                    </Text>
+                  </>
+                )}
               </View>
             )}
 
@@ -1056,6 +1173,130 @@ export default function UpcomingTests() {
           ))
         }
       </View>
+
+      {/* Zimam Recommendations Section */}
+      {filteredZimamRecs.length > 0 && (
+        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
+              {currentLang === 'ar' ? 'التوصيات الصحية' : 'Health Recommendations'}
+            </Text>
+            <View style={{ backgroundColor: Colors.primary, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>
+                {filteredZimamRecs.reduce((sum, cat) => sum + cat.recs.length, 0)}
+              </Text>
+            </View>
+          </View>
+
+          {filteredZimamRecs.map((category) => (
+            <Card
+              key={category.key}
+              marginB-s3
+              backgroundColor={Colors.card}
+              enableShadow
+              elevation={3}
+              style={{ borderRadius: 16, overflow: 'hidden' }}
+            >
+              {/* Category Header - Clickable to expand/collapse */}
+              <TouchableOpacity
+                onPress={() => toggleCategory(category.key)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 16,
+                  backgroundColor: getCategoryColor(category.key) + '15',
+                  borderBottomWidth: expandedCategories[category.key] ? 1 : 0,
+                  borderBottomColor: Colors.border,
+                }}
+              >
+                <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: getCategoryColor(category.key),
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: I18nManager.isRTL ? 0 : 12,
+                  marginLeft: I18nManager.isRTL ? 12 : 0,
+                }}>
+                  <MaterialCommunityIcons
+                    name={getCategoryIcon(category.key) as any}
+                    size={22}
+                    color={Colors.white}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontFamily: 'ReadexPro-Bold',
+                    fontSize: 16,
+                    color: getCategoryColor(category.key),
+                  }}>
+                    {category.name[currentLang]}
+                  </Text>
+                  <Text style={{
+                    fontFamily: 'ReadexPro',
+                    fontSize: 12,
+                    color: Colors.textSecondary,
+                  }}>
+                    {category.recs.length} {currentLang === 'ar' ? 'توصية' : 'recommendation(s)'}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={expandedCategories[category.key] ? 'chevron-up' : 'chevron-down'}
+                  size={24}
+                  color={Colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {/* Recommendations List */}
+              {expandedCategories[category.key] && (
+                <View style={{ padding: 12 }}>
+                  {category.recs.map((rec, index) => (
+                    <View
+                      key={rec.key}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                        paddingVertical: 10,
+                        borderBottomWidth: index < category.recs.length - 1 ? 1 : 0,
+                        borderBottomColor: Colors.border,
+                      }}
+                    >
+                      <View style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: getCategoryColor(category.key),
+                        marginTop: 6,
+                        marginRight: I18nManager.isRTL ? 0 : 10,
+                        marginLeft: I18nManager.isRTL ? 10 : 0,
+                      }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{
+                          fontFamily: 'ReadexPro-SemiBold',
+                          fontSize: 14,
+                          color: getCategoryColor(category.key),
+                          marginBottom: 4,
+                        }}>
+                          {rec.name[currentLang]}
+                        </Text>
+                        <Text style={{
+                          fontFamily: 'ReadexPro',
+                          fontSize: 12,
+                          color: Colors.textSecondary,
+                          lineHeight: 18,
+                        }}>
+                          {rec.articulation.text[currentLang]}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </Card>
+          ))}
+        </View>
+      )}
 
       {/* Screenings List */}
       <View

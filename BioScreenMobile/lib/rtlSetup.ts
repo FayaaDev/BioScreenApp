@@ -17,7 +17,11 @@ export async function initializeRTL(language?: Language): Promise<void> {
     if (I18nManager.isRTL !== isRTL) {
       I18nManager.forceRTL(isRTL);
       I18nManager.allowRTL(isRTL);
-      Updates.reloadAsync();
+      
+      // Only reload in production, skip in development
+      if (!__DEV__) {
+        Updates.reloadAsync();
+      }
       
       console.log(`[RTL Setup] RTL ${isRTL ? 'enabled' : 'disabled'} for language: ${lang}`);
       

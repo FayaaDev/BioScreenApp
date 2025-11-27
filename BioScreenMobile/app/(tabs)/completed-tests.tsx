@@ -122,6 +122,7 @@ export default function CompletedTests() {
   const [userId, setUserId] = useState<string | null>(null);
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const isRTL = i18n.language === 'ar';
+  const currentLang = i18n.language as 'en' | 'ar';
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
@@ -178,6 +179,8 @@ export default function CompletedTests() {
       return await medicalStorage.getFamilyMembers(userId);
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   // Fetch screenings
@@ -395,16 +398,20 @@ export default function CompletedTests() {
       >
         <View style={{ width: '100%' }}>
           <View style={{ width: '100%', gap: 12 }}>
-            {/* Gender and Date of Birth Row */}
-            {currentPerson.dateOfBirth && (
+            {/* Gender and Age Row */}
+            {(currentPersonGender || currentPersonAge) && (
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {currentPersonGender === "male" ? t("common.male") : currentPersonGender === "female" ? t("common.female") : "-"}
                 </Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                  {currentPerson.dateOfBirth}
-                </Text>
+                {currentPersonAge && (
+                  <>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                      {currentPersonAge} {currentLang === 'ar' ? 'سنة' : 'years'}
+                    </Text>
+                  </>
+                )}
               </View>
             )}
 

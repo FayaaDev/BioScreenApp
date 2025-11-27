@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { FamilyManagement } from "../../components/FamilyManagement";
 import { useTranslation } from "react-i18next";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import i18n from "../../lib/i18n";
 import { changeRTLDirection } from "../../lib/rtlSetup";
@@ -36,7 +37,6 @@ export default function Profile() {
   const isRTL = i18n.language.startsWith("ar");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleToggleTheme = () => {
@@ -164,6 +164,12 @@ export default function Profile() {
     });
   };
 
+  const handleToggleLanguage = async () => {
+    const newLang = i18n.language === 'ar' ? 'en' : 'ar';
+    await i18n.changeLanguage(newLang);
+    await changeRTLDirection(newLang === 'ar');
+  };
+
   if (!userId || isLoading) {
     return (
       <LoaderScreen color={Colors.primary} message={t("common.loading")} backgroundColor={Colors.background} />
@@ -186,24 +192,11 @@ export default function Profile() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              position: "absolute",
-              top: 16,
-              right: 16,
-              zIndex: 2,
-              gap: 12,
+              justifyContent: "space-between",
+              width: "100%",
+              marginBottom: 16,
             }}
           >
-            <TouchableOpacity onPress={handleToggleTheme}>
-              <MaterialIcons name={isDark ? "light-mode" : "dark-mode"} size={28} color={Colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/onboarding")}>
-              <MaterialIcons name="edit" size={28} color={Colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowLanguageModal(true)}>
-              <MaterialIcons name="language" size={28} color={Colors.primary} />
-            </TouchableOpacity>
-          </View>
-          <View style={{ alignItems: 'flex-start', width: '100%', marginBottom: 16 }}>
             <Text
               text60
               style={{
@@ -214,6 +207,63 @@ export default function Profile() {
             >
               {t("profile.title")}
             </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <TouchableOpacity 
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: Colors.background,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={async () => {
+                  const newLang = i18n.language === 'ar' ? 'en' : 'ar';
+                  await i18n.changeLanguage(newLang);
+                  await changeRTLDirection(newLang === 'ar');
+                }}
+              >
+                <Text style={{ fontFamily: 'ReadexPro-Bold', fontSize: 14, color: Colors.primary }}>
+                  {i18n.language === 'ar' ? 'EN' : 'ع'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: Colors.background,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={handleToggleTheme}
+              >
+                <Ionicons 
+                  name={isDark ? 'sunny-outline' : 'moon-outline'} 
+                  size={20} 
+                  color={Colors.primary} 
+                />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: Colors.background,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => router.push("/onboarding")}
+              >
+                <MaterialIcons name="edit" size={20} color={Colors.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={{ gap: 16 }}>
             <View style={{ gap: 8 }}>
@@ -462,87 +512,6 @@ export default function Profile() {
             onPress={() => setShowAgreement(true)}
           />
         </Card>
-
-        {/* Language Selection Modal */}
-        <Modal
-          visible={showLanguageModal}
-          onDismiss={() => setShowLanguageModal(false)}
-          overlayBackgroundColor={Colors.overlay}
-        >
-          <View flex center>
-            <Card
-              padding-s6
-              backgroundColor={Colors.card}
-              br40
-              style={{ minWidth: 280 }}
-            >
-              <Text
-                text70
-                style={{ fontFamily: "ReadexPro-Bold", color: Colors.primary }}
-                center
-                marginB-s4
-              >
-                {t("profile.changeLanguage")}
-              </Text>
-              <Button
-                label="العربية"
-                backgroundColor={i18n.language === "ar" ? Colors.primary : Colors.background}
-                paddingV-s3
-                br20
-                marginB-s3
-                labelStyle={{
-                  color: i18n.language === "ar" ? Colors.white : Colors.primary,
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  fontFamily: "ReadexPro-Bold",
-                }}
-                onPress={async () => {
-                  if (i18n.language !== "ar") {
-                    await i18n.changeLanguage("ar");
-                    setShowLanguageModal(false);
-                    await changeRTLDirection(true);
-                  } else {
-                    setShowLanguageModal(false);
-                  }
-                }}
-              />
-              <Button
-                label="English"
-                backgroundColor={i18n.language === "en" ? Colors.primary : Colors.background}
-                paddingV-s3
-                br20
-                marginB-s1
-                labelStyle={{
-                  color: i18n.language === "en" ? Colors.white : Colors.primary,
-                  fontWeight: "bold",
-                  fontSize: 16,
-                  fontFamily: "ReadexPro-Bold",
-                }}
-                onPress={async () => {
-                  if (i18n.language !== "en") {
-                    await i18n.changeLanguage("en");
-                    setShowLanguageModal(false);
-                    await changeRTLDirection(false);
-                  } else {
-                    setShowLanguageModal(false);
-                  }
-                }}
-              />
-              <TouchableOpacity
-                marginT-s2
-                center
-                onPress={() => setShowLanguageModal(false)}
-              >
-                <Text
-                  text70
-                  style={{ fontFamily: "ReadexPro-Bold", color: Colors.primary }}
-                >
-                  {t("common.close")}
-                </Text>
-              </TouchableOpacity>
-            </Card>
-          </View>
-        </Modal>
 
         {/* User Agreement Modal */}
         <Modal

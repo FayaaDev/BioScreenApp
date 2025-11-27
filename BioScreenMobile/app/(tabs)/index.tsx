@@ -20,6 +20,8 @@ import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { medicalStorage, Screening, FamilyMember as StoredFamilyMember } from '@/lib/medical-storage';
+import { RecommendationEngine } from '@/lib/recommendationEngine';
+import { GroupedRecs, RecCategory, Recommendation } from '@/lib/zimam/types';
 
 interface DashboardStats {
   totalScreenings: number;
@@ -87,6 +89,7 @@ export default function HomeScreen() {
   const { selectedPersonId, setSelectedPersonId } = useContext(SelectedPersonContext);
   const [screenings, setScreenings] = useState<Screening[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [zimamRecommendations, setZimamRecommendations] = useState<GroupedRecs | null>(null);
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -112,13 +115,64 @@ export default function HomeScreen() {
       return await medicalStorage.getUserProfile(userId);
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
+  // Load Zimam recommendations when user profile or selected person changes
   useEffect(() => {
-    if (userProfile) {
-      setUser(userProfile as unknown as User);
-    }
-  }, [userProfile]);
+    const loadRecommendations = async () => {
+      let profileToEvaluate = null;
+      
+      if (selectedPersonId === 'user' && userProfile) {
+        profileToEvaluate = userProfile;
+        setUser(userProfile as unknown as User);
+      } else if (selectedPersonId !== 'user' && familyMembersData) {
+        const member = familyMembersData.find((m) => m.id === selectedPersonId || m.id?.toString() === selectedPersonId);
+        if (member && member.dateOfBirth && member.gender) {
+          // Build a profile object for the family member
+          const dob = new Date(member.dateOfBirth);
+          const height = member.height || '0';
+          const weight = member.weight || '0';
+          const h = parseFloat(height) / 100;
+          const w = parseFloat(weight);
+          const bmi = h > 0 && w > 0 ? w / (h * h) : 0;
+          const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+          
+          profileToEvaluate = {
+            version: '1.0',
+            data: {
+              gender: member.gender?.toLowerCase() as 'male' | 'female',
+              birthDate: {
+                day: dob.getDate().toString(),
+                month: (dob.getMonth() + 1).toString(),
+                year: dob.getFullYear().toString(),
+              },
+              height: height,
+              weight: weight,
+              conditions: member.medicalConditions || [],
+              age: age,
+              bmi: bmi,
+            },
+          };
+        }
+      }
+      
+      if (profileToEvaluate) {
+        try {
+          const result = await RecommendationEngine.evaluate({ profile: profileToEvaluate });
+          setZimamRecommendations(result.groupedRecs);
+        } catch (error) {
+          console.error('Zimam Engine Error:', error);
+          setZimamRecommendations(null);
+        }
+      } else {
+        setZimamRecommendations(null);
+      }
+    };
+    
+    loadRecommendations();
+  }, [userProfile, selectedPersonId, familyMembersData]);
 
   // Load screenings from local storage based on selected person
   useEffect(() => {
@@ -158,6 +212,8 @@ export default function HomeScreen() {
       return await medicalStorage.getFamilyMembers(userId);
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   // Validate selected person when family members data changes
@@ -250,6 +306,10 @@ export default function HomeScreen() {
       return name ? t('home.eveningGreeting', { name }) : t('home.greeting');
     }
   };
+
+  // Get current language for bilingual text
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language === 'ar' ? 'ar' : 'en';
 
   if (isLoading && !userId) {
     return (
@@ -363,145 +423,119 @@ export default function HomeScreen() {
         </ScrollView>
       </LinearGradient>
 
-      {/* Stats Cards */}
-      <View paddingH-s5 marginB-s5>
-        <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
-          {t('home.testStatusTitle')}
-        </Text>
-        <View row style={{ justifyContent: 'space-between', gap: 8 }}>
-          <Card
-            paddingV-s4
-            paddingH-s1
-            center
-            backgroundColor={Colors.dashboardCardBackground}
-            enableShadow
-            elevation={3}
-            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 36,
-                fontFamily: 'ReadexPro-Bold',
-                color: Colors.dashboardStatus.completed,
-                marginBottom: 8
-              }}
+      {/* Recommendations Summary Cards */}
+      {zimamRecommendations && zimamRecommendations.groupedRecs.length > 0 && (() => {
+        // Calculate total recommendations
+        const totalRecommendations = zimamRecommendations.groupedRecs.reduce(
+          (sum, cat) => sum + cat.recs.length,
+          0
+        );
+        // For now, completed is 0 - this will be updated when tracking is implemented
+        const completedRecommendations = 0;
+        
+        return (
+        <View paddingH-s5 marginB-s5>
+          <Text h4 marginB-s4 style={{ textAlign: 'left', color: Colors.text, fontFamily: 'ReadexPro-Bold' }}>
+            {currentLang === 'ar' ? 'التوصيات الصحية' : 'Health Recommendations'}
+          </Text>
+          <View row style={{ justifyContent: 'space-between', gap: 8 }}>
+            {/* Completed Card */}
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => router.push('/(tabs)/completed-tests')}
             >
-              {stats.completedThisYear}
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'ReadexPro-SemiBold',
-                textAlign: 'center',
-                color: Colors.white,
-                fontSize: 9
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {t('home.statusTabs.done')}
-            </Text>
-          </Card>
-
-          <Card
-            paddingV-s4
-            paddingH-s1
-            center
-            backgroundColor={Colors.dashboardCardBackground}
-            enableShadow
-            elevation={3}
-            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 36,
-                fontFamily: 'ReadexPro-Bold',
-                color: Colors.dashboardStatus.later,
-                marginBottom: 8
-              }}
-            >
-              {stats.laterScreenings}
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'ReadexPro-SemiBold',
-                textAlign: 'center',
-                color: Colors.white,
-                fontSize: 9
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {t('home.statusTabs.later')}
-            </Text>
-          </Card>
-
-          <Card
-            paddingV-s4
-            paddingH-s1
-            center
-            backgroundColor={Colors.dashboardCardBackground}
-            enableShadow
-            elevation={3}
-            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 36,
-                fontFamily: 'ReadexPro-Bold',
-                color: Colors.dashboardStatus.overdue,
-                marginBottom: 8
-              }}
-            >
-              {stats.overdueScreenings}
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'ReadexPro-SemiBold',
-                textAlign: 'center',
-                color: Colors.white,
-                fontSize: 9
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {t('home.statusTabs.overdue')}
-            </Text>
-          </Card>
-
-          <Card
-            paddingV-s4
-            paddingH-s1
-            center
-            backgroundColor={Colors.dashboardCardBackground}
-            enableShadow
-            elevation={3}
-            style={{ flex: 1, height: 110, justifyContent: 'center', borderRadius: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 36,
-                fontFamily: 'ReadexPro-Bold',
-                color: Colors.dashboardStatus.due,
-                marginBottom: 8
-              }}
-            >
-              {stats.dueScreenings}
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'ReadexPro-SemiBold',
-                textAlign: 'center',
-                color: Colors.white,
-                fontSize: 9
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {t('home.statusTabs.due')}
-            </Text>
-          </Card>
+              <Card
+                paddingV-s4
+                paddingH-s1
+                center
+                backgroundColor={Colors.dashboardCardBackground}
+                enableShadow
+                elevation={3}
+                style={{ height: 110, justifyContent: 'center', borderRadius: 16 }}
+              >
+                <Text
+                  style={{
+                    fontSize: 30,
+                    fontFamily: 'ReadexPro-Bold',
+                    color: Colors.dashboardStatus.completed,
+                    marginBottom: 8
+                  }}
+                >
+                  {completedRecommendations}/{totalRecommendations}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'ReadexPro-SemiBold',
+                    textAlign: 'center',
+                    color: Colors.white,
+                    fontSize: 9
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {t('home.statusTabs.done')}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+            {zimamRecommendations.groupedRecs.map((category) => {
+              // Map category to dashboard status color
+              const getCategoryDashboardColor = (key: string) => {
+                switch (key) {
+                  case 'screening':
+                    return Colors.dashboardStatus.due; // Blue
+                  case 'counseling':
+                    return Colors.dashboardStatus.overdue; // Amber/Yellow
+                  case 'vaccination':
+                    return Colors.dashboardStatus.completed; // Green
+                  default:
+                    return Colors.dashboardStatus.later;
+                }
+              };
+              return (
+                <TouchableOpacity
+                  key={category.key}
+                  style={{ flex: 1 }}
+                  onPress={() => router.push('/(tabs)/upcoming-tests')}
+                >
+                  <Card
+                    paddingV-s4
+                    paddingH-s1
+                    center
+                    backgroundColor={Colors.dashboardCardBackground}
+                    enableShadow
+                    elevation={3}
+                    style={{ height: 110, justifyContent: 'center', borderRadius: 16 }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 36,
+                        fontFamily: 'ReadexPro-Bold',
+                        color: getCategoryDashboardColor(category.key),
+                        marginBottom: 8
+                      }}
+                    >
+                      {category.recs.length}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: 'ReadexPro-SemiBold',
+                        textAlign: 'center',
+                        color: Colors.white,
+                        fontSize: 9
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {category.name[currentLang]}
+                    </Text>
+                  </Card>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-      </View>
+        );
+      })()}
 
       {/* Educational Content - Middle Section */}
       <View paddingH-s5 marginB-s8>
