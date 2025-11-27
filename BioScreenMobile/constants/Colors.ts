@@ -46,6 +46,7 @@ interface ThemeColors {
   textSecondary: string;
   gradientStart: string;
   gradientEnd: string;
+  headerGradient: [string, string, string]; // 3-color gradient for headers
   success: string;
   error: string;
   warning: string;
@@ -129,6 +130,7 @@ export const Colors: {
     textSecondary: getStep(radixScales.sageLight, 11),
     gradientStart: getStep(radixScales.cyanLight, 3),
     gradientEnd: getStep(radixScales.cyanLight, 9),
+    headerGradient: ['#0e7490', '#0891b2', '#06b6d4'] as [string, string, string], // Cyan gradient for light theme
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
@@ -146,7 +148,7 @@ export const Colors: {
       due: '#0c4a6e', // Dark Blue
       overdue: '#D97706', // Yellowish-Brownish (Amber 600)
       later: '#ffffff', // White
-      completed: '#134e4a', // Dark Teal/Green
+      completed: '#15803d', // Dark Green (Green 700) - better contrast on light backgrounds
     },
   },
   // Zimam Dark Theme (Default)
@@ -178,6 +180,7 @@ export const Colors: {
     textSecondary: getStep(radixScales.sageDark, 11),
     gradientStart: getStep(radixScales.sageDark, 3),
     gradientEnd: getStep(radixScales.sageDark, 4),
+    headerGradient: ['#134e4a', '#0f766e', '#14b8a6'] as [string, string, string], // Teal gradient with more contrast for dark theme
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
@@ -195,7 +198,7 @@ export const Colors: {
       due: '#22d3ee', // Light Blue
       overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
-      completed: '#4ade80', // Light Green
+      completed: '#22c55e', // Vibrant Green (Green 500)
     },
   },
   // Explicit Zimam Themes (for future switching logic)
@@ -228,6 +231,7 @@ export const Colors: {
     textSecondary: getStep(radixScales.sageLight, 11),
     gradientStart: getStep(radixScales.cyanLight, 3),
     gradientEnd: getStep(radixScales.cyanLight, 9),
+    headerGradient: ['#0e7490', '#0891b2', '#06b6d4'] as [string, string, string], // Cyan gradient for light theme
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
@@ -245,7 +249,7 @@ export const Colors: {
       due: '#0c4a6e', // Dark Blue
       overdue: '#D97706', // Yellowish-Brownish (Amber 600)
       later: '#ffffff', // White
-      completed: '#134e4a', // Dark Teal/Green
+      completed: '#15803d', // Dark Green (Green 700) - better contrast on light backgrounds
     },
   },
   zimamDark: {
@@ -277,6 +281,7 @@ export const Colors: {
     textSecondary: getStep(radixScales.sageDark, 11),
     gradientStart: getStep(radixScales.sageDark, 3),
     gradientEnd: getStep(radixScales.sageDark, 4),
+    headerGradient: ['#134e4a', '#0f766e', '#14b8a6'] as [string, string, string], // Teal gradient with more contrast for dark theme
     success: '#10b981',
     error: '#ef4444',
     warning: '#f59e0b',
@@ -294,7 +299,7 @@ export const Colors: {
       due: '#22d3ee', // Light Blue
       overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
-      completed: '#4ade80', // Light Green
+      completed: '#22c55e', // Vibrant Green (Green 500)
     },
   },
   // Direct access properties (defaulting to light theme initially)
@@ -325,6 +330,7 @@ export const Colors: {
   textSecondary: getStep(radixScales.sageLight, 11),
   gradientStart: getStep(radixScales.cyanLight, 3),
   gradientEnd: getStep(radixScales.cyanLight, 9),
+  headerGradient: ['#0e7490', '#0891b2', '#06b6d4'] as [string, string, string], // Default to light theme
   success: '#10b981',
   error: '#ef4444',
   warning: '#f59e0b',
@@ -344,7 +350,7 @@ export const Colors: {
     due: '#0c4a6e',
     overdue: '#D97706',
     later: '#ffffff',
-    completed: '#134e4a',
+    completed: '#15803d',
   },
 };
 

@@ -38,14 +38,14 @@ function RootLayoutContent() {
           // Load stored language preference and apply to i18n
           await loadStoredLanguage();
 
-          // Initialize RTL based on current language
-          await initializeRTL(i18n.language as 'ar' | 'en');
+          // Initialize RTL based on stored language (no argument needed)
+          await initializeRTL();
 
           setIsReady(true);
         } catch (error) {
           console.error('Error setting up language and RTL:', error);
-          // Fallback: initialize RTL with default Arabic
-          await initializeRTL('ar');
+          // Fallback: initialize RTL with default
+          await initializeRTL();
           setIsReady(true);
         }
       }
@@ -88,7 +88,8 @@ function RootLayoutContent() {
               headerShown: false,
             }}
           >
-            <Stack.Screen name="login" />
+            <Stack.Screen name="index" />
+            <Stack.Screen name="intro" options={{ animation: 'none' }} />
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

@@ -3,6 +3,7 @@ import {
   ScrollView,
   Linking,
   RefreshControl,
+  I18nManager,
 } from "react-native";
 import { View, Text, Card, Button, TouchableOpacity, LoaderScreen, Colors } from 'react-native-ui-lib';
 // import { Colors } from '@/constants/Colors';
@@ -16,13 +17,16 @@ import {
   ScreeningWithDetails,
 } from "../../lib/screening-utils";
 import Tooltip from "react-native-walkthrough-tooltip";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { SelectedPersonContext } from "../../context/SelectedPersonContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { Colors as ThemeColors } from "../../constants/Colors";
 import { medicalStorage } from "../../lib/medical-storage";
+import { RecommendationEngine } from "../../lib/recommendationEngine";
+import { GroupedRecs } from "../../lib/zimam/types";
 
 type UserDataResponse = {
   user: { name?: string; dateOfBirth: string; gender: string };
@@ -516,10 +520,56 @@ export default function UpcomingTests() {
     SelectedPersonContext,
   );
   const isRTL = i18n.language === "ar";
+  const currentLang = i18n.language === 'ar' ? 'ar' : 'en';
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [zimamRecommendations, setZimamRecommendations] = useState<GroupedRecs | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  // Load completed recommendations using React Query for cross-screen sync
+  const { data: completedRecommendations = [] } = useQuery({
+    queryKey: ['completedRecommendations', selectedPersonId],
+    queryFn: async () => {
+      try {
+        const stored = await AsyncStorage.getItem(`completed_recommendations_${selectedPersonId}`);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error('Error loading completed recommendations:', error);
+        return [];
+      }
+    },
+    enabled: !!selectedPersonId,
+  });
+
+  // Mark recommendation as completed
+  const handleMarkRecommendationComplete = async (recKey: string) => {
+    try {
+      const newCompleted = [...completedRecommendations, recKey];
+      await AsyncStorage.setItem(
+        `completed_recommendations_${selectedPersonId}`,
+        JSON.stringify(newCompleted)
+      );
+      // Invalidate the query to update all screens
+      queryClient.invalidateQueries({ queryKey: ['completedRecommendations', selectedPersonId] });
+      showToast({
+        title: currentLang === 'ar' ? 'تم تسجيل التوصية كمكتملة' : 'Recommendation marked as completed',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error marking recommendation complete:', error);
+      showToast({
+        title: currentLang === 'ar' ? 'حدث خطأ' : 'An error occurred',
+        type: 'error',
+      });
+    }
+  };
+
+  // Open Sehhaty booking
+  const handleBookWithSehhaty = () => {
+    Linking.openURL('https://www.moh.gov.sa/eServices/Sehhaty/Pages/default.aspx');
+  };
 
   // Refetch family members when screen comes into focus
   useFocusEffect(
@@ -577,7 +627,82 @@ export default function UpcomingTests() {
       return await medicalStorage.getFamilyMembers(userId);
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
+
+  // Load Zimam recommendations when user profile or selected person changes
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      let profileToEvaluate = null;
+      
+      if (selectedPersonId === 'user' && userProfile) {
+        profileToEvaluate = userProfile;
+      } else if (selectedPersonId !== 'user' && familyMembersList) {
+        const member = familyMembersList.find((m) => m.id === selectedPersonId || m.id?.toString() === selectedPersonId);
+        if (member && member.dateOfBirth && member.gender) {
+          // Use the family member profile directly (it's already a MedicalProfile)
+          profileToEvaluate = member;
+        }
+      }
+      
+      if (profileToEvaluate) {
+        try {
+          const result = await RecommendationEngine.evaluate({ profile: profileToEvaluate });
+          setZimamRecommendations(result.groupedRecs);
+          // Auto-expand all categories initially
+          const expanded: Record<string, boolean> = {};
+          result.groupedRecs.groupedRecs.forEach((cat) => {
+            expanded[cat.key] = true;
+          });
+          setExpandedCategories(expanded);
+        } catch (error) {
+          console.error('Zimam Engine Error:', error);
+          setZimamRecommendations(null);
+        }
+      } else {
+        setZimamRecommendations(null);
+      }
+    };
+    
+    loadRecommendations();
+  }, [userProfile, selectedPersonId, familyMembersList]);
+
+  // Toggle category expansion
+  const toggleCategory = (key: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Get color for recommendation category using dashboard status colors
+  const getCategoryColor = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return Colors.dashboardStatus.due; // Blue
+      case 'counseling':
+        return Colors.dashboardStatus.overdue; // Amber/Yellow
+      case 'vaccination':
+        return Colors.dashboardStatus.completed; // Green
+      default:
+        return Colors.dashboardStatus.later;
+    }
+  };
+
+  // Get icon for recommendation category
+  const getCategoryIcon = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return 'clipboard-pulse';
+      case 'counseling':
+        return 'account-heart';
+      case 'vaccination':
+        return 'needle';
+      default:
+        return 'medical-bag';
+    }
+  };
 
   // Fetch screenings
   const { data: screeningsData } = useQuery({
@@ -620,7 +745,7 @@ export default function UpcomingTests() {
 
   const currentPersonAge = currentPerson.dateOfBirth
     ? calculateAge(currentPerson.dateOfBirth)
-    : "";
+    : null;
   const currentPersonName = currentPerson.name || t("common.you");
   const currentPersonGender = currentPerson.gender || "";
 
@@ -646,16 +771,19 @@ export default function UpcomingTests() {
 
   const stats = calculateScreeningStats(screenings);
 
-  // Tabs logic
+  // Helper to create tab color object from dashboardStatus color
+  const createTabColor = (baseColor: string) => ({
+    background: baseColor + '20',
+    text: baseColor,
+    border: baseColor,
+  });
+
+  // Tabs logic - now using recommendation categories
   const tabOptions = [
-    { key: "all", label: t("home.statusTabs.all"), color: undefined },
-    { key: "later", label: t("home.statusTabs.later"), color: (Colors as any).status?.later },
-    {
-      key: "overdue",
-      label: t("home.statusTabs.overdue"),
-      color: (Colors as any).status?.overdue,
-    },
-    { key: "due", label: t("home.statusTabs.due"), color: (Colors as any).status?.due },
+    { key: "all", label: currentLang === 'ar' ? 'الكل' : 'All', color: undefined },
+    { key: "screening", label: currentLang === 'ar' ? 'الفحوصات' : 'Screenings', color: createTabColor(Colors.dashboardStatus.due) },
+    { key: "counseling", label: currentLang === 'ar' ? 'المشورات' : 'Counselings', color: createTabColor(Colors.dashboardStatus.overdue) },
+    { key: "vaccination", label: currentLang === 'ar' ? 'التطعيمات' : 'Vaccinations', color: createTabColor(Colors.dashboardStatus.completed) },
   ];
 
   let filteredScreenings = screenings;
@@ -668,6 +796,17 @@ export default function UpcomingTests() {
   } else if (activeTab !== "all") {
     filteredScreenings = filterScreeningsByStatus(screenings, activeTab);
   }
+
+  // Filter Zimam recommendations based on active tab and exclude completed ones
+  const filteredZimamRecs = zimamRecommendations?.groupedRecs
+    .map((category) => ({
+      ...category,
+      recs: category.recs.filter(rec => !completedRecommendations.includes(rec.key)),
+    }))
+    .filter((category) => {
+      if (activeTab === "all") return category.recs.length > 0;
+      return category.key === activeTab && category.recs.length > 0;
+    }) || [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -913,9 +1052,11 @@ export default function UpcomingTests() {
       <LinearGradient
         colors={
           colorScheme === "dark"
-            ? [Colors.background, Colors.card]
-            : [Colors.primary, Colors.primary]
+            ? ThemeColors.dark.headerGradient
+            : ThemeColors.light.headerGradient
         }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[
           styles.header,
           { paddingTop: insets.top + 16, paddingBottom: 16 },
@@ -925,16 +1066,23 @@ export default function UpcomingTests() {
           {/* Removed the Hello/Greeting Title as requested */}
 
           <View style={{ width: '100%', gap: 12 }}>
-            {/* Gender and Date of Birth Row */}
-            {currentPerson.dateOfBirth && (
+            {/* Gender and Age Row */}
+            {(currentPersonGender || currentPersonAge !== null) && (
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {currentPersonGender === "male" ? t("common.male") : currentPersonGender === "female" ? t("common.female") : "-"}
                 </Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
-                <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                  {currentPerson.dateOfBirth}
-                </Text>
+                {currentPersonAge !== null && (
+                  <>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
+                    <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
+                      {currentPersonAge < 1 
+                        ? (currentLang === 'ar' ? 'أقل من سنة' : 'Less than 1 year')
+                        : `${currentPersonAge} ${currentLang === 'ar' ? 'سنة' : 'years'}`
+                      }
+                    </Text>
+                  </>
+                )}
               </View>
             )}
 
@@ -1057,7 +1205,199 @@ export default function UpcomingTests() {
         }
       </View>
 
-      {/* Screenings List */}
+      {/* Zimam Recommendations Section */}
+      {filteredZimamRecs.length > 0 ? (
+        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
+              {currentLang === 'ar' ? 'التوصيات الصحية' : 'Health Recommendations'}
+            </Text>
+            <View style={{ backgroundColor: Colors.primary, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <Text style={{ color: Colors.white, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>
+                {filteredZimamRecs.reduce((sum, cat) => sum + cat.recs.length, 0)}
+              </Text>
+            </View>
+          </View>
+
+          {filteredZimamRecs.map((category) => (
+            <Card
+              key={category.key}
+              marginB-s3
+              backgroundColor={Colors.card}
+              enableShadow
+              elevation={3}
+              style={{ borderRadius: 16, overflow: 'hidden' }}
+            >
+              {/* Category Header - Clickable to expand/collapse */}
+              <TouchableOpacity
+                onPress={() => toggleCategory(category.key)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 16,
+                  backgroundColor: getCategoryColor(category.key) + '15',
+                  borderBottomWidth: expandedCategories[category.key] ? 1 : 0,
+                  borderBottomColor: Colors.border,
+                }}
+              >
+                <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: getCategoryColor(category.key),
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: I18nManager.isRTL ? 0 : 12,
+                  marginLeft: I18nManager.isRTL ? 12 : 0,
+                }}>
+                  <MaterialCommunityIcons
+                    name={getCategoryIcon(category.key) as any}
+                    size={22}
+                    color={Colors.white}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontFamily: 'ReadexPro-Bold',
+                    fontSize: 16,
+                    color: getCategoryColor(category.key),
+                  }}>
+                    {category.name[currentLang]}
+                  </Text>
+                  <Text style={{
+                    fontFamily: 'ReadexPro',
+                    fontSize: 12,
+                    color: Colors.textSecondary,
+                  }}>
+                    {category.recs.length} {currentLang === 'ar' ? 'توصية' : 'recommendation(s)'}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={expandedCategories[category.key] ? 'chevron-up' : 'chevron-down'}
+                  size={24}
+                  color={Colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {/* Recommendations List */}
+              {expandedCategories[category.key] && (
+                <View style={{ padding: 12 }}>
+                  {category.recs.map((rec, index) => (
+                    <View
+                      key={rec.key}
+                      style={{
+                        paddingVertical: 12,
+                        borderBottomWidth: index < category.recs.length - 1 ? 1 : 0,
+                        borderBottomColor: Colors.border,
+                      }}
+                    >
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                      }}>
+                        <View style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: getCategoryColor(category.key),
+                          marginTop: 6,
+                          marginRight: I18nManager.isRTL ? 0 : 10,
+                          marginLeft: I18nManager.isRTL ? 10 : 0,
+                        }} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={{
+                            fontFamily: 'ReadexPro-SemiBold',
+                            fontSize: 14,
+                            color: getCategoryColor(category.key),
+                            marginBottom: 4,
+                          }}>
+                            {rec.name[currentLang]}
+                          </Text>
+                          <Text style={{
+                            fontFamily: 'ReadexPro',
+                            fontSize: 12,
+                            color: Colors.textSecondary,
+                            lineHeight: 18,
+                          }}>
+                            {rec.articulation.text[currentLang]}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      {/* Action Buttons */}
+                      <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                        gap: 8,
+                        marginTop: 12,
+                        paddingLeft: I18nManager.isRTL ? 0 : 18,
+                        paddingRight: I18nManager.isRTL ? 18 : 0,
+                      }}>
+                        <TouchableOpacity
+                          onPress={handleBookWithSehhaty}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.primary,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            gap: 6,
+                          }}
+                        >
+                          <MaterialCommunityIcons name="calendar-check" size={16} color={Colors.white} />
+                          <Text style={{
+                            fontFamily: 'ReadexPro-SemiBold',
+                            fontSize: 12,
+                            color: Colors.white,
+                          }}>
+                            {currentLang === 'ar' ? 'احجز مع صحتي' : 'Book with Sehhaty'}
+                          </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                          onPress={() => handleMarkRecommendationComplete(rec.key)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: Colors.dashboardStatus.completed,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            gap: 6,
+                          }}
+                        >
+                          <Ionicons name="checkmark-circle" size={16} color={Colors.white} />
+                          <Text style={{
+                            fontFamily: 'ReadexPro-SemiBold',
+                            fontSize: 12,
+                            color: Colors.white,
+                          }}>
+                            {currentLang === 'ar' ? 'تم' : 'Done'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </Card>
+          ))}
+        </View>
+      ) : (
+        <View style={{ paddingHorizontal: 16, paddingVertical: 40, alignItems: 'center' }}>
+          <Ionicons name="clipboard-outline" size={64} color={Colors.textSecondary} style={{ opacity: 0.5, marginBottom: 16 }} />
+          <Text style={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16, color: Colors.textSecondary, textAlign: 'center' }}>
+            {currentLang === 'ar' ? 'لم يتم العثور على توصيات' : 'No recommendations found'}
+          </Text>
+          <Text style={{ fontFamily: 'ReadexPro', fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginTop: 8, opacity: 0.7 }}>
+            {currentLang === 'ar' ? 'لا توجد توصيات صحية لهذه الفئة' : 'No health recommendations for this category'}
+          </Text>
+        </View>
+      )}
+
+      {/* Screenings List - only show when there are screenings */}
+      {filteredScreenings.length > 0 && (
       <View
         style={{
           padding: 16,
@@ -1067,10 +1407,7 @@ export default function UpcomingTests() {
           style={styles.screeningsList}
           contentContainerStyle={{ gap: 7, paddingBottom: 32 }}
         >
-          {filteredScreenings.length === 0 ? (
-            <Text style={styles.emptyText}>{t("home.noScreenings")}</Text>
-          ) : (
-            filteredScreenings.map((screening, index) => (
+          {filteredScreenings.map((screening, index) => (
               <ScreeningCard
                 key={
                   screening.id !== 0
@@ -1084,10 +1421,10 @@ export default function UpcomingTests() {
                 userBirthDate={currentPerson.dateOfBirth}
                 styles={styles}
               />
-            ))
-          )}
+            ))}
         </ScrollView>
       </View>
+      )}
     </ScrollView>
   );
 }

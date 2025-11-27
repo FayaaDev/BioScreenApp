@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { ApiError } from '../types/api';
@@ -6,18 +7,22 @@ import { ApiError } from '../types/api';
 const getApiBaseUrl = () => {
   // Check for environment variable from Expo
   const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
-  
+
   if (envApiUrl) {
     console.log('Using API URL from environment:', envApiUrl);
     return envApiUrl;
   }
-  
+
   // Check if we're in development mode
   if (__DEV__) {
     console.log('Development mode: using local fallback');
-    return 'http://localhost:5000'; // Use localhost for development
+    // For Android Emulator, localhost is 10.0.2.2
+    if (Platform.OS === 'android') {
+      return 'http://10.0.2.2:5000';
+    }
+    return 'http://localhost:5000'; // Use localhost for iOS/web
   }
-  
+
   // Production fallback - use your domain with HTTPS
   console.log('Production mode: using production fallback');
   return 'https://bakkerapp.com';
@@ -29,11 +34,11 @@ const API_BASE_URL = getApiBaseUrl();
 export const testConnectivity = async (): Promise<boolean> => {
   try {
     console.log('Testing connectivity to:', API_BASE_URL);
-    
+
     // Add timeout to prevent hanging
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
+
     const response = await fetch(`${API_BASE_URL}/api/health`, {
       method: 'GET',
       headers: {
@@ -41,17 +46,17 @@ export const testConnectivity = async (): Promise<boolean> => {
       },
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     console.log('Connectivity test response status:', response.status);
     console.log('Response ok:', response.ok);
-    
+
     if (response.ok) {
       const data = await response.text();
       console.log('Server response:', data);
     }
-    
+
     return response.ok;
   } catch (error: any) {
     console.error('Connectivity test failed:', error);
@@ -74,7 +79,7 @@ export const apiRequest = async <T>(
     console.log('Making API request to:', url);
     console.log('Request method:', method);
     console.log('Request data:', data);
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
@@ -91,12 +96,12 @@ export const apiRequest = async <T>(
 
     console.log('Request headers:', headers);
 
-    // Add timeout to the request - increased to 60 seconds for slow connections
+    // Add timeout to the request - reduced to 15 seconds to prevent long hangs
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      console.warn(`Request timeout triggered for ${endpoint} after 60 seconds`);
+      console.warn(`Request timeout triggered for ${endpoint} after 15 seconds`);
       controller.abort();
-    }, 60000); // 60 second timeout
+    }, 15000); // 15 second timeout
 
     const response = await fetch(url, {
       method,
@@ -125,13 +130,13 @@ export const apiRequest = async <T>(
     console.error('Error constructor:', error?.constructor?.name);
     console.error('Error name:', (error as any)?.name);
     console.error('Error message:', (error as any)?.message);
-    
+
     // Handle AbortError specifically
     if ((error as any)?.name === 'AbortError') {
       console.error('Request was aborted (timeout)');
       throw new Error(`Request timeout: The server at ${API_BASE_URL} took too long to respond. Please check your connection.`);
     }
-    
+
     if (error instanceof TypeError) {
       if (error.message.includes('Network request failed')) {
         console.error('Network error details:', {
@@ -146,11 +151,11 @@ export const apiRequest = async <T>(
         throw new Error('Request timeout: The server took too long to respond.');
       }
     }
-    
+
     if (error instanceof Error) {
       throw error;
     }
-    
+
     throw new Error('An unknown error occurred');
   }
 };
@@ -159,12 +164,12 @@ export const apiRequest = async <T>(
 export const debugNetworkIssue = async (): Promise<void> => {
   console.log('=== NETWORK DEBUG START ===');
   console.log('API_BASE_URL:', API_BASE_URL);
-  
+
   // Test 1: Basic connectivity
   console.log('Test 1: Basic connectivity test');
   const connectivityResult = await testConnectivity();
   console.log('Connectivity test result:', connectivityResult);
-  
+
   // Test 2: Simple fetch to Google (to verify internet connection)
   console.log('Test 2: Internet connectivity test');
   try {
@@ -176,11 +181,11 @@ export const debugNetworkIssue = async (): Promise<void> => {
   } catch (error) {
     console.log('Google connectivity: FAILED -', error);
   }
-  
+
   // Test 3: Try different endpoints on your server
   console.log('Test 3: Testing different server endpoints');
   const endpoints = ['/api/health', '/api/users', '/'];
-  
+
   for (const endpoint of endpoints) {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -192,6 +197,6 @@ export const debugNetworkIssue = async (): Promise<void> => {
       console.log(`${endpoint}: FAILED -`, error);
     }
   }
-  
+
   console.log('=== NETWORK DEBUG END ===');
 };

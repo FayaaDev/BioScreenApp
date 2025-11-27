@@ -10,6 +10,7 @@ import { db, adminUsers } from './db';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import WhatsAppService from './whatsappService';
+import { RecommendationService } from './recommendationService';
 // Notifications disabled for next update
 // import NotificationScheduler from './notificationScheduler';
 
@@ -18,16 +19,16 @@ class NotificationScheduler {
   static getInstance() {
     return new NotificationScheduler();
   }
-  
+
   async initialize() {
     console.log('📵 Notifications disabled - scheduler not initialized');
   }
-  
+
   async scheduleScreeningReminder(...args: any[]) {
     console.log('📵 Notifications disabled - screening reminder not scheduled');
     return 'disabled';
   }
-  
+
   async scheduleFamilyMemberScreeningReminder(...args: any[]) {
     console.log('📵 Notifications disabled - family member reminder not scheduled');
     return 'disabled';
@@ -92,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     authToken: process.env.TWILIO_AUTH_TOKEN || '',
     whatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER || ''
   };
-  
+
   if (twilioConfig.accountSid && twilioConfig.authToken && twilioConfig.whatsappNumber) {
     whatsappService.initialize(twilioConfig);
     console.log('✅ Twilio WhatsApp service initialized');
@@ -117,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.session.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
-    
+
     const user = await storage.getUser(req.session.userId);
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: "Admin access required" });
@@ -134,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { id: number; username: string };
-      
+
       // Verify admin exists
       const admin = await db.query.adminUsers.findFirst({
         where: eq(adminUsers.id, decoded.id)
@@ -153,8 +154,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: 'ok', 
+    res.json({
+      status: 'ok',
       timestamp: new Date().toISOString(),
       server: 'BioScreen API'
     });
@@ -164,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
       }
@@ -193,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: '24h' }
       );
 
-      res.json({ 
+      res.json({
         token,
         user: {
           id: admin.id,
@@ -210,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
       }
@@ -238,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
       console.log(`[Login] Password validation result: ${isValidPassword}`);
-      
+
       if (!isValidPassword) {
         console.log(`[Login] Password mismatch for user: ${normalizedEmail}`);
         return res.status(401).json({ error: 'Invalid credentials' });
@@ -251,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: '24h' }
       );
 
-      res.json({ 
+      res.json({
         token,
         user: {
           id: user.id,
@@ -281,23 +282,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/debug/verify-password", async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password required' });
       }
 
       const normalizedEmail = email.trim().toLowerCase().replace(/[\u200E\u200F\u202A-\u202E]/g, '');
       const user = await storage.getUserByEmail(normalizedEmail);
-      
+
       if (!user) {
-        return res.json({ 
+        return res.json({
           found: false,
-          email: normalizedEmail 
+          email: normalizedEmail
         });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
-      
+
       res.json({
         found: true,
         userId: user.id,
@@ -341,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
-      
+
       const iconUrl = `/icons/${req.file.filename}`;
       res.json({ iconUrl });
     } catch (error) {
@@ -356,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedEmail = req.body.email
         ? req.body.email.trim().toLowerCase().replace(/[\u200E\u200F\u202A-\u202E]/g, '')
         : req.body.email;
-      
+
       // Map nested fields to flat fields
       const mappedBody = {
         ...req.body,
@@ -367,96 +368,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const userData = insertUserSchema.parse(mappedBody);
-      
+
       // Hash password before storing
       const hashedPassword = await bcrypt.hash(userData.password || "temp_password", 10);
       const userDataWithHashedPassword = {
         ...userData,
         password: hashedPassword
       };
-      
+
       const user = await storage.createUser(userDataWithHashedPassword);
-      
+
       // Generate initial screenings for the user
       const screenings = await storage.getScreenings();
       const userAge = new Date().getFullYear() - new Date(userData.dateOfBirth).getFullYear();
-      
+
       for (const screening of screenings) {
         // Check if screening applies to this user's gender and age range
         const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === userData.gender;
         const withinAgeRange = screening.endAge === null || userAge <= screening.endAge;
-        
+
         // Skip SMK screenings for non-smokers
-          if (screening.specialCode === "SMK" && !userData.isSmoker) {
+        if (screening.specialCode === "SMK" && !userData.isSmoker) {
+          continue;
+        }
+
+        // Skip PRG screenings for non-Pregnant women
+        if (screening.specialCode === "PRG" && !userData.isPregnant) {
+          continue;
+        }
+
+        // Skip STD screenings (STD)for partners with a single spouse.
+        if (screening.specialCode === "SEX" && userData.sexualPartnerCount === "single") {
+          continue;
+        }
+
+        // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
+        if (screening.specialCode === "BMI_DM" && userData.height && userData.weight) {
+          const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
+          if (userBMI <= 24.9) {
             continue;
           }
+        }
 
-          // Skip PRG screenings for non-Pregnant women
-          if (screening.specialCode === "PRG" && !userData.isPregnant) {
+        // Skip Lung Cancer screening (LungCa) for non-smokers or non-heavy smokers
+        if (
+          screening.specialCode === "LungCa" &&
+          (
+            userData.isSmoker === false || // Skip if user is a non-smoker
+            !userData.smokingAmount ||
+            !userData.smokingDuration ||
+            (parseFloat(userData.smokingAmount) * parseFloat(userData.smokingDuration) < 20)
+          )
+        ) {
+          continue;
+        }
+
+        // Skip Heart screening (RF) for medically free users.
+        if (
+          screening.specialCode === "RF" &&
+          !userData.isDiabetic &&
+          !userData.isHypertensive &&
+          !userData.isCholesterol &&
+          !userData.isSmoker
+        ) {
+          continue;
+        }
+
+        // Skip Obesity screening for users with BMI <= 29.9
+        if (screening.specialCode === "BMI_OB" && userData.height && userData.weight) {
+          const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
+          if (userBMI <= 29.9) {
             continue;
           }
+        }
 
-          // Skip STD screenings (STD)for partners with a single spouse.
-          if (screening.specialCode === "SEX" && userData.sexualPartnerCount === "single") {
-            continue;
-          }
 
-          // Skip Diabetes screening (BMI_DM) for users with BMI <= 24.9
-          if (screening.specialCode === "BMI_DM" && userData.height && userData.weight) {
-            const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
-            if (userBMI <= 24.9) {
-              continue;
-            }
-          }
 
-          // Skip Lung Cancer screening (LungCa) for non-smokers or non-heavy smokers
-          if (
-            screening.specialCode === "LungCa" &&
-            (
-              userData.isSmoker === false || // Skip if user is a non-smoker
-              !userData.smokingAmount ||
-              !userData.smokingDuration ||
-              (parseFloat(userData.smokingAmount) * parseFloat(userData.smokingDuration) < 20)
-            )
-          ) {
-            continue;
-          }
-
-          // Skip Heart screening (RF) for medically free users.
-          if (
-            screening.specialCode === "RF" &&
-            !userData.isDiabetic &&
-            !userData.isHypertensive &&
-            !userData.isCholesterol &&
-            !userData.isSmoker
-          ) {
-            continue;
-          }
-
-          // Skip Obesity screening for users with BMI <= 29.9
-          if (screening.specialCode === "BMI_OB" && userData.height && userData.weight) {
-            const userBMI = (parseFloat(userData.weight) / Math.pow(parseFloat(userData.height) / 100, 2));
-            if (userBMI <= 29.9) {
-              continue;
-            }
-          }
-        
-
-        
         if (genderMatches && withinAgeRange) {
           // Calculate next due date - always set to January of the target year
           const birthDate = new Date(userData.dateOfBirth);
           const birthYear = birthDate.getFullYear();
           const currentYear = new Date().getFullYear();
           const currentMonth = new Date().getMonth() + 1; // 1-based month
-          
+
           // Calculate the year when user turns the start age
           const targetYear = birthYear + screening.startAge;
           const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-          
+
           // Determine status based on current date vs target date
           let status: "due" | "overdue" | "later";
-          
+
           if (currentYear < targetYear) {
             // Before the target year - always "later"
             status = "later";
@@ -467,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // More than one year past start age - "overdue"
             status = "overdue";
           }
-          
+
           await storage.createUserScreening({
             userId: user.id,
             screeningId: screening.id,
@@ -475,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             nextDue: nextDue.toISOString(),
             status: status
           });
-          
+
           // Schedule WhatsApp reminder if user has phone number and screening is due
           if (userData.phoneNumber && status === "due") {
             try {
@@ -493,7 +494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       // Send welcome message if phone number is provided
       if (userData.phoneNumber) {
         try {
@@ -502,7 +503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userData.phoneNumber,
             userData.name
           );
-          
+
           if (welcomeSuccess) {
             console.log(`✅ Welcome message sent to new user: ${userData.name} (${userData.phoneNumber})`);
           } else {
@@ -512,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error sending welcome message during user creation:', error);
         }
       }
-      
+
       res.json(user);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -527,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
       // Normalize email if provided
       const normalizedUpdates = { ...req.body };
       if (normalizedUpdates.email) {
@@ -536,15 +537,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .toLowerCase()
           .replace(/[\u200E\u200F\u202A-\u202E]/g, ''); // Remove RTL/LTR marks
       }
-      
+
       const updates = insertUserSchema.partial().parse(normalizedUpdates);
       const user = await storage.updateUser(userId, updates);
-      
+
       if (!user) {
         res.status(404).json({ message: "User not found" });
         return;
       }
-      
+
       // Send welcome message if phone number is being added or updated
       if (updates.phoneNumber && updates.phoneNumber !== user.phoneNumber) {
         try {
@@ -553,17 +554,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updates.phoneNumber,
             user.name
           );
-          
+
           if (welcomeSuccess) {
             console.log(`✅ Welcome message sent to updated user: ${user.name} (${updates.phoneNumber})`);
           } else {
             console.log(`⚠️ Failed to send welcome message to: ${user.name} (${updates.phoneNumber})`);
           }
-          
+
           // Schedule WhatsApp reminders for existing due screenings
           const userScreenings = await storage.getUserScreenings(user.id);
           const notificationScheduler = NotificationScheduler.getInstance();
-          
+
           for (const userScreening of userScreenings) {
             if (userScreening.status === "due") {
               try {
@@ -583,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error sending welcome message during user update:', error);
         }
       }
-      
+
       res.json(user);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -599,154 +600,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         res.status(404).json({ message: "User not found" });
         return;
       }
 
-      const userScreenings = await storage.getUserScreenings(userId);
-      const allScreenings = await storage.getScreenings();
-      
-      // Calculate user age for status determination
-      const userAge = new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear();
-      
-      // Check for new screenings based on current age
-      for (const screening of allScreenings) {
-        // Skip if user already has this screening
-        if (userScreenings.some(us => us.screeningId === screening.id && us.status !== 'completed')) {
-          continue;
-        }
+      // Use the new RecommendationService
+      const recommendationService = RecommendationService.getInstance();
+      const recommendations = await recommendationService.getRecommendations(user);
 
-        // Skip if this is a one-time test (frequencyYears === 0) and user already has it (completed or not)
-        if (screening.frequencyYears === 0 && userScreenings.some(us => us.screeningId === screening.id)) {
-          continue;
-        }
+      // Also fetch old style screenings for backward compatibility if needed, 
+      // or just return the new format. The requirement implies a change in logic.
+      // However, the frontend might break if we completely remove 'screenings'.
+      // For now, I will return BOTH the new 'recommendations' and the old 'screenings' 
+      // (but 'screenings' might be empty or just raw data if I don't run the old logic).
 
-        // Check if screening applies to this user's gender and age range
-        const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === user.gender;
-        const withinAgeRange = screening.endAge === null || userAge <= screening.endAge;
-        
-        // Apply special conditions (same as in user creation)
-        if (screening.specialCode === "SMK" && !user.isSmoker) continue;
-        if (screening.specialCode === "PRG" && !user.isPregnant) continue;
-        if (screening.specialCode === "SEX" && user.sexualPartnerCount === "single") continue;
-        if (screening.specialCode === "BMI_DM" && user.height && user.weight) {
-          const userBMI = (parseFloat(user.weight) / Math.pow(parseFloat(user.height) / 100, 2));
-          if (userBMI <= 24.9) continue;
-        }
-        if (screening.specialCode === "LungCa" && (!user.isSmoker || !user.smokingAmount || !user.smokingDuration || 
-            (parseFloat(user.smokingAmount) * parseFloat(user.smokingDuration) < 20))) continue;
-        if (screening.specialCode === "RF" && !user.isDiabetic && !user.isHypertensive && 
-            !user.isCholesterol && !user.isSmoker) continue;
-        if (screening.specialCode === "BMI_OB" && user.height && user.weight) {
-          const userBMI = (parseFloat(user.weight) / Math.pow(parseFloat(user.height) / 100, 2));
-          if (userBMI <= 29.9) continue;
-        }
+      // Actually, let's keep the old logic for 'screenings' property to avoid breaking the app completely 
+      // while we migrate, but the user asked to "modify the data in the backend side".
+      // I will return the new structure as 'recommendations' (or 'groupedRecs' as per example).
+      // The example shows:
+      // {
+      //   "groupedRecs": [...]
+      // }
+      // The old response was:
+      // {
+      //   user,
+      //   screenings: [...]
+      // }
 
-        if (genderMatches && withinAgeRange) {
-          // Calculate next due date
-          const birthDate = new Date(user.dateOfBirth);
-          const birthYear = birthDate.getFullYear();
-          const currentYear = new Date().getFullYear();
-          
-          // Calculate the year when user turns the start age
-          const targetYear = birthYear + screening.startAge;
-          const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-          
-          // Determine status based on current date vs target date
-          let status: "due" | "overdue" | "later";
-          
-          if (currentYear < targetYear) {
-            status = "later";
-          } else if (currentYear === targetYear || currentYear === targetYear + 1) {
-            status = "due";
-          } else {
-            status = "overdue";
-          }
-          
-          // Create new screening for user
-          await storage.createUserScreening({
-            userId: user.id,
-            screeningId: screening.id,
-            lastCompleted: null,
-            nextDue: nextDue.toISOString(),
-            status: status
-          });
-        }
-      }
-
-      // Get updated screenings after adding new ones
-      const updatedUserScreenings = await storage.getUserScreenings(userId);
-      
-      // Calculate status for all screenings
-      const screeningsWithDetails = await Promise.all(updatedUserScreenings.map(async us => {
-        const screening = allScreenings.find(s => s.id === us.screeningId);
-        // Dynamically calculate status if not completed
-        let status = us.status;
-        if (status !== "completed" && screening) {
-          // Preserve 'laterRecreated' status for repeatable screenings
-          if (status === "laterRecreated") {
-            // Do not overwrite, just return as is
-            return {
-              ...us,
-              status,
-              screening
-            };
-          }
-          const now = new Date();
-          // For repeatable screenings, use nextDue date to determine status
-          if (screening.frequencyYears > 0) {
-            const nextDue = new Date(us.nextDue);
-            const oneYearAfterNextDue = new Date(nextDue);
-            oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
-            if (now < nextDue) {
-              status = "later";
-            } else if (now >= nextDue && now < oneYearAfterNextDue) {
-              status = "due";
-            } else {
-              status = "overdue";
-            }
-          } else {
-            // For non-repeatable screenings, use the original age-based logic
-            const birthDate = new Date(user.dateOfBirth);
-            const birthYear = birthDate.getFullYear();
-            const currentYear = now.getFullYear();
-            const targetYear = birthYear + screening.startAge;
-            if (currentYear < targetYear) {
-              status = "later";
-            } else if (currentYear === targetYear || currentYear === targetYear + 1) {
-              status = "due";
-            } else {
-              status = "overdue";
-            }
-          }
-          // Update the screening status in the database if it has changed
-          if (status !== us.status) {
-            await storage.updateUserScreening(us.id, {
-              status: status,
-              nextDue: us.nextDue // Keep the existing nextDue date
-            });
-          }
-        }
-        return {
-          ...us,
-          status,
-          screening
-        };
-      }));
+      // I will return:
+      // {
+      //   user,
+      //   ...recommendations // spreads groupedRecs
+      // }
 
       res.json({
         user,
-        screenings: screeningsWithDetails
+        ...recommendations
       });
     } catch (error) {
+      console.error('Error fetching user recommendations:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Family member routes
-  
+
   // Get family members for a user
   app.get("/api/users/:userId/family", async (req, res) => {
     try {
@@ -772,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       const familyMemberData = insertFamilyMemberSchema.parse(mappedBody);
       const familyMember = await storage.createFamilyMember(familyMemberData);
-      
+
       // Send welcome message if phone number is provided
       if (familyMemberData.phoneNumber) {
         try {
@@ -781,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             familyMemberData.phoneNumber,
             familyMemberData.name
           );
-          
+
           if (welcomeSuccess) {
             console.log(`✅ Welcome message sent to new family member: ${familyMemberData.name} (${familyMemberData.phoneNumber})`);
           } else {
@@ -793,13 +693,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             // Get all screenings to calculate which ones apply to this family member
             const allScreenings = await storage.getScreenings();
-            
+
             // Calculate age and applicable screenings (similar to /api/family/:id/screenings logic)
             const memberAge = new Date().getFullYear() - new Date(familyMember.dateOfBirth).getFullYear();
-            
+
             const applicableScreenings = allScreenings.filter(screening => {
               const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === familyMember.gender;
-              
+
               // Skip SMK screenings for non-smokers
               if (screening.specialCode === "SMK" && !familyMember.isSmoker) {
                 return false;
@@ -817,21 +717,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (screening.endAge !== null && memberAge > screening.endAge) {
                 return false;
               }
-              
+
               return genderMatches;
             });
 
             const notificationScheduler = NotificationScheduler.getInstance();
-            
+
             // Check each applicable screening for "due" status
             for (const screening of applicableScreenings) {
               const birthDate = new Date(familyMember.dateOfBirth);
               const birthYear = birthDate.getFullYear();
               const currentYear = new Date().getFullYear();
               const targetYear = birthYear + screening.startAge;
-              
+
               let status: "due" | "overdue" | "later";
-              
+
               if (currentYear < targetYear) {
                 status = "later";
               } else if (currentYear === targetYear || currentYear === targetYear + 1) {
@@ -839,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } else {
                 status = "overdue";
               }
-              
+
               // Schedule reminder if status is "due"
               if (status === "due") {
                 try {
@@ -863,7 +763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error sending welcome message during family member creation:', error);
         }
       }
-      
+
       res.json(familyMember);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -886,16 +786,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sexualPartnerCount: req.body.sexualActivityDetails?.partnerCount,
       };
       const updates = insertFamilyMemberSchema.partial().parse(mappedBody);
-      
+
       // Get original family member to compare phone numbers
       const originalFamilyMember = await storage.getFamilyMember(id);
-      
+
       const familyMember = await storage.updateFamilyMember(id, updates);
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
+
       // Send welcome message if phone number is being added or updated
       if (updates.phoneNumber && originalFamilyMember && updates.phoneNumber !== originalFamilyMember.phoneNumber) {
         try {
@@ -904,17 +804,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updates.phoneNumber,
             familyMember.name
           );
-          
+
           if (welcomeSuccess) {
             console.log(`✅ Welcome message sent to updated family member: ${familyMember.name} (${updates.phoneNumber})`);
           } else {
             console.log(`⚠️ Failed to send welcome message to family member: ${familyMember.name} (${updates.phoneNumber})`);
           }
-          
+
           // Schedule WhatsApp reminders for existing due screenings
           const familyScreenings = await storage.getFamilyMemberScreenings(id);
           const notificationScheduler = NotificationScheduler.getInstance();
-          
+
           for (const familyScreening of familyScreenings) {
             if (familyScreening.status === "due") {
               try {
@@ -934,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error sending welcome message during family member update:', error);
         }
       }
-      
+
       res.json(familyMember);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -950,12 +850,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteFamilyMember(id);
-      
+
       if (!deleted) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
+
       res.json({ message: "Family member deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -966,28 +866,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/family/:id/screenings", async (req, res) => {
     try {
       const familyMemberId = parseInt(req.params.id);
-      
+
       // Get the family member first
       const familyMember = await storage.getFamilyMember(familyMemberId);
-      
+
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
+
       // Get all available screenings
       const allScreenings = await storage.getScreenings();
-      
+
       // Get existing family member screening records
       const existingFamilyScreenings = await storage.getFamilyMemberScreenings(familyMemberId);
-      
+
       // Calculate age
       const memberAge = new Date().getFullYear() - new Date(familyMember.dateOfBirth).getFullYear();
-      
+
       // Filter and calculate appropriate screenings
       const applicableScreenings = allScreenings.filter(screening => {
         const genderMatches = screening.genderApplicable === "both" || screening.genderApplicable === familyMember.gender;
-        
+
         // Skip SMK screenings for non-smokers
         if (screening.specialCode === "SMK" && !familyMember.isSmoker) {
           return false;
@@ -1008,7 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return false;
           }
         }
-        
+
         // Skip PRG screenings for non-Pregnant women
         if (screening.specialCode === "PRG" && !familyMember.isPregnant) {
           return false;
@@ -1042,14 +942,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) {
           return false;
         }
-        
+
         // Include all gender-appropriate screenings regardless of age to show "later" screenings
         // We'll filter by age in the status calculation
         return genderMatches;
       }).map(screening => {
         // Check if there's an existing family member screening record
         const existingScreening = existingFamilyScreenings.find(fms => fms.screeningId === screening.id);
-        
+
         if (existingScreening) {
           // Dynamically calculate status if not completed
           let status = existingScreening.status;
@@ -1064,13 +964,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               };
             }
             const now = new Date();
-            
+
             // For repeatable screenings, use nextDue date to determine status
             if (screening.frequencyYears > 0) {
               const nextDue = new Date(existingScreening.nextDue);
               const oneYearAfterNextDue = new Date(nextDue);
               oneYearAfterNextDue.setFullYear(nextDue.getFullYear() + 1);
-              
+
               if (now < nextDue) {
                 status = "later";
               } else if (now >= nextDue && now < oneYearAfterNextDue) {
@@ -1084,7 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const birthYear = birthDate.getFullYear();
               const currentYear = now.getFullYear();
               const targetYear = birthYear + screening.startAge;
-              
+
               if (currentYear < targetYear) {
                 status = "later";
               } else if (currentYear === targetYear || currentYear === targetYear + 1) {
@@ -1114,24 +1014,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             screening
           };
         }
-        
+
         // Calculate status for family member (for screenings without records)
         const birthDate = new Date(familyMember.dateOfBirth);
         const birthYear = birthDate.getFullYear();
         const currentYear = new Date().getFullYear();
-        
+
         // Calculate the year when family member turns the start age
         const targetYear = birthYear + screening.startAge;
         const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-        
+
         // Check if family member is beyond the end age (exclude these screenings)
         if (screening.endAge !== null && memberAge > screening.endAge) {
           return null; // Will be filtered out
         }
-        
+
         // Determine status based on current date vs target date
         let status: "due" | "overdue" | "later";
-        
+
         if (currentYear < targetYear) {
           status = "later";
         } else if (currentYear === targetYear || currentYear === targetYear + 1) {
@@ -1139,7 +1039,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           status = "overdue";
         }
-        
+
         return {
           id: 0, // No user screening ID for family members without records
           userId: familyMember.userId,
@@ -1150,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           screening
         };
       }).filter(screening => screening !== null); // Remove screenings beyond end age
-      
+
       // Calculate BMI if height and weight are available
       let bmiInfo = null;
       if (familyMember.height && familyMember.weight) {
@@ -1186,13 +1086,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const screeningData = insertScreeningSchema.parse(req.body);
       const screening = await storage.createScreening(screeningData);
-      
+
       // Assign new screening to existing users who meet the criteria
       const allUsers = await storage.getAllUsers();
-      
+
       for (const user of allUsers) {
         const userAge = new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear();
-        
+
         // Include users based on gender and age criteria
         // Include if: gender matches AND (user hasn't exceeded end age if it exists)
         if (
@@ -1204,14 +1104,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const birthYear = birthDate.getFullYear();
           const currentYear = new Date().getFullYear();
           const currentMonth = new Date().getMonth() + 1;
-          
+
           // Calculate the year when user turns the start age
           const targetYear = birthYear + screening.startAge;
           const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-          
+
           // Determine status based on current date vs target date
           let status: "due" | "overdue" | "later";
-          
+
           if (currentYear < targetYear) {
             // Before the target year - always "later"
             status = "later";
@@ -1222,7 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // More than one year past start age - "overdue"
             status = "overdue";
           }
-          
+
           await storage.createUserScreening({
             userId: user.id,
             screeningId: screening.id,
@@ -1232,7 +1132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       res.json(screening);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1249,12 +1149,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = insertScreeningSchema.partial().parse(req.body);
       const screening = await storage.updateScreening(id, updates);
-      
+
       if (!screening) {
         res.status(404).json({ message: "Screening not found" });
         return;
       }
-      
+
       res.json(screening);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1270,12 +1170,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteScreening(id);
-      
+
       if (!deleted) {
         res.status(404).json({ message: "Screening not found" });
         return;
       }
-      
+
       res.json({ message: "Screening deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -1288,7 +1188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = insertUserScreeningSchema.partial().parse(req.body);
       console.log(`[PUT /api/user-screenings/${id}] Received updates:`, updates);
-      
+
       // Get the current screening to check frequency
       const currentScreening = await storage.getUserScreeningById(id);
       console.log(`[PUT /api/user-screenings/${id}] Current screening:`, currentScreening);
@@ -1320,15 +1220,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (updates.status === 'completed' && screening.frequencyYears > 0) {
         // Check for existing future screening
         const existingScreenings = await storage.getUserScreenings(currentScreening.userId);
-        const hasFutureScreening = existingScreenings.some(us => 
-          us.screeningId === screening.id && 
-          us.status === 'later' && 
+        const hasFutureScreening = existingScreenings.some(us =>
+          us.screeningId === screening.id &&
+          us.status === 'later' &&
           us.id !== id
         );
 
         if (hasFutureScreening) {
           console.log(`[PUT /api/user-screenings/${id}] Not creating repeatable screening: another future screening exists`);
-          res.status(400).json({ 
+          res.status(400).json({
             message: "You already have a future test scheduled. Please complete your current tests first.",
             error: "FUTURE_TEST_EXISTS"
           });
@@ -1348,7 +1248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           nextDue: nextDueDate.toISOString(),
           status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
-        
+
         // Schedule WhatsApp reminder if user has phone number
         try {
           const user = await storage.getUser(currentScreening.userId);
@@ -1365,7 +1265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           console.error('Error scheduling WhatsApp reminder for user screening:', error);
         }
-        
+
         // Delete the completed screening
         await storage.deleteUserScreening(id);
       } else if (updates.status === 'completed' && screening.frequencyYears === 0) {
@@ -1389,14 +1289,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const familyId = parseInt(req.params.familyId);
       const screeningId = parseInt(req.params.screeningId);
       const { lastCompleted, nextDue, status } = insertFamilyMemberScreeningSchema.partial().parse(req.body);
-      
+
       // Get the family member to verify it exists
       const familyMember = await storage.getFamilyMember(familyId);
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
+
       // Get the screening to verify it exists
       const screening = await storage.getScreening(screeningId);
       if (!screening) {
@@ -1407,7 +1307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get existing family member screening records
       const existingFamilyScreenings = await storage.getFamilyMemberScreenings(familyId);
       const existingScreening = existingFamilyScreenings.find(fms => fms.screeningId === screeningId);
-      
+
       // Create or update the family member screening record
       let familyScreening;
       if (existingScreening) {
@@ -1422,7 +1322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const birthYear = birthDate.getFullYear();
         const targetYear = birthYear + screening.startAge;
         const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-        
+
         familyScreening = await storage.createFamilyMemberScreening({
           familyMemberId: familyId,
           screeningId: screeningId,
@@ -1440,15 +1340,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If completing a screening and it has a frequency, create the next screening
       if (screening.frequencyYears > 0) {
         // Check for existing future screening
-        const hasFutureScreening = existingFamilyScreenings.some(fms => 
-          fms.screeningId === screening.id && 
-          fms.status === 'later' && 
+        const hasFutureScreening = existingFamilyScreenings.some(fms =>
+          fms.screeningId === screening.id &&
+          fms.status === 'later' &&
           fms.id !== familyScreening.id
         );
 
         if (hasFutureScreening) {
           console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Not creating repeatable screening: another future screening exists`);
-          res.status(400).json({ 
+          res.status(400).json({
             message: "You already have a future test scheduled. Please complete your current tests first.",
             error: "FUTURE_TEST_EXISTS"
           });
@@ -1468,7 +1368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           nextDue: nextDueDate.toISOString(),
           status: "laterRecreated" // Set new screenings as "laterRecreated" for recreated tests
         });
-        
+
         // Schedule WhatsApp reminder if family member has phone number
         try {
           if (familyMember.phoneNumber) {
@@ -1484,13 +1384,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           console.error('Error scheduling WhatsApp reminder for family member screening:', error);
         }
-        
+
         // Delete the completed screening
         await storage.deleteFamilyMemberScreening(familyScreening.id);
       } else {
         console.log(`[POST /api/family/${familyId}/screenings/${screeningId}/complete] Non-repeatable screening marked as completed, no new screening created`);
       }
-      
+
       res.json(familyScreening);
     } catch (error) {
       console.error("Error marking family member screening as completed:", error);
@@ -1507,60 +1407,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const familyId = parseInt(req.params.familyId);
       const screeningId = parseInt(req.params.screeningId);
-      
+
       // Get the family member to verify it exists
       const familyMember = await storage.getFamilyMember(familyId);
       if (!familyMember) {
         res.status(404).json({ message: "Family member not found" });
         return;
       }
-      
+
       // Get the screening to verify it exists and calculate next due date
       const screening = await storage.getScreening(screeningId);
       if (!screening) {
         res.status(404).json({ message: "Screening not found" });
         return;
       }
-      
+
       // Find the existing family member screening record
       const existingFamilyScreenings = await storage.getFamilyMemberScreenings(familyId);
       const existingScreening = existingFamilyScreenings.find(fms => fms.screeningId === screeningId);
-      
+
       if (!existingScreening) {
         res.status(404).json({ message: "Family member screening record not found" });
         return;
       }
-      
+
       // Calculate new next due date based on family member's age and screening frequency
       const birthDate = new Date(familyMember.dateOfBirth);
       const birthYear = birthDate.getFullYear();
       const currentYear = new Date().getFullYear();
       const targetYear = birthYear + screening.startAge;
       const nextDue = new Date(targetYear, 0, 1); // January 1st of target year
-      
+
       // Determine new status
       let status: "due" | "overdue" | "later";
-      
+
       if (currentYear < targetYear) {
         status = "later";
       } else if (currentYear === targetYear || currentYear === targetYear + 1) {
-        status = "due";  
+        status = "due";
       } else {
         status = "overdue";
       }
-      
+
       // Update the family member screening record
       const updatedScreening = await storage.updateFamilyMemberScreening(existingScreening.id, {
         lastCompleted: null,
         nextDue: nextDue.toISOString(),
         status: status
       });
-      
+
       if (!updatedScreening) {
         res.status(500).json({ message: "Failed to update family member screening" });
         return;
       }
-      
+
       res.json(updatedScreening);
     } catch (error) {
       console.error("Error marking family member screening as not completed:", error);
@@ -1576,7 +1476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notifications/schedule-screening", async (req, res) => {
     try {
       const { userId, screeningId, dueDate, reminderDays = 7 } = req.body;
-      
+
       if (!userId || !screeningId || !dueDate) {
         return res.status(400).json({ error: 'userId, screeningId, and dueDate are required' });
       }
@@ -1589,10 +1489,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reminderDays
       );
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         jobId,
-        message: 'Screening reminder scheduled successfully' 
+        message: 'Screening reminder scheduled successfully'
       });
     } catch (error) {
       console.error('Error scheduling screening reminder:', error);
@@ -1603,7 +1503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notifications/schedule-family-screening", async (req, res) => {
     try {
       const { familyMemberId, screeningId, dueDate, reminderDays = 7 } = req.body;
-      
+
       if (!familyMemberId || !screeningId || !dueDate) {
         return res.status(400).json({ error: 'familyMemberId, screeningId, and dueDate are required' });
       }
@@ -1616,10 +1516,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reminderDays
       );
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         jobId,
-        message: 'Family screening reminder scheduled successfully' 
+        message: 'Family screening reminder scheduled successfully'
       });
     } catch (error) {
       console.error('Error scheduling family screening reminder:', error);
@@ -1630,7 +1530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notifications/send-welcome", async (req, res) => {
     try {
       const { phoneNumber, personName } = req.body;
-      
+
       if (!phoneNumber || !personName) {
         return res.status(400).json({ error: 'phoneNumber and personName are required' });
       }
@@ -1639,9 +1539,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const success = await whatsappService.sendWelcomeMessage(phoneNumber, personName);
 
       if (success) {
-        res.json({ 
-          success: true, 
-          message: 'Welcome message sent successfully' 
+        res.json({
+          success: true,
+          message: 'Welcome message sent successfully'
         });
       } else {
         res.status(500).json({ error: 'Failed to send welcome message' });
@@ -1656,7 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const whatsappService = WhatsAppService.getInstance();
       const notificationScheduler = NotificationScheduler.getInstance();
-      
+
       res.json({
         whatsappService: {
           initialized: !!process.env.TWILIO_ACCOUNT_SID,
@@ -1676,7 +1576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notifications/schedule-all-reminders", async (req, res) => {
     try {
       const { userId, familyMemberId } = req.body;
-      
+
       if (!userId && !familyMemberId) {
         return res.status(400).json({ error: 'Either userId or familyMemberId is required' });
       }
@@ -1805,7 +1705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = insertEducationalContentSchema.partial().parse(req.body);
-      
+
       const [updatedContent] = await db.update(educationalContent)
         .set({
           ...updates,
@@ -1833,7 +1733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/educational-content/:id", authenticateAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      
+
       const [deletedContent] = await db.delete(educationalContent)
         .where(eq(educationalContent.id, id))
         .returning();
