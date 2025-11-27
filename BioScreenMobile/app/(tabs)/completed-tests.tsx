@@ -2,6 +2,7 @@ import { useEffect, useState, useContext, useCallback } from 'react';
 import {
   ScrollView,
   RefreshControl,
+  I18nManager,
 } from 'react-native';
 import { View, Text, Card, Button, TouchableOpacity, LoaderScreen, Colors } from 'react-native-ui-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,13 +11,16 @@ import { apiRequest } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { useRouter } from 'expo-router';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '../../hooks/useColorScheme';
+import { Colors as ThemeColors } from '../../constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { medicalStorage } from '../../lib/medical-storage';
+import { RecommendationEngine } from '../../lib/recommendationEngine';
+import { GroupedRecs, Recommendation } from '../../lib/zimam/types';
 
 // Types
 type Screening = {
@@ -127,6 +131,8 @@ export default function CompletedTests() {
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [zimamRecommendations, setZimamRecommendations] = useState<GroupedRecs | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   // Force re-render when language changes
   useEffect(() => {
@@ -197,6 +203,132 @@ export default function CompletedTests() {
     enabled: !!userId,
   });
 
+  // Load completed recommendations using React Query for cross-screen sync
+  const { data: completedRecommendations = [] } = useQuery<string[]>({
+    queryKey: ['completedRecommendations', selectedPersonId],
+    queryFn: async () => {
+      try {
+        const stored = await AsyncStorage.getItem(`completed_recommendations_${selectedPersonId}`);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error('Error loading completed recommendations:', error);
+        return [];
+      }
+    },
+    enabled: !!selectedPersonId,
+  });
+
+  // Load Zimam recommendations to get completed recommendation details
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      let profileToEvaluate = null;
+      
+      if (selectedPersonId === 'user' && userProfile) {
+        profileToEvaluate = userProfile;
+      } else if (selectedPersonId !== 'user' && familyMembersList) {
+        const member = familyMembersList.find((m) => m.id === selectedPersonId || m.id?.toString() === selectedPersonId);
+        if (member && member.dateOfBirth && member.gender) {
+          // Use the family member profile directly (it's already a MedicalProfile)
+          profileToEvaluate = member;
+        }
+      }
+      
+      if (profileToEvaluate) {
+        try {
+          const result = await RecommendationEngine.evaluate({ profile: profileToEvaluate });
+          setZimamRecommendations(result.groupedRecs);
+          // Auto-expand all categories
+          const expanded: Record<string, boolean> = {};
+          result.groupedRecs.groupedRecs.forEach((cat) => {
+            expanded[cat.key] = true;
+          });
+          setExpandedCategories(expanded);
+        } catch (error) {
+          console.error('Zimam Engine Error:', error);
+          setZimamRecommendations(null);
+        }
+      } else {
+        setZimamRecommendations(null);
+      }
+    };
+    
+    loadRecommendations();
+  }, [userProfile, selectedPersonId, familyMembersList]);
+
+  // Toggle category expansion
+  const toggleCategory = (key: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Get color for recommendation category
+  const getCategoryColor = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return Colors.dashboardStatus.due;
+      case 'counseling':
+        return Colors.dashboardStatus.overdue;
+      case 'vaccination':
+        return Colors.dashboardStatus.completed;
+      default:
+        return Colors.dashboardStatus.later;
+    }
+  };
+
+  // Get icon for recommendation category
+  const getCategoryIcon = (key: string): string => {
+    switch (key) {
+      case 'screening':
+        return 'clipboard-pulse';
+      case 'counseling':
+        return 'account-heart';
+      case 'vaccination':
+        return 'needle';
+      default:
+        return 'medical-bag';
+    }
+  };
+
+  // Get completed recommendations with their details
+  const getCompletedRecommendationsWithDetails = () => {
+    if (!zimamRecommendations) return [];
+    
+    const completedRecs: { category: string; categoryName: { en: string; ar: string }; rec: Recommendation }[] = [];
+    
+    zimamRecommendations.groupedRecs.forEach((category) => {
+      category.recs.forEach((rec) => {
+        if (completedRecommendations.includes(rec.key)) {
+          completedRecs.push({
+            category: category.key,
+            categoryName: category.name,
+            rec,
+          });
+        }
+      });
+    });
+    
+    return completedRecs;
+  };
+
+  // Handle reverting a completed recommendation back to incomplete
+  const handleRevertRecommendation = async (recKey: string, recName: string) => {
+    try {
+      const updatedCompletedRecs = completedRecommendations.filter(key => key !== recKey);
+      await AsyncStorage.setItem(
+        `completed_recommendations_${selectedPersonId}`,
+        JSON.stringify(updatedCompletedRecs)
+      );
+      // Invalidate the query to sync across all screens
+      queryClient.invalidateQueries({ queryKey: ['completedRecommendations', selectedPersonId] });
+      showToast('success', t('completed.revertedSuccess') || `${recName} ${currentLang === 'ar' ? 'تم إرجاعها' : 'reverted'}`);
+    } catch (error) {
+      console.error('Error reverting recommendation:', error);
+      showToast('error', currentLang === 'ar' ? 'حدث خطأ' : 'An error occurred');
+    }
+  };
+
   // Determine current person data
   let currentPerson: any = {
     name: t("common.you"),
@@ -222,7 +354,7 @@ export default function CompletedTests() {
   const familyMembers = familyMembersList || [];
   const screenings: any[] = screeningsData || [];
 
-  const currentPersonAge = currentPerson.dateOfBirth ? calculateAge(currentPerson.dateOfBirth) : '';
+  const currentPersonAge = currentPerson.dateOfBirth ? calculateAge(currentPerson.dateOfBirth) : null;
   const currentPersonName = currentPerson.name || t('common.you');
   const currentPersonGender = currentPerson.gender || '';
 
@@ -388,9 +520,11 @@ export default function CompletedTests() {
       <LinearGradient
         colors={
           colorScheme === "dark"
-            ? [Colors.background, Colors.card]
-            : [Colors.primary, Colors.primary]
+            ? ThemeColors.dark.headerGradient
+            : ThemeColors.light.headerGradient
         }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[
           styles.header,
           { paddingTop: insets.top + 16, paddingBottom: 16 },
@@ -399,16 +533,19 @@ export default function CompletedTests() {
         <View style={{ width: '100%' }}>
           <View style={{ width: '100%', gap: 12 }}>
             {/* Gender and Age Row */}
-            {(currentPersonGender || currentPersonAge) && (
+            {(currentPersonGender || currentPersonAge !== null) && (
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
                   {currentPersonGender === "male" ? t("common.male") : currentPersonGender === "female" ? t("common.female") : "-"}
                 </Text>
-                {currentPersonAge && (
+                {currentPersonAge !== null && (
                   <>
                     <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>•</Text>
                     <Text style={{ color: Colors.white, fontFamily: 'ReadexPro', fontSize: 14 }}>
-                      {currentPersonAge} {currentLang === 'ar' ? 'سنة' : 'years'}
+                      {currentPersonAge < 1 
+                        ? (currentLang === 'ar' ? 'أقل من سنة' : 'Less than 1 year')
+                        : `${currentPersonAge} ${currentLang === 'ar' ? 'سنة' : 'years'}`
+                      }
                     </Text>
                   </>
                 )}
@@ -503,11 +640,188 @@ export default function CompletedTests() {
         </ScrollView>
       </LinearGradient>
 
-      {/* Completed Screenings List */}
-      <View style={styles.screeningsList}>
-        {completedScreenings.length === 0 ? (
-          <Text style={styles.emptyText}>{t('completed.noCompleted')}</Text>
-        ) : (
+      {/* Completed Recommendations Section */}
+      {(() => {
+        const completedRecsWithDetails = getCompletedRecommendationsWithDetails();
+        if (completedRecsWithDetails.length === 0) {
+          return (
+            <View style={{ paddingHorizontal: 16, paddingVertical: 40, alignItems: 'center' }}>
+              <Ionicons name="checkmark-circle-outline" size={64} color={Colors.textSecondary} style={{ opacity: 0.5, marginBottom: 16 }} />
+              <Text style={{ fontFamily: 'ReadexPro-SemiBold', fontSize: 16, color: Colors.textSecondary, textAlign: 'center' }}>
+                {currentLang === 'ar' ? 'لا توجد توصيات مكتملة بعد' : 'No completed recommendations yet'}
+              </Text>
+              <Text style={{ fontFamily: 'ReadexPro', fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginTop: 8, opacity: 0.7 }}>
+                {currentLang === 'ar' ? 'أكمل توصياتك الصحية لتظهر هنا' : 'Complete your health recommendations to see them here'}
+              </Text>
+            </View>
+          );
+        }
+        
+        // Group by category
+        const groupedByCategory = completedRecsWithDetails.reduce((acc, item) => {
+          if (!acc[item.category]) {
+            acc[item.category] = {
+              key: item.category,
+              name: item.categoryName,
+              recs: [],
+            };
+          }
+          acc[item.category].recs.push(item.rec);
+          return acc;
+        }, {} as Record<string, { key: string; name: { en: string; ar: string }; recs: Recommendation[] }>);
+        
+        return (
+          <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 18, fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
+                {currentLang === 'ar' ? 'التوصيات المكتملة' : 'Completed Recommendations'}
+              </Text>
+              <View style={{ backgroundColor: Colors.white, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+                <Text style={{ color: Colors.primary, fontFamily: 'ReadexPro-Bold', fontSize: 12 }}>
+                  {completedRecsWithDetails.length}
+                </Text>
+              </View>
+            </View>
+
+            {Object.values(groupedByCategory).map((category) => (
+              <Card
+                key={category.key}
+                marginB-s3
+                backgroundColor={Colors.card}
+                enableShadow
+                elevation={3}
+                style={{ borderRadius: 16, overflow: 'hidden' }}
+              >
+                {/* Category Header */}
+                <TouchableOpacity
+                  onPress={() => toggleCategory(`completed_${category.key}`)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 16,
+                    backgroundColor: getCategoryColor(category.key) + '15',
+                    borderBottomWidth: expandedCategories[`completed_${category.key}`] ? 1 : 0,
+                    borderBottomColor: Colors.border,
+                  }}
+                >
+                  <View style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: getCategoryColor(category.key),
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: I18nManager.isRTL ? 0 : 12,
+                    marginLeft: I18nManager.isRTL ? 12 : 0,
+                  }}>
+                    <MaterialCommunityIcons
+                      name={getCategoryIcon(category.key) as any}
+                      size={22}
+                      color={Colors.white}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{
+                      fontFamily: 'ReadexPro-Bold',
+                      fontSize: 16,
+                      color: getCategoryColor(category.key),
+                    }}>
+                      {category.name[currentLang]}
+                    </Text>
+                    <Text style={{
+                      fontFamily: 'ReadexPro',
+                      fontSize: 12,
+                      color: Colors.textSecondary,
+                    }}>
+                      {category.recs.length} {currentLang === 'ar' ? 'مكتملة' : 'completed'}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name={expandedCategories[`completed_${category.key}`] ? 'chevron-up' : 'chevron-down'}
+                    size={24}
+                    color={Colors.textSecondary}
+                  />
+                </TouchableOpacity>
+
+                {/* Completed Recommendations List */}
+                {expandedCategories[`completed_${category.key}`] && (
+                  <View style={{ padding: 12 }}>
+                    {category.recs.map((rec, index) => (
+                      <View
+                        key={rec.key}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'flex-start',
+                          paddingVertical: 10,
+                          borderBottomWidth: index < category.recs.length - 1 ? 1 : 0,
+                          borderBottomColor: Colors.border,
+                        }}
+                      >
+                        <View style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          backgroundColor: Colors.dashboardStatus.completed,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginTop: 2,
+                          marginRight: I18nManager.isRTL ? 0 : 10,
+                          marginLeft: I18nManager.isRTL ? 10 : 0,
+                        }}>
+                          <Ionicons name="checkmark" size={16} color={Colors.white} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{
+                            fontFamily: 'ReadexPro-SemiBold',
+                            fontSize: 14,
+                            color: Colors.dashboardStatus.completed,
+                            marginBottom: 4,
+                          }}>
+                            {rec.name[currentLang]}
+                          </Text>
+                          <Text style={{
+                            fontFamily: 'ReadexPro',
+                            fontSize: 12,
+                            color: Colors.textSecondary,
+                            lineHeight: 18,
+                          }}>
+                            {rec.articulation.text[currentLang]}
+                          </Text>
+                          {/* Revert Button */}
+                          <TouchableOpacity
+                            onPress={() => handleRevertRecommendation(rec.key, rec.name[currentLang])}
+                            style={{
+                              marginTop: 10,
+                              paddingVertical: 6,
+                              paddingHorizontal: 12,
+                              borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: Colors.error,
+                              alignSelf: I18nManager.isRTL ? 'flex-end' : 'flex-start',
+                            }}
+                          >
+                            <Text style={{
+                              fontFamily: 'ReadexPro-SemiBold',
+                              fontSize: 12,
+                              color: Colors.error,
+                            }}>
+                              {currentLang === 'ar' ? 'غير مكتمل' : 'Not Complete'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </Card>
+            ))}
+          </View>
+        );
+      })()}
+
+      {/* Completed Screenings List - only show when there are screenings */}
+      {completedScreenings.length > 0 && (
+        <View style={styles.screeningsList}>
           <View style={{ gap: 7 }}>
             {completedScreenings.map((screening, index) => (
               <ScreeningCard
@@ -519,8 +833,8 @@ export default function CompletedTests() {
               />
             ))}
           </View>
-        )}
-      </View>
+        </View>
+      )}
     </ScrollView>
   );
 }

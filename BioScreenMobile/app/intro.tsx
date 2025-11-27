@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  I18nManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -90,13 +91,12 @@ export default function IntroScreen() {
   const [isLayoutReady, setIsLayoutReady] = useState(false);
   const isArabic = i18n.language === 'ar';
 
-  // Scroll to correct initial position for RTL
+  // Scroll to correct initial position
   useEffect(() => {
-    if (isLayoutReady && isArabic) {
-      // In RTL, screen 1 is at x = 2 * width (end of scroll)
-      scrollRef.current?.scrollTo({ x: 2 * width, animated: false });
+    if (isLayoutReady) {
+      scrollRef.current?.scrollTo({ x: 0, animated: false });
     }
-  }, [isLayoutReady, isArabic]);
+  }, [isLayoutReady]);
 
   // Check if intro was already completed
   useEffect(() => {
@@ -128,13 +128,7 @@ export default function IntroScreen() {
   const handleNext = () => {
     if (currentPage < 2) {
       const nextPage = currentPage + 1;
-      // For RTL, we need to scroll in the opposite direction
-      if (isArabic) {
-        // In RTL, pages are reversed, so we scroll to (2 - nextPage) * width
-        scrollRef.current?.scrollTo({ x: (2 - nextPage) * width, animated: true });
-      } else {
-        scrollRef.current?.scrollTo({ x: nextPage * width, animated: true });
-      }
+      scrollRef.current?.scrollTo({ x: nextPage * width, animated: true });
       setCurrentPage(nextPage);
     } else {
       handleSkip();
@@ -149,11 +143,7 @@ export default function IntroScreen() {
 
   const handleScroll = (event: any) => {
     const scrollX = event.nativeEvent.contentOffset.x;
-    let page = Math.round(scrollX / width);
-    // For RTL, reverse the page index
-    if (isArabic) {
-      page = 2 - page;
-    }
+    const page = Math.round(scrollX / width);
     setCurrentPage(page);
   };
 
@@ -267,22 +257,24 @@ export default function IntroScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScroll}
-        scrollEventThrottle={16}
-        style={styles.scrollView}
-        contentContainerStyle={{ flexDirection: isArabic ? 'row-reverse' : 'row' }}
-        onLayout={() => setIsLayoutReady(true)}
-      >
-        {renderScreen1()}
-        {renderScreen2()}
-        {renderScreen3()}
-      </ScrollView>
+      {/* Content - Force LTR for horizontal scrolling regardless of RTL setting */}
+      <View style={{ flex: 1, direction: 'ltr' }}>
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={handleScroll}
+          scrollEventThrottle={16}
+          style={[styles.scrollView, { direction: 'ltr' }]}
+          contentContainerStyle={{ flexDirection: 'row' }}
+          onLayout={() => setIsLayoutReady(true)}
+        >
+          {renderScreen1()}
+          {renderScreen2()}
+          {renderScreen3()}
+        </ScrollView>
+      </View>
 
       {/* Footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>

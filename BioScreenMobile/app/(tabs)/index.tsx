@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors as ThemeColors } from '@/constants/Colors';
 import { apiRequest } from '@/lib/api';
 import { ScreeningWithDetails } from '@/lib/screening-utils';
 import { SelectedPersonContext } from '../../context/SelectedPersonContext';
@@ -93,6 +94,21 @@ export default function HomeScreen() {
 
   const colors = Colors[colorScheme ?? 'light'];
 
+  // Load completed recommendations using React Query for cross-screen sync
+  const { data: completedRecommendations = [] } = useQuery<string[]>({
+    queryKey: ['completedRecommendations', selectedPersonId],
+    queryFn: async () => {
+      try {
+        const stored = await AsyncStorage.getItem(`completed_recommendations_${selectedPersonId}`);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error('Error loading completed recommendations:', error);
+        return [];
+      }
+    },
+    enabled: !!selectedPersonId,
+  });
+
   // Load userId from AsyncStorage
   useEffect(() => {
     AsyncStorage.getItem("local_user_id").then((id) => {
@@ -130,31 +146,8 @@ export default function HomeScreen() {
       } else if (selectedPersonId !== 'user' && familyMembersData) {
         const member = familyMembersData.find((m) => m.id === selectedPersonId || m.id?.toString() === selectedPersonId);
         if (member && member.dateOfBirth && member.gender) {
-          // Build a profile object for the family member
-          const dob = new Date(member.dateOfBirth);
-          const height = member.height || '0';
-          const weight = member.weight || '0';
-          const h = parseFloat(height) / 100;
-          const w = parseFloat(weight);
-          const bmi = h > 0 && w > 0 ? w / (h * h) : 0;
-          const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-          
-          profileToEvaluate = {
-            version: '1.0',
-            data: {
-              gender: member.gender?.toLowerCase() as 'male' | 'female',
-              birthDate: {
-                day: dob.getDate().toString(),
-                month: (dob.getMonth() + 1).toString(),
-                year: dob.getFullYear().toString(),
-              },
-              height: height,
-              weight: weight,
-              conditions: member.medicalConditions || [],
-              age: age,
-              bmi: bmi,
-            },
-          };
+          // Use the family member profile directly (it's already a MedicalProfile)
+          profileToEvaluate = member;
         }
       }
       
@@ -335,7 +328,12 @@ export default function HomeScreen() {
     >
       {/* Header with Gradient */}
       <LinearGradient
-        colors={colorScheme === 'dark' ? [Colors.background, Colors.card] : [Colors.primary, Colors.primary]}
+        colors={colorScheme === 'dark' 
+          ? ThemeColors.dark.headerGradient 
+          : ThemeColors.light.headerGradient
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={{
           paddingHorizontal: 16,
           borderBottomLeftRadius: 16,
@@ -424,14 +422,29 @@ export default function HomeScreen() {
       </LinearGradient>
 
       {/* Recommendations Summary Cards */}
-      {zimamRecommendations && zimamRecommendations.groupedRecs.length > 0 && (() => {
+      {zimamRecommendations && (() => {
+        // Define all categories to always show
+        const allCategories = [
+          { key: 'screening', name: { en: 'Screenings', ar: 'الفحوصات' } },
+          { key: 'counseling', name: { en: 'Counselings', ar: 'المشورات' } },
+          { key: 'vaccination', name: { en: 'Vaccinations', ar: 'التطعيمات' } },
+        ];
+        
+        // Get count for each category from recommendations (excluding completed)
+        const getCategoryCount = (key: string) => {
+          const category = zimamRecommendations.groupedRecs.find(cat => cat.key === key);
+          if (!category) return 0;
+          return category.recs.filter(rec => !completedRecommendations.includes(rec.key)).length;
+        };
+        
         // Calculate total recommendations
-        const totalRecommendations = zimamRecommendations.groupedRecs.reduce(
-          (sum, cat) => sum + cat.recs.length,
+        const totalRecommendations = allCategories.reduce(
+          (sum, cat) => sum + getCategoryCount(cat.key),
           0
-        );
-        // For now, completed is 0 - this will be updated when tracking is implemented
-        const completedRecommendations = 0;
+        ) + completedRecommendations.length;
+        
+        // Get actual completed count
+        const completedCount = completedRecommendations.length;
         
         return (
         <View paddingH-s5 marginB-s5>
@@ -457,11 +470,11 @@ export default function HomeScreen() {
                   style={{
                     fontSize: 30,
                     fontFamily: 'ReadexPro-Bold',
-                    color: Colors.dashboardStatus.completed,
+                    color: Colors.white,
                     marginBottom: 8
                   }}
                 >
-                  {completedRecommendations}/{totalRecommendations}
+                  {completedCount}/{totalRecommendations}
                 </Text>
                 <Text
                   style={{
@@ -477,7 +490,7 @@ export default function HomeScreen() {
                 </Text>
               </Card>
             </TouchableOpacity>
-            {zimamRecommendations.groupedRecs.map((category) => {
+            {allCategories.map((category) => {
               // Map category to dashboard status color
               const getCategoryDashboardColor = (key: string) => {
                 switch (key) {
@@ -514,7 +527,7 @@ export default function HomeScreen() {
                         marginBottom: 8
                       }}
                     >
-                      {category.recs.length}
+                      {getCategoryCount(category.key)}
                     </Text>
                     <Text
                       style={{
