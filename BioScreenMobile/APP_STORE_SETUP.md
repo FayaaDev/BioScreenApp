@@ -62,8 +62,8 @@ If you prefer to create the app record manually:
 
 - **Bundle Identifier:** `com.zimam.app` (already configured in app.config.ts)
 - **App Name:** زمام (Zimam)
-- **Version:** 1.0.2
-- **Build Number:** 19
+- **Version:** 1.2
+- **Build Number:** 1
 
 ## Required Before Submission
 
