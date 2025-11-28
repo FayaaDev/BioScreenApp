@@ -62,7 +62,8 @@ export type ConditionType =
   | 'hypertension'
   | 'diabetes-mellitus'
   | 'cholesterol'
-  | 'sexual-history';
+  | 'sexual-history'
+  | 'pregnant';
 
 export interface AgeRange {
   min?: number;

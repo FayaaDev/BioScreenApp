@@ -100,7 +100,7 @@ export const screeningRules: RecommendationRule[] = [
   },
 
   // Colorectal Cancer Screening
-  // Example 2: Female, 53 years - recommended for 50-75
+  // Zimam: Adults 45-75, annually for stool-based tests
   {
     key: 'colorectal-cancer-screening',
     name: {
@@ -109,7 +109,7 @@ export const screeningRules: RecommendationRule[] = [
     },
     category: 'screening',
     gender: 'all',
-    ageRange: { min: 50, max: 75 },
+    ageRange: { min: 45, max: 75 },
     articulation: {
       template: {
         en: 'It is recommended to do this screening annually for all adults aged 50-75 years',
@@ -123,7 +123,7 @@ export const screeningRules: RecommendationRule[] = [
   },
 
   // Cervical Cancer Screening
-  // Example 2: Female, 53 years, sexual-history - recommended for women 30-65 with sexual history
+  // Zimam: Women 21-65 who have ever had sexual contact, every 3 years
   {
     key: 'cervical-cancer-screening',
     name: {
@@ -132,7 +132,7 @@ export const screeningRules: RecommendationRule[] = [
     },
     category: 'screening',
     gender: 'female',
-    ageRange: { min: 30, max: 65 },
+    ageRange: { min: 21, max: 65 },
     requiredConditions: ['sexual-history'],
     articulation: {
       template: {
@@ -161,6 +161,45 @@ export const screeningRules: RecommendationRule[] = [
       template: {
         en: 'It is recommended to do this screening for all women aged 40-69 years',
         ar: 'يوصى بإجراء هذا الفحص لجميع النساء اللواتي أعمارهن 40-69 عامًا',
+      },
+    },
+  },
+
+  // Osteoporosis Screening
+  // Zimam: Women 65+
+  {
+    key: 'osteoporosis-screening',
+    name: {
+      en: 'Osteoporosis Screening',
+      ar: 'فحص هشاشة العظام',
+    },
+    category: 'screening',
+    gender: 'female',
+    ageRange: { min: 65 },
+    articulation: {
+      template: {
+        en: 'It is recommended to do this screening for all women aged 65 years or older',
+        ar: 'يوصى بإجراء هذا الفحص لجميع النساء اللواتي أعمارهن 65 عامًا فأكثر',
+      },
+    },
+  },
+
+  // STIs Screening
+  // Zimam: Sexually active adults
+  {
+    key: 'stis-screening',
+    name: {
+      en: 'STIs Screening',
+      ar: 'فحص الأمراض المنقولة جنسياً',
+    },
+    category: 'screening',
+    gender: 'all',
+    ageRange: { min: 18 },
+    requiredConditions: ['sexual-history'],
+    articulation: {
+      template: {
+        en: 'It is recommended to do this screening for sexually active adults',
+        ar: 'يوصى بإجراء هذا الفحص للبالغين النشطين جنسياً',
       },
     },
   },
