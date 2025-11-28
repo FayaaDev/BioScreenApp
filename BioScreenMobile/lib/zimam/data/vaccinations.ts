@@ -177,4 +177,42 @@ export const vaccinationRules: RecommendationRule[] = [
       },
     },
   },
+
+  // HPV Vaccination
+  // Zimam: Adults 18-26
+  {
+    key: 'hpv-vaccination',
+    name: {
+      en: 'HPV Vaccination',
+      ar: 'تطعيم فيروس الورم الحليمي البشري',
+    },
+    category: 'vaccination',
+    gender: 'all',
+    ageRange: { min: 18, max: 26 },
+    articulation: {
+      template: {
+        en: 'It is recommended to get this vaccination for all adults aged 18-26 years who have not been previously vaccinated',
+        ar: 'يوصى بأخذ هذا التطعيم لجميع البالغين الذين أعمارهم 18-26 عامًا ولم يسبق لهم التطعيم',
+      },
+    },
+  },
+
+  // Meningococcal Vaccination
+  // Zimam: At-risk adults (included for all with consultation note)
+  {
+    key: 'meningococcal-vaccination',
+    name: {
+      en: 'Meningococcal Vaccination',
+      ar: 'تطعيم المكورات السحائية',
+    },
+    category: 'vaccination',
+    gender: 'all',
+    ageRange: { min: 18 },
+    articulation: {
+      template: {
+        en: 'It is recommended to get this vaccination for adults at increased risk. Consult your doctor to determine if you need this vaccination',
+        ar: 'يوصى بأخذ هذا التطعيم للبالغين المعرضين لخطر متزايد. استشر طبيبك لتحديد ما إذا كنت بحاجة إلى هذا التطعيم',
+      },
+    },
+  },
 ];

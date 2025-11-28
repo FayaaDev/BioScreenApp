@@ -103,6 +103,11 @@ export function profileToConditions(
     conditions.push('sexual-history');
   }
 
+  // Pregnancy
+  if (profile.isPregnant) {
+    conditions.push('pregnant');
+  }
+
   return conditions;
 }
 
