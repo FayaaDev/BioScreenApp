@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Slider, Chip, Colors } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TouchableOpacity, Checkbox, TextField, Modal, Chip, Colors } from 'react-native-ui-lib';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../hooks/useToast";
@@ -90,6 +90,96 @@ const ArabicButton = ({
     </Text>
   </TouchableOpacity>
 );
+
+// Stepper Input Component for height/weight - better UX than slider
+const StepperInput = ({
+  label,
+  value,
+  onChange,
+  minValue,
+  maxValue,
+  unit,
+  step = 1,
+  error
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  minValue: number;
+  maxValue: number;
+  unit: string;
+  step?: number;
+  error?: string;
+}) => {
+  const increment = () => {
+    const newValue = Math.min(value + step, maxValue);
+    onChange(newValue);
+  };
+  
+  const decrement = () => {
+    const newValue = Math.max(value - step, minValue);
+    onChange(newValue);
+  };
+
+  return (
+    <View marginB-s4>
+      <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
+        {label}
+      </Text>
+      <View row centerV style={{ 
+        backgroundColor: Colors.card, 
+        borderRadius: 12, 
+        borderWidth: 1, 
+        borderColor: Colors.primary + '40',
+        overflow: 'hidden'
+      }}>
+        <TouchableOpacity 
+          onPress={decrement}
+          style={{ 
+            width: 56, 
+            height: 56, 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            backgroundColor: Colors.primary + '20'
+          }}
+        >
+          <MaterialIcons name="remove" size={28} color={Colors.primary} />
+        </TouchableOpacity>
+        
+        <View flex center style={{ paddingVertical: 12 }}>
+          <Text style={{ 
+            fontSize: 24, 
+            fontFamily: 'ReadexPro-Bold', 
+            color: Colors.text 
+          }}>
+            {value}
+          </Text>
+          <Text style={{ 
+            fontSize: 12, 
+            fontFamily: 'ReadexPro-Medium', 
+            color: Colors.textSecondary 
+          }}>
+            {unit}
+          </Text>
+        </View>
+        
+        <TouchableOpacity 
+          onPress={increment}
+          style={{ 
+            width: 56, 
+            height: 56, 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            backgroundColor: Colors.primary + '20'
+          }}
+        >
+          <MaterialIcons name="add" size={28} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+      {error && <Text error caption marginT-s1>{error}</Text>}
+    </View>
+  );
+};
 
 interface FamilyMember {
   id: string;
@@ -1296,52 +1386,36 @@ export function FamilyManagement({
                   </View>
 
                   {/* Height */}
-                  <View marginB-s4>
-                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                      {t("onboarding.height")}: {formData.height || '140'} {t("common.cm")}
-                    </Text>
-                    <Slider
-                      value={parseFloat(formData.height) || 140}
-                      minimumValue={100}
-                      maximumValue={250}
-                      step={1}
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, height: value.toString() });
-                        if (validationErrors.height) {
-                          setValidationErrors({ ...validationErrors, height: '' });
-                        }
-                      }}
-                      thumbTintColor={formData.height ? Colors.primary : Colors.textSecondary}
-                      minimumTrackTintColor={formData.height ? Colors.primary : Colors.textSecondary}
-                      maximumTrackTintColor={Colors.textSecondary}
-                      containerStyle={{ marginBottom: 8 }}
-                    />
-                    {validationErrors.height && <Text error caption marginT-s1>{validationErrors.height}</Text>}
-                  </View>
+                  <StepperInput
+                    label={t("onboarding.height")}
+                    value={parseFloat(formData.height) || 140}
+                    onChange={(value) => {
+                      setFormData({ ...formData, height: value.toString() });
+                      if (validationErrors.height) {
+                        setValidationErrors({ ...validationErrors, height: '' });
+                      }
+                    }}
+                    minValue={100}
+                    maxValue={250}
+                    unit={t("common.cm")}
+                    error={validationErrors.height}
+                  />
 
                   {/* Weight */}
-                  <View marginB-s4>
-                    <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                      {t("onboarding.weight")}: {formData.weight || '60'} {t("common.kg")}
-                    </Text>
-                    <Slider
-                      value={parseFloat(formData.weight) || 60}
-                      minimumValue={30}
-                      maximumValue={200}
-                      step={1}
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, weight: value.toString() });
-                        if (validationErrors.weight) {
-                          setValidationErrors({ ...validationErrors, weight: '' });
-                        }
-                      }}
-                      thumbTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
-                      minimumTrackTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
-                      maximumTrackTintColor={Colors.textSecondary}
-                      containerStyle={{ marginBottom: 8 }}
-                    />
-                    {validationErrors.weight && <Text error caption marginT-s1>{validationErrors.weight}</Text>}
-                  </View>
+                  <StepperInput
+                    label={t("onboarding.weight")}
+                    value={parseFloat(formData.weight) || 60}
+                    onChange={(value) => {
+                      setFormData({ ...formData, weight: value.toString() });
+                      if (validationErrors.weight) {
+                        setValidationErrors({ ...validationErrors, weight: '' });
+                      }
+                    }}
+                    minValue={30}
+                    maxValue={200}
+                    unit={t("common.kg")}
+                    error={validationErrors.weight}
+                  />
 
                   {formData.height &&
                     formData.weight &&

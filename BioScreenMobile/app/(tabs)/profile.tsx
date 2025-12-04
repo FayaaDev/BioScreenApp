@@ -147,14 +147,30 @@ export default function Profile() {
     router.replace("/onboarding");
   };
 
-  const handleSignOut = async () => {
-    const userId = await AsyncStorage.getItem("local_user_id");
-    if (userId) {
-      await medicalStorage.clearUserData(userId);
+  const handleDeleteData = async () => {
+    try {
+      // Get userId before clearing
+      const userId = await AsyncStorage.getItem("local_user_id");
+      
+      // Clear medical storage first
+      if (userId) {
+        await medicalStorage.clearUserData(userId);
+      }
+      
+      // Clear all AsyncStorage data
+      await AsyncStorage.clear();
+      
+      showToast({ title: t("profile.dataDeleted"), type: "success" });
+      
+      // Small delay to ensure storage is cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Navigate to intro page
+      router.replace("/intro");
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      showToast({ title: t("common.error"), type: "error" });
     }
-    await AsyncStorage.removeItem("local_user_id");
-    showToast({ title: t("profile.signOutSuccess"), type: "success" });
-    router.replace("/onboarding");
   };
 
   const handleSwitchPerson = (id: string) => {
@@ -489,10 +505,10 @@ export default function Profile() {
           />
         </Card>
 
-        {/* Reset Profile and Sign Out */}
+        {/* Delete Data and User Agreement */}
         <Card padding-s5 backgroundColor={Colors.card} br40 marginB-s4>
           <Button
-            label={t("profile.signOut")}
+            label={t("profile.deleteData")}
             backgroundColor="transparent"
             outline
             outlineColor={Colors.error}
@@ -500,7 +516,7 @@ export default function Profile() {
             borderRadius={200}
             marginB-s3
             labelStyle={{ color: Colors.error, fontSize: 16, fontFamily: 'ReadexPro-Bold' }}
-            onPress={handleSignOut}
+            onPress={handleDeleteData}
             style={{ borderWidth: 1, borderColor: Colors.error }}
           />
           <Button

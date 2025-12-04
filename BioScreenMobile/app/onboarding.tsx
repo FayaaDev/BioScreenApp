@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ScrollView,
   Platform,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
-import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, Slider, ChipsInput, Chip, WheelPicker } from 'react-native-ui-lib';
+import { View, Text, Card, Button, TextField, TouchableOpacity, Checkbox, ChipsInput, Chip, WheelPicker } from 'react-native-ui-lib';
 import { useRouter } from 'expo-router';
 import { useToast } from '../hooks/useToast';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -91,6 +91,96 @@ const ArabicButton = ({
   </TouchableOpacity>
 );
 
+// Stepper Input Component for height/weight - better UX than slider
+const StepperInput = React.memo(({
+  label,
+  value,
+  onChange,
+  minValue,
+  maxValue,
+  unit,
+  step = 1,
+  error
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  minValue: number;
+  maxValue: number;
+  unit: string;
+  step?: number;
+  error?: string;
+}) => {
+  const increment = () => {
+    const newValue = Math.min(value + step, maxValue);
+    onChange(newValue);
+  };
+  
+  const decrement = () => {
+    const newValue = Math.max(value - step, minValue);
+    onChange(newValue);
+  };
+
+  return (
+    <View marginB-s4>
+      <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
+        {label}
+      </Text>
+      <View row centerV style={{ 
+        backgroundColor: Colors.card, 
+        borderRadius: 12, 
+        borderWidth: 1, 
+        borderColor: Colors.primary + '40',
+        overflow: 'hidden'
+      }}>
+        <TouchableOpacity 
+          onPress={decrement}
+          style={{ 
+            width: 56, 
+            height: 56, 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            backgroundColor: Colors.primary + '20'
+          }}
+        >
+          <MaterialIcons name="remove" size={28} color={Colors.primary} />
+        </TouchableOpacity>
+        
+        <View flex center style={{ paddingVertical: 12 }}>
+          <Text style={{ 
+            fontSize: 24, 
+            fontFamily: 'ReadexPro-Bold', 
+            color: Colors.text 
+          }}>
+            {value}
+          </Text>
+          <Text style={{ 
+            fontSize: 12, 
+            fontFamily: 'ReadexPro-Medium', 
+            color: Colors.textSecondary 
+          }}>
+            {unit}
+          </Text>
+        </View>
+        
+        <TouchableOpacity 
+          onPress={increment}
+          style={{ 
+            width: 56, 
+            height: 56, 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            backgroundColor: Colors.primary + '20'
+          }}
+        >
+          <MaterialIcons name="add" size={28} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+      {error && <Text error caption marginT-s1>{error}</Text>}
+    </View>
+  );
+});
+
 interface OnboardingFormData {
   gender: string;
   dateOfBirth: string;
@@ -106,7 +196,6 @@ interface OnboardingFormData {
   sexualActivityDetails?: {
     partnerCount: 'single' | 'multiple';
   };
-  saveData: boolean;
 }
 
 interface FormErrors {
@@ -128,6 +217,8 @@ export default function Onboarding() {
   const queryClient = useQueryClient();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(null);
+  const [tempHeight, setTempHeight] = useState<number>(140);
+  const [tempWeight, setTempWeight] = useState<number>(60);
   const [formData, setFormData] = useState<OnboardingFormData>({
     gender: '',
     dateOfBirth: '',
@@ -143,12 +234,44 @@ export default function Onboarding() {
     sexualActivityDetails: {
       partnerCount: 'single',
     },
-    saveData: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInfoCondition, setSelectedInfoCondition] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Sync temp values with formData
+  useEffect(() => {
+    if (formData.height) {
+      setTempHeight(parseFloat(formData.height));
+    }
+    if (formData.weight) {
+      setTempWeight(parseFloat(formData.weight));
+    }
+  }, [formData.height, formData.weight]);
+
+  // Callbacks for sliders
+  const handleHeightChange = useCallback((value: number) => {
+    setTempHeight(value);
+  }, []);
+
+  const handleHeightComplete = useCallback((value: number) => {
+    setFormData(prev => ({ ...prev, height: value.toString() }));
+    if (errors.height) {
+      setErrors(prev => ({ ...prev, height: undefined }));
+    }
+  }, [errors.height]);
+
+  const handleWeightChange = useCallback((value: number) => {
+    setTempWeight(value);
+  }, []);
+
+  const handleWeightComplete = useCallback((value: number) => {
+    setFormData(prev => ({ ...prev, weight: value.toString() }));
+    if (errors.weight) {
+      setErrors(prev => ({ ...prev, weight: undefined }));
+    }
+  }, [errors.weight]);
 
   // Load existing profile data on mount
   useEffect(() => {
@@ -168,8 +291,11 @@ export default function Onboarding() {
               isPregnant: existingProfile.isPregnant || false,
               isSexuallyActive: existingProfile.isSexuallyActive || false,
               sexualActivityDetails: existingProfile.sexualActivityDetails || { partnerCount: 'single' },
-              saveData: true, // If they had saved data before, default to save again
             });
+            
+            // Set temp values for sliders
+            setTempHeight(parseFloat(existingProfile.height) || 140);
+            setTempWeight(parseFloat(existingProfile.weight) || 60);
             
             // Set tempDate for the date picker if dateOfBirth exists
             if (existingProfile.dateOfBirth) {
@@ -282,21 +408,13 @@ export default function Onboarding() {
         // Continue anyway, we can sync later
       }
 
-      // Only mark onboarding as complete if user wants to save permanently
-      if (formData.saveData) {
-        await medicalStorage.setOnboardingComplete(userId, true);
-        showToast({
-          title: 'مرحباً بك',
-          description: 'تم حفظ بياناتك بشكل دائم',
-          type: 'success',
-        });
-      } else {
-        showToast({
-          title: 'مرحباً بك',
-          description: 'تم حفظ بياناتك لهذه الجلسة فقط',
-          type: 'success',
-        });
-      }
+      // Always save data permanently
+      await medicalStorage.setOnboardingComplete(userId, true);
+      showToast({
+        title: 'مرحباً بك',
+        description: 'تم حفظ بياناتك بنجاح',
+        type: 'success',
+      });
 
       // Small delay to ensure AsyncStorage completes before navigation
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -631,51 +749,37 @@ export default function Onboarding() {
               )}
             </View>
 
-            <View marginB-s4>
-              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                {t("onboarding.height")}: {formData.height || '140'} {t("common.cm")}
-              </Text>
-              <Slider
-                value={parseFloat(formData.height) || 140}
-                minimumValue={100}
-                maximumValue={250}
-                step={1}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, height: value.toString() });
-                  if (errors.height) {
-                    setErrors({ ...errors, height: undefined });
-                  }
-                }}
-                thumbTintColor={formData.height ? Colors.primary : Colors.textSecondary}
-                minimumTrackTintColor={formData.height ? Colors.primary : Colors.textSecondary}
-                maximumTrackTintColor={Colors.textSecondary}
-                containerStyle={{ marginBottom: 8 }}
-              />
-              {errors.height && <Text error caption marginT-s1>{errors.height}</Text>}
-            </View>
+            <StepperInput
+              label={t("onboarding.height")}
+              value={tempHeight}
+              onChange={(value) => {
+                setTempHeight(value);
+                setFormData(prev => ({ ...prev, height: value.toString() }));
+                if (errors.height) {
+                  setErrors(prev => ({ ...prev, height: undefined }));
+                }
+              }}
+              minValue={100}
+              maxValue={250}
+              unit={t("common.cm")}
+              error={errors.height}
+            />
 
-            <View marginB-s4>
-              <Text bodySmall right marginB-s2 style={{ color: Colors.text }}>
-                {t("onboarding.weight")}: {formData.weight || '60'} {t("common.kg")}
-              </Text>
-              <Slider
-                value={parseFloat(formData.weight) || 60}
-                minimumValue={30}
-                maximumValue={200}
-                step={1}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, weight: value.toString() });
-                  if (errors.weight) {
-                    setErrors({ ...errors, weight: undefined });
-                  }
-                }}
-                thumbTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
-                minimumTrackTintColor={formData.weight ? Colors.primary : Colors.textSecondary}
-                maximumTrackTintColor={Colors.textSecondary}
-                containerStyle={{ marginBottom: 8 }}
-              />
-              {errors.weight && <Text error caption marginT-s1>{errors.weight}</Text>}
-            </View>
+            <StepperInput
+              label={t("onboarding.weight")}
+              value={tempWeight}
+              onChange={(value) => {
+                setTempWeight(value);
+                setFormData(prev => ({ ...prev, weight: value.toString() }));
+                if (errors.weight) {
+                  setErrors(prev => ({ ...prev, weight: undefined }));
+                }
+              }}
+              minValue={30}
+              maxValue={200}
+              unit={t("common.kg")}
+              error={errors.weight}
+            />
 
             {/* BMI Display */}
             {formData.height && formData.weight && (
@@ -785,34 +889,6 @@ export default function Onboarding() {
 
             <View style={{ gap: 16 }}>
               {/* Removed smoking details fields */}
-            </View>
-
-            <View marginT-s4 marginB-s4>
-              <Checkbox
-                value={formData.saveData}
-                onValueChange={(value) => setFormData({ ...formData, saveData: value })}
-                label={t("onboarding.saveData")}
-                color={Colors.primary}
-                labelStyle={{
-                  fontFamily: 'ReadexPro-Medium',
-                  color: Colors.text,
-                  fontSize: 14,
-                  writingDirection: 'rtl',
-                  marginLeft: 0,
-                  marginRight: 8,
-                  lineHeight: 22,
-                  paddingVertical: 4,
-                }}
-                containerStyle={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  paddingVertical: 4,
-                }}
-              />
-              <Text bodySmall right marginT-s1 style={{ color: Colors.textSecondary, lineHeight: 18, paddingVertical: 2 }}>
-                {t("onboarding.saveDataDesc")}
-              </Text>
             </View>
 
             <Button
