@@ -461,16 +461,16 @@ export default function HomeScreen() {
                 paddingV-s4
                 paddingH-s1
                 center
-                backgroundColor={Colors.dashboardCardBackground}
+                backgroundColor={Colors.container.background}
                 enableShadow
                 elevation={3}
-                style={{ height: 110, justifyContent: 'center', borderRadius: 16 }}
+                style={{ height: 110, justifyContent: 'center', borderRadius: 16, borderWidth: 1, borderColor: Colors.container.border }}
               >
                 <Text
                   style={{
                     fontSize: 30,
                     fontFamily: 'ReadexPro-Bold',
-                    color: Colors.white,
+                    color: Colors.primary,
                     marginBottom: 8
                   }}
                 >
@@ -480,7 +480,7 @@ export default function HomeScreen() {
                   style={{
                     fontFamily: 'ReadexPro-SemiBold',
                     textAlign: 'center',
-                    color: Colors.white,
+                    color: Colors.text,
                     fontSize: 9
                   }}
                   numberOfLines={1}
@@ -514,10 +514,10 @@ export default function HomeScreen() {
                     paddingV-s4
                     paddingH-s1
                     center
-                    backgroundColor={Colors.dashboardCardBackground}
+                    backgroundColor={Colors.container.background}
                     enableShadow
                     elevation={3}
-                    style={{ height: 110, justifyContent: 'center', borderRadius: 16 }}
+                    style={{ height: 110, justifyContent: 'center', borderRadius: 16, borderWidth: 1, borderColor: Colors.container.border }}
                   >
                     <Text
                       style={{
@@ -533,7 +533,7 @@ export default function HomeScreen() {
                       style={{
                         fontFamily: 'ReadexPro-SemiBold',
                         textAlign: 'center',
-                        color: Colors.white,
+                        color: Colors.text,
                         fontSize: 9
                       }}
                       numberOfLines={1}
@@ -563,9 +563,10 @@ export default function HomeScreen() {
                 key={content.id}
                 padding-s5
                 marginB-s3
-                backgroundColor={Colors.card}
+                backgroundColor={Colors.container.background}
                 enableShadow
                 elevation={3}
+                style={{ borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}
               >
                 <Text body style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', marginBottom: 8, color: Colors.text }}>
                   {content.title}
@@ -577,7 +578,7 @@ export default function HomeScreen() {
             ))}
           </View>
         ) : (
-          <Card padding-s5 backgroundColor={Colors.card} enableShadow elevation={3}>
+          <Card padding-s5 backgroundColor={Colors.container.background} enableShadow elevation={3} style={{ borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}>
             <MaterialCommunityIcons name="information" size={32} color={Colors.primary} />
             <Text body marginT-s3 marginB-s2 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', color: Colors.text }}>
               {t('home.defaultTipTitle')}
@@ -600,7 +601,7 @@ export default function HomeScreen() {
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+            <Card padding-s5 center backgroundColor={Colors.container.background} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center', borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}>
               <MaterialCommunityIcons name="account-group" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.addFamilyTitle')}
@@ -615,7 +616,7 @@ export default function HomeScreen() {
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/upcoming-tests')}
           >
-            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+            <Card padding-s5 center backgroundColor={Colors.container.background} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center', borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}>
               <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.upcomingTestsTitle')}
@@ -630,7 +631,7 @@ export default function HomeScreen() {
             style={{ width: '48%', height: 140 }}
             onPress={() => router.push('/(tabs)/completed-tests')}
           >
-            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+            <Card padding-s5 center backgroundColor={Colors.container.background} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center', borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}>
               <MaterialCommunityIcons name="clipboard-check" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>
                 {t('home.completedTestsTitle')}
@@ -645,7 +646,7 @@ export default function HomeScreen() {
             style={{ width: '48%', height: 140 }}
             onPress={() => setShowContactModal(true)}
           >
-            <Card padding-s5 center backgroundColor={Colors.card} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center' }}>
+            <Card padding-s5 center backgroundColor={Colors.container.background} enableShadow elevation={3} style={{ height: '100%', justifyContent: 'center', borderWidth: 1, borderColor: Colors.container.border, borderRadius: 16 }}>
               <MaterialCommunityIcons name="email" size={32} color={Colors.primary} />
               <Text bodySmall marginT-s3 marginB-4 style={{ fontWeight: 'bold', fontFamily: 'ReadexPro-Bold', textAlign: 'center', color: Colors.text }}>{t('contactUs.title')}</Text>
               <Text caption style={{ fontFamily: 'ReadexPro', textAlign: 'center', lineHeight: 16, color: Colors.text }}>{t('contactUs.description')}</Text>

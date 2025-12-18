@@ -66,6 +66,11 @@ interface ThemeColors {
     later: string;
     completed: string;
   };
+  // Container colors - light cyan tinted like website
+  container: {
+    background: string;
+    border: string;
+  };
 }
 
 export const Colors: {
@@ -100,6 +105,7 @@ export const Colors: {
   status: ThemeColors['status'];
   tabBarBackground: string;
   dashboardStatus: ThemeColors['dashboardStatus'];
+  container: ThemeColors['container'];
 } = {
   // Legacy Light Theme (mapped to Zimam Light for now)
   light: {
@@ -150,6 +156,10 @@ export const Colors: {
       later: '#ffffff', // White
       completed: '#15803d', // Dark Green (Green 700) - better contrast on light backgrounds
     },
+    container: {
+      background: '#f0f9ff', // Light cyan tint like website
+      border: '#7dd3fc', // Sky blue border
+    },
   },
   // Zimam Dark Theme (Default)
   dark: {
@@ -199,6 +209,10 @@ export const Colors: {
       overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
       completed: '#22c55e', // Vibrant Green (Green 500)
+    },
+    container: {
+      background: 'rgba(14, 116, 144, 0.15)', // Dark cyan tint
+      border: 'rgba(56, 189, 248, 0.4)', // Cyan border with transparency
     },
   },
   // Explicit Zimam Themes (for future switching logic)
@@ -251,6 +265,10 @@ export const Colors: {
       later: '#ffffff', // White
       completed: '#15803d', // Dark Green (Green 700) - better contrast on light backgrounds
     },
+    container: {
+      background: '#f0f9ff', // Light cyan tint like website
+      border: '#7dd3fc', // Sky blue border
+    },
   },
   zimamDark: {
     // Same as dark above
@@ -300,6 +318,10 @@ export const Colors: {
       overdue: '#F59E0B', // Amber 500
       later: '#ffffff', // White
       completed: '#22c55e', // Vibrant Green (Green 500)
+    },
+    container: {
+      background: 'rgba(14, 116, 144, 0.15)', // Dark cyan tint
+      border: 'rgba(56, 189, 248, 0.4)', // Cyan border with transparency
     },
   },
   // Direct access properties (defaulting to light theme initially)
@@ -351,6 +373,10 @@ export const Colors: {
     overdue: '#D97706',
     later: '#ffffff',
     completed: '#15803d',
+  },
+  container: {
+    background: '#f0f9ff',
+    border: '#7dd3fc',
   },
 };
 
